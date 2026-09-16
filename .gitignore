@@ -9,3 +9,4 @@ playwright-report/
 Thumbs.db
 .env
 .env.*
+*.tsbuildinfo

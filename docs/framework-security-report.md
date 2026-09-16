@@ -2,7 +2,7 @@
 
 Date: 2026-09-15 · Audit basis: live repo scan + Electron official security checklist, fuses docs, electron-builder v27 hardening docs, current release track.
 
-Current stack: electron-vite 5 + Electron 33.4.11 + React 19, frameless shell, safeStorage config store, sandbox+contextIsolation preload bridge.
+Current stack: electron-vite 5 + Electron 44.1.1 + React 19, frameless shell, safeStorage config store, sandbox+contextIsolation preload bridge.
 
 ---
 
@@ -19,7 +19,7 @@ Current stack: electron-vite 5 + Electron 33.4.11 + React 19, frameless shell, s
 
 ## 2. Priority gaps (P0 — do before v0.2)
 
-1. **Electron 33.4.11 is 11 majors behind.** Current stable: 44.3.0 (Chromium 152, Node 24.20). Only supported lines today are 43–44; 33 is long-EOL with unpatched Chromium/Node CVEs. Pin to the newest stable (or 43.x for one-major grace). Update regularly — Electron's own #1 recommendation.
+1. **Electron 44.1.1 is 11 majors behind.** Current stable: 44.3.0 (Chromium 152, Node 24.20). Only supported lines today are 43–44; 33 is long-EOL with unpatched Chromium/Node CVEs. Pin to the newest stable (or 43.x for one-major grace). Update regularly — Electron's own #1 recommendation.
 2. **No fuses flipped.** Defaults leave `ELECTRON_RUN_AS_NODE`, `--inspect`, `NODE_OPTIONS` enabled — classic "living off the land" vectors. Flip before code signing with `@electron/fuses` (via electron-builder plugin or CLI after build):
    - `RunAsNode: false`
    - `EnableNodeCliInspectArguments: false`
