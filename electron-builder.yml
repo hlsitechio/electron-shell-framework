@@ -1,0 +1,36 @@
+{
+  '$schema': 'https://go.quicktype.io/electron-builder/26.15.3/schema.json',
+  'appId': 'com.hlsitechio.electron-shell-framework',
+  'productName': 'App Shell',
+  'copyright': 'Copyright © 2026 hlsitechio',
+
+  'directories': { 'output': 'release/${version}', 'buildResources': 'build' },
+
+  'files': ['out/**/*', 'package.json', 'build/icon.png'],
+
+  'asar': true,
+  'compression': 'normal',
+
+  'win':
+    {
+      'target': [{ 'target': 'nsis', 'arch': ['x64'] }, { 'target': 'portable', 'arch': ['x64'] }],
+      'icon': 'build/icon.ico'
+    },
+
+  'nsis':
+    {
+      'oneClick': false,
+      'perMachine': false,
+      'allowToChangeInstallationDirectory': true,
+      'createDesktopShortcut': true,
+      'createStartMenuShortcut': true,
+      'shortcutName': 'App Shell',
+      'artifactName': '${productName}-Setup-${version}.${ext}'
+    },
+
+  'portable': { 'artifactName': '${productName}-Portable-${version}.${ext}' },
+
+  'publish': { 'provider': 'github', 'owner': 'hlsitechio', 'repo': 'electron-shell-framework' },
+
+  'npmRebuild': false
+}

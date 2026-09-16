@@ -1,0 +1,225 @@
+@import 'tailwindcss';
+
+/* ============================================================
+   THEME TOKENS — light & dark via CSS variables
+   A future app only ever touches these tokens + Tailwind classes.
+   ============================================================ */
+
+:root {
+  --radius: 0.625rem;
+
+  /* Light theme — pure grey scale (ref: lightest grey-white → mid greys) */
+  --background: 0 0% 96%;
+  --foreground: 0 0% 14%;
+
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 14%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 14%;
+
+  --primary: 0 0% 40%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 94%;
+  --secondary-foreground: 0 0% 22%;
+  --muted: 0 0% 93%;
+  --muted-foreground: 0 0% 45%;
+  --accent: 0 0% 91%;
+  --accent-foreground: 0 0% 25%;
+  --destructive: 5 45% 50%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 0 0% 93.6%;
+  --input: 0 0% 90%;
+  --ring: 0 0% 42%;
+  --card-border: 0 0% 96%; /* hairline card separation in light mode */
+
+  /* Shell-specific surfaces — LIGHT sidebars (they follow the light theme) */
+  --sidebar-bg: 0 0% 96%;
+  --sidebar-fg: 0 0% 15%;
+  --sidebar-muted: 0 0% 45%;
+  --sidebar-accent: 0 0% 45%;
+  --sidebar-border: 0 0% 93%;
+  --topbar-bg: 0 0% 100%;
+  --tab-active-bg: 0 0% 92%;
+  --tab-active-fg: 0 0% 25%;
+  --tab-hover-bg: 0 0% 95%;
+  --rightpanel-bg: 0 0% 96%; /* matches --sidebar-bg (light) */
+  --rightpanel-border: 0 0% 93%; /* matches --sidebar-border (light) */
+  --content-bg: 0 0% 97%;
+
+  /* Chart + status — grey scale */
+  --success: 160 30% 40%;
+  --warning: 0 0% 46%;
+  --info: 0 0% 66%;
+  --terra: 0 0% 52%;
+  --chart-1: 204 40% 42%;
+  --chart-2: 0 0% 45%;
+  --chart-3: 160 30% 40%;
+  --chart-4: 25 45% 45%;
+  --chart-5: 280 25% 45%;
+}
+
+/* ============================================================
+   DARK THEME — PURE NEUTRAL GREY (ref: no blue cast on bg)
+   hue 0 · sat 0 everywhere · semantic colors muted only
+   ============================================================ */
+[data-theme='dark'] {
+  --background: 0 0% 12%;
+  --foreground: 0 0% 90%;
+
+  --card: 0 0% 15%;
+  --card-foreground: 0 0% 90%;
+  --popover: 0 0% 15%;
+  --popover-foreground: 0 0% 90%;
+
+  --primary: 0 0% 68%;
+  --primary-foreground: 0 0% 10%;
+  --secondary: 0 0% 20%;
+  --secondary-foreground: 0 0% 90%;
+  --muted: 0 0% 18%;
+  --muted-foreground: 0 0% 62%;
+  --accent: 0 0% 24%;
+  --accent-foreground: 0 0% 88%;
+  --destructive: 5 35% 45%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 0 0% 14.5%;
+  --input: 0 0% 16%;
+  --ring: 0 0% 60%;
+  --card-border: 0 0% 17%; /* hairline card separation in dark mode */
+
+  /* Shell-specific */
+  --sidebar-bg: 0 0% 9%;
+  --sidebar-fg: 0 0% 86%;
+  --sidebar-muted: 0 0% 54%;
+  --sidebar-accent: 0 0% 62%;
+  --sidebar-border: 0 0% 12%;
+  --topbar-bg: 0 0% 13%;
+  --tab-active-bg: 0 0% 26%;
+  --tab-active-fg: 0 0% 88%;
+  --tab-hover-bg: 0 0% 17%;
+  --rightpanel-bg: 0 0% 9%; /* matches --sidebar-bg */
+  --rightpanel-border: 0 0% 12%; /* matches --sidebar-border */
+  --content-bg: 0 0% 10%;
+
+  --success: 160 30% 45%;
+  --warning: 0 0% 62%;
+  --info: 0 0% 74%;
+  --terra: 0 0% 58%;
+  --chart-1: 204 61% 61%;
+  --chart-2: 0 0% 55%;
+  --chart-3: 160 30% 45%;
+  --chart-4: 25 65% 55%;
+  --chart-5: 280 30% 55%;
+}
+
+/* ============================================================
+   SHADCN COMPONENT MAPPING
+   ============================================================ */
+
+/*
+ * @theme inline turns bare-token utilities (bg-card, border-input,
+ * text-muted-foreground, ring-ring, ...) into VALID colors.
+ * Tokens are HSL triplets ('0 0% 16%'); wrapping with hsl() at use
+ * site makes var() resolve — otherwise the declaration is dropped
+ * and borders/text fall back to currentColor (the old "bright tick
+ * border" bug).
+ */
+@theme inline {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-card-border: hsl(var(--card-border));
+  --color-sidebar-bg: hsl(var(--sidebar-bg));
+  --color-sidebar-fg: hsl(var(--sidebar-fg));
+  --color-sidebar-muted: hsl(var(--sidebar-muted));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-topbar-bg: hsl(var(--topbar-bg));
+  --color-tab-active-bg: hsl(var(--tab-active-bg));
+  --color-tab-active-fg: hsl(var(--tab-active-fg));
+  --color-tab-hover-bg: hsl(var(--tab-hover-bg));
+  --color-rightpanel-bg: hsl(var(--rightpanel-bg));
+  --color-rightpanel-border: hsl(var(--rightpanel-border));
+  --color-content-bg: hsl(var(--content-bg));
+  --color-success: hsl(var(--success));
+  --color-warning: hsl(var(--warning));
+  --color-info: hsl(var(--info));
+  --color-terra: hsl(var(--terra));
+}
+
+:root {
+  --shadow-2xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-xs: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+[data-theme='dark'] {
+  --shadow-xs: 0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3);
+  --shadow-sm: 0 2px 6px 0 rgb(0 0 0 / 0.35);
+  --shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.45), 0 2px 4px -2px rgb(0 0 0 / 0.35);
+  --shadow-lg: 0 12px 24px -4px rgb(0 0 0 / 0.55), 0 4px 8px -6px rgb(0 0 0 / 0.4);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family:
+    'Segoe UI Variable Text',
+    'Segoe UI',
+    system-ui,
+    -apple-system,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* Frameless drag regions */
+.app-drag {
+  -webkit-app-region: drag;
+}
+.app-no-drag {
+  -webkit-app-region: no-drag;
+}
+
+/* Slim custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
