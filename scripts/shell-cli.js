@@ -103,6 +103,14 @@ function nodeVersion() {
   return Number(v)
 }
 
+/** Set a repo-local git config value (no-op if git is unavailable). */
+function gitConfig(key, value) {
+  // no shell: true — the value can contain characters (dots, @, +) that
+  // would need escaping, and shell:true triggers DEP0190.
+  const r = spawnSync('git', ['config', key, value], { cwd: ROOT, stdio: 'ignore' })
+  return r.status === 0
+}
+
 // ---------------------------------------------------------------------------
 // preflight
 // ---------------------------------------------------------------------------
@@ -237,10 +245,76 @@ const commands = {
     ok('Packaging complete — check release/ folder.')
   },
 
+  /**
+   * Identity + auth, through the GitHub CLI login.
+   *
+   * Nothing here stores a token: `gh` already keeps credentials in the OS
+   * keyring, so we only (a) check the login exists, (b) point git's credential
+   * helper at it, and (c) set the commit identity to the account's noreply
+   * address — which is what GitHub's "block pushes that expose my email"
+   * protection requires.
+   */
+  login() {
+    banner()
+    section('GitHub login')
+
+    const authed = has('gh')
+    if (!authed) {
+      fail('gh (GitHub CLI) not found — install it, then re-run.')
+      console.log(`  ${c.dim}https://cli.github.com${c.reset}`)
+      die('Login not possible without the GitHub CLI.')
+    }
+
+    const status = spawnSync('gh', ['auth', 'status'], { encoding: 'utf-8' })
+    const loggedIn = status.status === 0
+
+    if (!loggedIn) {
+      warn('Not logged in to GitHub.')
+      log('  ', 'Launching `gh auth login` (interactive)…')
+      run('gh', ['auth', 'login', '--web', '--git-protocol', 'https'], { allowFail: true })
+    } else {
+      const line = (status.stdout || status.stderr || '')
+        .split('\n')
+        .map((l) => l.trim())
+        .find((l) => l.includes('Logged in'))
+      // gh's own output already starts with "✓" — don't double it
+      if (line) console.log(`  ${c.green}✓${c.reset} ${line.replace(/^✓\s*/, '')}`)
+      else ok('Logged in to github.com')
+    }
+
+    // git uses the gh credential helper → no token in config, no token on disk
+    const setup = spawnSync('gh', ['auth', 'setup-git'], { stdio: 'ignore' })
+    if (setup.status === 0) ok('git credential helper → gh')
+    else warn('Could not wire the gh credential helper (git may still work via another helper).')
+
+    // commit identity: the noreply address, so pushes are never blocked.
+    // NOTE: no `shell: true` anywhere here — DEP0190, and it mangles --jq.
+    const who = spawnSync('gh', ['api', 'user', '--jq', '.login + " " + (.id|tostring)'], {
+      encoding: 'utf-8'
+    })
+    const whoOut = (who.stdout || '').trim()
+    if (who.status === 0 && whoOut) {
+      const [login, id] = whoOut.split(/\s+/)
+      const email = `${id}+${login}@users.noreply.github.com`
+      const nameOk = gitConfig('user.name', login)
+      const mailOk = gitConfig('user.email', email)
+      if (nameOk && mailOk) ok(`commit identity → ${login} <${email}>`)
+      else warn('Could not write git config — set user.email manually before committing.')
+    } else {
+      warn('Could not read the account from gh — set user.email manually before committing.')
+    }
+
+    section('Login complete')
+    console.log('  Next steps:')
+    console.log('    •  node scripts/shell-cli.js install   – full install')
+    console.log('    •  git push origin main                – publish (no email block)\n')
+  },
+
   help() {
     banner()
     console.log(`  ${c.bold}Usage:${c.reset} node scripts/shell-cli.js <command>\n`)
     for (const [name, desc] of Object.entries({
+      login: 'authenticate via the GitHub CLI + set the commit identity',
       install:
         'full step-by-step install (IRM) — preflight → deps → checks → build → run → package',
       check: 'environment preflight only',
