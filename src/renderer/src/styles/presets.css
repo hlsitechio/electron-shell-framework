@@ -1,0 +1,1111 @@
+/* ============================================================
+   THEME PRESETS — 10 app shells
+
+   base tokens live in theme.css (:root / [data-theme='dark'])
+   every block below OVERRIDES them when <html data-preset='...'>
+   is set. Both attributes are always required so specificity
+   never depends on source order.
+
+   generated file — regenerate rather than hand-editing ramps,
+   but editing a single value is fine (see docs/THEMES.md)
+   ============================================================ */
+
+/* Muted Violet — dark */
+[data-theme='dark'][data-preset='muted-violet'] {
+  --background: 260 15.8% 7.5%;
+  --foreground: 263.1 44.8% 94.3%;
+  --card: 258 17.2% 11.4%;
+  --card-foreground: 263.1 44.8% 94.3%;
+  --popover: 258 17.2% 11.4%;
+  --popover-foreground: 263.1 44.8% 94.3%;
+  --primary: 251.5 46.5% 60.4%;
+  --primary-foreground: 240 18.2% 8.6%;
+  --secondary: 258 15.6% 12.5%;
+  --secondary-foreground: 262.5 45.7% 86.3%;
+  --muted: 260 16.2% 14.5%;
+  --muted-foreground: 258.6 17% 66.5%;
+  --accent: 261.4 14.9% 18.4%;
+  --accent-foreground: 262.5 44.4% 89.4%;
+  --destructive: 4.8 40.2% 50.8%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 261.4 16.7% 16.5%;
+  --input: 260 16.2% 14.5%;
+  --ring: 251.5 46.5% 60.4%;
+  --card-border: 260 15.2% 19.4%;
+  --sidebar-bg: 264 15.2% 6.5%;
+  --sidebar-fg: 263.1 44.8% 94.3%;
+  --sidebar-muted: 258.6 17% 66.5%;
+  --sidebar-accent: 251.5 46.5% 60.4%;
+  --sidebar-border: 261.4 16.7% 16.5%;
+  --topbar-bg: 260 17% 10.4%;
+  --tab-active-bg: 249.3 34.4% 52.2%;
+  --tab-active-fg: 263.1 44.8% 94.3%;
+  --tab-hover-bg: 258 15.6% 12.5%;
+  --rightpanel-bg: 264 15.2% 6.5%;
+  --rightpanel-border: 261.4 16.7% 16.5%;
+  --content-bg: 257.1 16.3% 8.4%;
+  --success: 153.1 33.1% 46.3%;
+  --warning: 36.5 38% 50%;
+  --info: 230.7 33% 65.5%;
+  --terra: 22.6 37.8% 55.9%;
+  --chart-1: 251.7 48.6% 64.9%;
+  --chart-2: 249.6 34.5% 46.1%;
+  --chart-3: 153.1 33.1% 46.3%;
+  --chart-4: 36.5 38% 50%;
+  --chart-5: 260.4 19.5% 52.7%;
+  --glass-tint: rgba(46, 43, 77, 0.42);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --gloss: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.02) 32%,
+    transparent 62%
+  );
+  --accent-grad: linear-gradient(135deg, #a498d9 0%, #7d6bc9 46%, #3d4a85 100%);
+  --glow-color: #3d4a85;
+}
+
+/* Muted Violet — light */
+[data-theme='light'][data-preset='muted-violet'] {
+  --background: 260 37.5% 96.9%;
+  --foreground: 253.3 30% 11.8%;
+  --card: 0 0% 100%;
+  --card-foreground: 253.3 30% 11.8%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 253.3 30% 11.8%;
+  --primary: 249.6 34.5% 46.1%;
+  --primary-foreground: 253.3 60% 97.1%;
+  --secondary: 262.5 38.1% 91.8%;
+  --secondary-foreground: 253.5 30.7% 19.8%;
+  --muted: 261 38.5% 89.8%;
+  --muted-foreground: 255.5 15.6% 39%;
+  --accent: 260 37% 85.7%;
+  --accent-foreground: 253.8 30.2% 16.9%;
+  --destructive: 4.4 47.4% 44.7%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 260 38.7% 87.8%;
+  --input: 261 38.5% 89.8%;
+  --ring: 249.6 34.5% 46.1%;
+  --card-border: 260.7 37.7% 84.9%;
+  --sidebar-bg: 255 40% 98%;
+  --sidebar-fg: 253.3 30% 11.8%;
+  --sidebar-muted: 255.5 15.6% 39%;
+  --sidebar-accent: 249.6 34.5% 46.1%;
+  --sidebar-border: 260 38.7% 87.8%;
+  --topbar-bg: 260 37.5% 93.7%;
+  --tab-active-bg: 251.1 46.6% 54.5%;
+  --tab-active-fg: 253.3 30% 11.8%;
+  --tab-hover-bg: 262.5 38.1% 91.8%;
+  --rightpanel-bg: 255 40% 98%;
+  --rightpanel-border: 260 38.7% 87.8%;
+  --content-bg: 262.5 36.4% 95.7%;
+  --success: 152.8 33.7% 37.3%;
+  --warning: 36.6 42.3% 38%;
+  --info: 230.2 24.9% 48%;
+  --terra: 22.6 42.3% 32%;
+  --chart-1: 249.6 34.5% 46.1%;
+  --chart-2: 251.5 46.5% 60.4%;
+  --chart-3: 152.8 33.7% 37.3%;
+  --chart-4: 36.6 42.3% 38%;
+  --chart-5: 257.6 17.7% 45.3%;
+  --glass-tint: rgba(255, 255, 255, 0.62);
+  --glass-border: rgba(255, 255, 255, 0.55);
+  --gloss: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.12) 32%,
+    transparent 62%
+  );
+  --accent-grad: linear-gradient(135deg, #4e4389 0%, #5a4d9e 46%, #a99ce0 100%);
+  --glow-color: #a99ce0;
+}
+
+/* Noguchi — dark */
+[data-theme='dark'][data-preset='noguchi'] {
+  --background: 228 25.6% 15.3%;
+  --foreground: 240 25.7% 93.1%;
+  --card: 221.5 21.3% 23.9%;
+  --card-foreground: 240 25.7% 93.1%;
+  --popover: 221.5 21.3% 23.9%;
+  --popover-foreground: 240 25.7% 93.1%;
+  --primary: 230.7 33% 65.5%;
+  --primary-foreground: 240 18.2% 8.6%;
+  --secondary: 226.7 26.2% 20.2%;
+  --secondary-foreground: 240 26.3% 85.1%;
+  --muted: 227.6 25.7% 22.2%;
+  --muted-foreground: 226.7 15.4% 65.7%;
+  --accent: 227.6 25.4% 26.3%;
+  --accent-foreground: 240 26.7% 88.2%;
+  --destructive: 4.8 40.2% 50.8%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 228.8 25.8% 24.3%;
+  --input: 227.6 25.7% 22.2%;
+  --ring: 230.7 33% 65.5%;
+  --card-border: 228 25.2% 27.3%;
+  --sidebar-bg: 227.4 26% 14.3%;
+  --sidebar-fg: 240 25.7% 93.1%;
+  --sidebar-muted: 226.7 15.4% 65.7%;
+  --sidebar-accent: 230.7 33% 65.5%;
+  --sidebar-border: 228.8 25.8% 24.3%;
+  --topbar-bg: 230 25.5% 18.4%;
+  --tab-active-bg: 240 9.4% 31.2%;
+  --tab-active-fg: 240 25.7% 93.1%;
+  --tab-hover-bg: 226.7 26.2% 20.2%;
+  --rightpanel-bg: 227.4 26% 14.3%;
+  --rightpanel-border: 228.8 25.8% 24.3%;
+  --content-bg: 228.6 25.3% 16.3%;
+  --success: 153.1 33.1% 46.3%;
+  --warning: 36.5 38% 50%;
+  --info: 214.1 37.2% 69.4%;
+  --terra: 22.6 37.8% 55.9%;
+  --chart-1: 214.1 37.2% 69.4%;
+  --chart-2: 230.7 33% 65.5%;
+  --chart-3: 153.1 33.1% 46.3%;
+  --chart-4: 36.5 38% 50%;
+  --chart-5: 219.6 22.5% 59%;
+  --glass-tint: rgba(48, 56, 74, 0.42);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --gloss: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.02) 32%,
+    transparent 62%
+  );
+  --accent-grad: linear-gradient(135deg, #b3b9d9 0%, #8a93c4 46%, #263940 100%);
+  --glow-color: #263940;
+}
+
+/* Noguchi — light */
+[data-theme='light'][data-preset='noguchi'] {
+  --background: 225 22.2% 96.5%;
+  --foreground: 228 25.6% 15.3%;
+  --card: 0 0% 100%;
+  --card-foreground: 228 25.6% 15.3%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 228 25.6% 15.3%;
+  --primary: 224 20.5% 28.6%;
+  --primary-foreground: 253.3 60% 97.1%;
+  --secondary: 222 22.7% 91.4%;
+  --secondary-foreground: 228.4 26.1% 23.3%;
+  --muted: 225 22.2% 89.4%;
+  --muted-foreground: 215 7.3% 32.2%;
+  --accent: 225 21.6% 85.5%;
+  --accent-foreground: 226.7 26.2% 20.2%;
+  --destructive: 4.4 47.4% 44.7%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 227.1 21.9% 87.5%;
+  --input: 225 22.2% 89.4%;
+  --ring: 224 20.5% 28.6%;
+  --card-border: 225.9 21.5% 84.5%;
+  --sidebar-bg: 220 23.1% 97.5%;
+  --sidebar-fg: 228 25.6% 15.3%;
+  --sidebar-muted: 215 7.3% 32.2%;
+  --sidebar-accent: 224 20.5% 28.6%;
+  --sidebar-border: 227.1 21.9% 87.5%;
+  --topbar-bg: 231.4 21.2% 93.5%;
+  --tab-active-bg: 221.1 20.9% 17.8%;
+  --tab-active-fg: 228 25.6% 15.3%;
+  --tab-hover-bg: 222 22.7% 91.4%;
+  --rightpanel-bg: 220 23.1% 97.5%;
+  --rightpanel-border: 227.1 21.9% 87.5%;
+  --content-bg: 228 21.7% 95.5%;
+  --success: 152.8 33.7% 37.3%;
+  --warning: 36.6 42.3% 38%;
+  --info: 219.7 32% 38%;
+  --terra: 22.6 42.3% 32%;
+  --chart-1: 219.7 32% 38%;
+  --chart-2: 224 20.5% 28.6%;
+  --chart-3: 152.8 33.7% 37.3%;
+  --chart-4: 36.6 42.3% 38%;
+  --chart-5: 215 7.3% 32.2%;
+  --glass-tint: rgba(255, 255, 255, 0.62);
+  --glass-border: rgba(255, 255, 255, 0.55);
+  --gloss: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.12) 32%,
+    transparent 62%
+  );
+  --accent-grad: linear-gradient(135deg, #2e3446 0%, #3a4258 46%, #94adce 100%);
+  --glow-color: #94adce;
+}
+
+/* Poiesis Purple — dark */
+[data-theme='dark'][data-preset='poiesis-purple'] {
+  --background: 270 38.5% 5.1%;
+  --foreground: 270 31.6% 92.5%;
+  --card: 272.5 35.3% 13.3%;
+  --card-foreground: 270 31.6% 92.5%;
+  --popover: 272.5 35.3% 13.3%;
+  --popover-foreground: 270 31.6% 92.5%;
+  --primary: 275.8 26.3% 53.7%;
+  --primary-foreground: 240 18.2% 8.6%;
+  --secondary: 270 38.5% 10.2%;
+  --secondary-foreground: 271.2 31.6% 84.5%;
+  --muted: 270 38.7% 12.2%;
+  --muted-foreground: 270 14.1% 63.9%;
+  --accent: 270 39% 16.1%;
+  --accent-foreground: 270 31.2% 87.5%;
+  --destructive: 4.8 40.2% 50.8%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 270 38.9% 14.1%;
+  --input: 270 38.7% 12.2%;
+  --ring: 275.8 26.3% 53.7%;
+  --card-border: 270.9 37.9% 17.1%;
+  --sidebar-bg: 270 40% 3.9%;
+  --sidebar-fg: 270 31.6% 92.5%;
+  --sidebar-muted: 270 14.1% 63.9%;
+  --sidebar-accent: 275.8 26.3% 53.7%;
+  --sidebar-border: 270 38.9% 14.1%;
+  --topbar-bg: 270 38.1% 8.2%;
+  --tab-active-bg: 280 29.5% 33.9%;
+  --tab-active-fg: 270 31.6% 92.5%;
+  --tab-hover-bg: 270 38.5% 10.2%;
+  --rightpanel-bg: 270 40% 3.9%;
+  --rightpanel-border: 270 38.9% 14.1%;
+  --content-bg: 270 37.5% 6.3%;
+  --success: 153.1 33.1% 46.3%;
+  --warning: 36.5 38% 50%;
+  --info: 258 28.4% 65.5%;
+  --terra: 22.6 37.8% 55.9%;
+  --chart-1: 275.4 30.4% 63.9%;
+  --chart-2: 280 29.6% 27.8%;
+  --chart-3: 153.1 33.1% 46.3%;
+  --chart-4: 36.5 38% 50%;
+  --chart-5: 271.8 21.2% 47.3%;
+  --glass-tint: rgba(78, 50, 92, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --gloss: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.02) 32%,
+    transparent 62%
+  );
+  --accent-grad: linear-gradient(135deg, #ac91bf 0%, #8f6aa8 46%, #4e325c 100%);
+  --glow-color: #4e325c;
+}
+
+/* Poiesis Purple — light */
+[data-theme='light'][data-preset='poiesis-purple'] {
+  --background: 285 22.2% 96.5%;
+  --foreground: 273 35.7% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 273 35.7% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 273 35.7% 11%;
+  --primary: 280 29.6% 27.8%;
+  --primary-foreground: 253.3 60% 97.1%;
+  --secondary: 288 22.7% 91.4%;
+  --secondary-foreground: 272.6 36.1% 19%;
+  --muted: 285 22.2% 89.4%;
+  --muted-foreground: 279 10.9% 36.1%;
+  --accent: 285 21.6% 85.5%;
+  --accent-foreground: 273.1 35.8% 15.9%;
+  --destructive: 4.4 47.4% 44.7%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 287.1 21.9% 87.5%;
+  --input: 285 22.2% 89.4%;
+  --ring: 280 29.6% 27.8%;
+  --card-border: 285.9 21.5% 84.5%;
+  --sidebar-bg: 280 23.1% 97.5%;
+  --sidebar-fg: 273 35.7% 11%;
+  --sidebar-muted: 279 10.9% 36.1%;
+  --sidebar-accent: 280 29.6% 27.8%;
+  --sidebar-border: 287.1 21.9% 87.5%;
+  --topbar-bg: 282.9 21.2% 93.5%;
+  --tab-active-bg: 276 30.2% 57.8%;
+  --tab-active-fg: 273 35.7% 11%;
+  --tab-hover-bg: 288 22.7% 91.4%;
+  --rightpanel-bg: 280 23.1% 97.5%;
+  --rightpanel-border: 287.1 21.9% 87.5%;
+  --content-bg: 288 21.7% 95.5%;
+  --success: 152.8 33.7% 37.3%;
+  --warning: 36.6 42.3% 38%;
+  --info: 257.6 17.7% 45.3%;
+  --terra: 22.6 42.3% 32%;
+  --chart-1: 280 29.6% 27.8%;
+  --chart-2: 275.4 30.4% 63.9%;
+  --chart-3: 152.8 33.7% 37.3%;
+  --chart-4: 36.6 42.3% 38%;
+  --chart-5: 271.8 21.2% 47.3%;
+  --glass-tint: rgba(255, 255, 255, 0.62);
+  --glass-border: rgba(255, 255, 255, 0.55);
+  --gloss: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.12) 32%,
+    transparent 62%
+  );
+  --accent-grad: linear-gradient(135deg, #3d2748 0%, #4e325c 46%, #c4a8d4 100%);
+  --glow-color: #c4a8d4;
+}
+
+/* Midnight Purple — dark */
+[data-theme='dark'][data-preset='midnight-purple'] {
+  --background: 266.7 47.4% 7.5%;
+  --foreground: 270 46.7% 94.1%;
+  --card: 266.7 46.4% 19%;
+  --card-foreground: 270 46.7% 94.1%;
+  --popover: 266.7 46.4% 19%;
+  --popover-foreground: 270 46.7% 94.1%;
+  --primary: 263.3 54.4% 64.7%;
+  --primary-foreground: 240 18.2% 8.6%;
+  --secondary: 266 46.9% 12.5%;
+  --secondary-foreground: 270.9 46.5% 86.1%;
+  --muted: 267.4 47.9% 14.3%;
+  --muted-foreground: 265 22.2% 68.2%;
+  --accent: 267.3 46.8% 18.4%;
+  --accent-foreground: 270 46.4% 89%;
+  --destructive: 4.8 40.2% 50.8%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 267 47.6% 16.5%;
+  --input: 267.4 47.9% 14.3%;
+  --ring: 263.3 54.4% 64.7%;
+  --card-border: 266.8 47.5% 19.4%;
+  --sidebar-bg: 268 45.5% 6.5%;
+  --sidebar-fg: 270 46.7% 94.1%;
+  --sidebar-muted: 265 22.2% 68.2%;
+  --sidebar-accent: 263.3 54.4% 64.7%;
+  --sidebar-border: 267 47.6% 16.5%;
+  --topbar-bg: 266.4 47.2% 10.4%;
+  --tab-active-bg: 268.9 36.7% 42.2%;
+  --tab-active-fg: 270 46.7% 94.1%;
+  --tab-hover-bg: 266 46.9% 12.5%;
+  --rightpanel-bg: 268 45.5% 6.5%;
+  --rightpanel-border: 267 47.6% 16.5%;
+  --content-bg: 265.7 48.8% 8.4%;
+  --success: 153.1 33.1% 46.3%;
+  --warning: 36.5 38% 50%;
+  --info: 255.7 40.9% 68.8%;
+  --terra: 22.6 37.8% 55.9%;
+  --chart-1: 264.1 66.7% 72.9%;
+  --chart-2: 269.1 37% 36.1%;
+  --chart-3: 153.1 33.1% 46.3%;
+  --chart-4: 36.5 38% 50%;
+  --chart-5: 267 30.4% 55.5%;
+  --glass-tint: rgba(46, 26, 71, 0.46);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --gloss: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.02) 32%,
+    transparent 62%
+  );
+  --accent-grad: linear-gradient(135deg, #bca3e4 0%, #9a74d6 46%, #5b3a7e 100%);
+  --glow-color: #5b3a7e;
+}
+
+/* Midnight Purple — light */
+[data-theme='light'][data-preset='midnight-purple'] {
+  --background: 274.3 46.7% 97.1%;
+  --foreground: 265.3 51.4% 14.5%;
+  --card: 0 0% 100%;
+  --card-foreground: 265.3 51.4% 14.5%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 265.3 51.4% 14.5%;
+  --primary: 267.5 46.2% 30.6%;
+  --primary-foreground: 253.3 60% 97.1%;
+  --secondary: 274.7 46.3% 92%;
+  --secondary-foreground: 265.4 51.3% 22.5%;
+  --muted: 273.9 45.1% 90%;
+  --muted-foreground: 265.9 22.4% 38.4%;
+  --accent: 274.5 46.5% 86.1%;
+  --accent-foreground: 265.9 51.5% 19.4%;
+  --destructive: 4.4 47.4% 44.7%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 275.2 47.5% 88%;
+  --input: 273.9 45.1% 90%;
+  --ring: 267.5 46.2% 30.6%;
+  --card-border: 273.3 47.4% 85.1%;
+  --sidebar-bg: 270 40% 98%;
+  --sidebar-fg: 265.3 51.4% 14.5%;
+  --sidebar-muted: 265.9 22.4% 38.4%;
+  --sidebar-accent: 267.5 46.2% 30.6%;
+  --sidebar-border: 275.2 47.5% 88%;
+  --topbar-bg: 274.3 46.7% 94.1%;
+  --tab-active-bg: 263.5 54.5% 58.6%;
+  --tab-active-fg: 265.3 51.4% 14.5%;
+  --tab-hover-bg: 274.7 46.3% 92%;
+  --rightpanel-bg: 270 40% 98%;
+  --rightpanel-border: 275.2 47.5% 88%;
+  --content-bg: 276 50% 96.1%;
+  --success: 152.8 33.7% 37.3%;
+  --warning: 36.6 42.3% 38%;
+  --info: 257.6 17.7% 45.3%;
+  --terra: 22.6 42.3% 32%;
+  --chart-1: 267.5 46.2% 30.6%;
+  --chart-2: 263.3 54.4% 64.7%;
+  --chart-3: 152.8 33.7% 37.3%;
+  --chart-4: 36.6 42.3% 38%;
+  --chart-5: 267 30.4% 55.5%;
+  --glass-tint: rgba(255, 255, 255, 0.62);
+  --glass-border: rgba(255, 255, 255, 0.55);
+  --gloss: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.12) 32%,
+    transparent 62%
+  );
+  --accent-grad: linear-gradient(135deg, #3c225c 0%, #4b2a72 46%, #c9aef0 100%);
+  --glow-color: #c9aef0;
+}
+
+/* Poiesis Blue — dark */
+[data-theme='dark'][data-preset='poiesis-blue'] {
+  --background: 220.9 52.4% 8.2%;
+  --foreground: 217.5 53.3% 94.1%;
+  --card: 223.6 55.6% 19.4%;
+  --card-foreground: 217.5 53.3% 94.1%;
+  --popover: 223.6 55.6% 19.4%;
+  --popover-foreground: 217.5 53.3% 94.1%;
+  --primary: 218.2 37% 53.3%;
+  --primary-foreground: 240 18.2% 8.6%;
+  --secondary: 221.1 52.2% 13.1%;
+  --secondary-foreground: 217.3 52.1% 86.1%;
+  --muted: 222 51.3% 15.3%;
+  --muted-foreground: 214.1 37.2% 69.4%;
+  --accent: 220.4 53.1% 19.2%;
+  --accent-foreground: 216 53.6% 89%;
+  --destructive: 4.8 40.2% 50.8%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 220.4 52.3% 17.3%;
+  --input: 222 51.3% 15.3%;
+  --ring: 218.2 37% 53.3%;
+  --card-border: 221.1 51.9% 20.4%;
+  --sidebar-bg: 221.1 51.4% 7.3%;
+  --sidebar-fg: 217.5 53.3% 94.1%;
+  --sidebar-muted: 214.1 37.2% 69.4%;
+  --sidebar-accent: 218.2 37% 53.3%;
+  --sidebar-border: 220.4 52.3% 17.3%;
+  --topbar-bg: 222 51.7% 11.4%;
+  --tab-active-bg: 219.2 32.1% 43.9%;
+  --tab-active-fg: 217.5 53.3% 94.1%;
+  --tab-hover-bg: 221.1 52.2% 13.1%;
+  --rightpanel-bg: 221.1 51.4% 7.3%;
+  --rightpanel-border: 220.4 52.3% 17.3%;
+  --content-bg: 220.8 53.2% 9.2%;
+  --success: 153.1 33.1% 46.3%;
+  --warning: 36.5 38% 50%;
+  --info: 214.1 37.2% 69.4%;
+  --terra: 22.6 37.8% 55.9%;
+  --chart-1: 214.1 37.2% 69.4%;
+  --chart-2: 219.7 32% 38%;
+  --chart-3: 153.1 33.1% 46.3%;
+  --chart-4: 36.5 38% 50%;
+  --chart-5: 218.2 37% 53.3%;
+  --glass-tint: rgba(22, 37, 77, 0.44);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --gloss: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.02) 32%,
+    transparent 62%
+  );
+  --accent-grad: linear-gradient(135deg, #869ec7 0%, #5c7cb4 46%, #16254d 100%);
+  --glow-color: #16254d;
+}
+
+/* Poiesis Blue — light */
+[data-theme='light'][data-preset='poiesis-blue'] {
+  --background: 217.5 50% 96.9%;
+  --foreground: 222 50% 11.8%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 50% 11.8%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 50% 11.8%;
+  --primary: 220.6 49.7% 28%;
+  --primary-foreground: 253.3 60% 97.1%;
+  --secondary: 217.1 51.2% 92%;
+  --secondary-foreground: 222.4 50.5% 19.8%;
+  --muted: 216.9 50% 89.8%;
+  --muted-foreground: 219.7 32% 38%;
+  --accent: 218.3 50% 85.9%;
+  --accent-foreground: 221.9 50.6% 16.7%;
+  --destructive: 4.4 47.4% 44.7%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 218.7 50.8% 88%;
+  --input: 216.9 50% 89.8%;
+  --ring: 220.6 49.7% 28%;
+  --card-border: 216.9 50.6% 84.9%;
+  --sidebar-bg: 216 45.5% 97.8%;
+  --sidebar-fg: 222 50% 11.8%;
+  --sidebar-muted: 219.7 32% 38%;
+  --sidebar-accent: 220.6 49.7% 28%;
+  --sidebar-border: 218.7 50.8% 88%;
+  --topbar-bg: 220 48.4% 93.9%;
+  --tab-active-bg: 217.8 36.9% 47.3%;
+  --tab-active-fg: 222 50% 11.8%;
+  --tab-hover-bg: 217.1 51.2% 92%;
+  --rightpanel-bg: 216 45.5% 97.8%;
+  --rightpanel-border: 218.7 50.8% 88%;
+  --content-bg: 218.2 52.4% 95.9%;
+  --success: 152.8 33.7% 37.3%;
+  --warning: 36.6 42.3% 38%;
+  --info: 219.7 32% 38%;
+  --terra: 22.6 42.3% 32%;
+  --chart-1: 220.6 49.7% 28%;
+  --chart-2: 218.2 37% 53.3%;
+  --chart-3: 152.8 33.7% 37.3%;
+  --chart-4: 36.6 42.3% 38%;
+  --chart-5: 214.1 37.2% 69.4%;
+  --glass-tint: rgba(255, 255, 255, 0.62);
+  --glass-border: rgba(255, 255, 255, 0.55);
+  --gloss: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.12) 32%,
+    transparent 62%
+  );
+  --accent-grad: linear-gradient(135deg, #1c2e54 0%, #243b6b 46%, #94adce 100%);
+  --glow-color: #94adce;
+}
+
+/* Winter Woods — dark */
+[data-theme='dark'][data-preset='winter-woods'] {
+  --background: 213 45.5% 8.6%;
+  --foreground: 210 38.9% 92.9%;
+  --card: 207.9 33.3% 16.5%;
+  --card-foreground: 210 38.9% 92.9%;
+  --popover: 207.9 33.3% 16.5%;
+  --popover-foreground: 210 38.9% 92.9%;
+  --primary: 209.5 29% 42.5%;
+  --primary-foreground: 253.3 60% 97.1%;
+  --secondary: 213.8 45.7% 13.7%;
+  --secondary-foreground: 210 39.5% 85.1%;
+  --muted: 213.3 45% 15.7%;
+  --muted-foreground: 209.3 22.4% 64.1%;
+  --accent: 212.6 46% 19.6%;
+  --accent-foreground: 210 38.7% 87.8%;
+  --destructive: 4.8 40.2% 50.8%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 213 44.4% 17.6%;
+  --input: 213.3 45% 15.7%;
+  --ring: 209.5 29% 42.5%;
+  --card-border: 213.8 45.3% 20.8%;
+  --sidebar-bg: 211.8 43.6% 7.6%;
+  --sidebar-fg: 210 38.9% 92.9%;
+  --sidebar-muted: 209.3 22.4% 64.1%;
+  --sidebar-accent: 209.5 29% 42.5%;
+  --sidebar-border: 213 44.4% 17.6%;
+  --topbar-bg: 213.3 45.8% 11.6%;
+  --tab-active-bg: 211.5 30.6% 37.8%;
+  --tab-active-fg: 210 38.9% 92.9%;
+  --tab-hover-bg: 213.8 45.7% 13.7%;
+  --rightpanel-bg: 211.8 43.6% 7.6%;
+  --rightpanel-border: 213 44.4% 17.6%;
+  --content-bg: 213.9 46.9% 9.6%;
+  --success: 153.1 33.1% 46.3%;
+  --warning: 36.5 38% 50%;
+  --info: 209.3 22.4% 64.1%;
+  --terra: 22.6 37.8% 55.9%;
+  --chart-1: 208.9 27.5% 60%;
+  --chart-2: 211.2 30.9% 31.8%;
+  --chart-3: 153.1 33.1% 46.3%;
+  --chart-4: 36.5 38% 50%;
+  --chart-5: 209.5 29% 42.5%;
+  --glass-tint: rgba(28, 43, 56, 0.44);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --gloss: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.02) 32%,
+    transparent 62%
+  );
+  --accent-grad: linear-gradient(135deg, #698cad 0%, #4d6d8c 46%, #28394b 100%);
+  --glow-color: #28394b;
+}
+
+/* Winter Woods — light */
+[data-theme='light'][data-preset='winter-woods'] {
+  --background: 210 30% 96.1%;
+  --foreground: 210 45.2% 12.2%;
+  --card: 0 0% 100%;
+  --card-foreground: 210 45.2% 12.2%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 210 45.2% 12.2%;
+  --primary: 210.9 30.4% 22.5%;
+  --primary-foreground: 253.3 60% 97.1%;
+  --secondary: 210 30.4% 91%;
+  --secondary-foreground: 210.6 45.6% 20.2%;
+  --muted: 211.8 30.9% 89.2%;
+  --muted-foreground: 209.3 24.6% 32.7%;
+  --accent: 210 28.9% 85.1%;
+  --accent-foreground: 210 45.5% 17.3%;
+  --destructive: 4.4 47.4% 44.7%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 210 30.3% 87.1%;
+  --input: 211.8 30.9% 89.2%;
+  --ring: 210.9 30.4% 22.5%;
+  --card-border: 211.2 30.9% 84.1%;
+  --sidebar-bg: 204 33.3% 97.1%;
+  --sidebar-fg: 210 45.2% 12.2%;
+  --sidebar-muted: 209.3 24.6% 32.7%;
+  --sidebar-accent: 210.9 30.4% 22.5%;
+  --sidebar-border: 210 30.3% 87.1%;
+  --topbar-bg: 212.7 31.4% 93.1%;
+  --tab-active-bg: 208.9 25.7% 42.7%;
+  --tab-active-fg: 210 45.2% 12.2%;
+  --tab-hover-bg: 210 30.4% 91%;
+  --rightpanel-bg: 204 33.3% 97.1%;
+  --rightpanel-border: 210 30.3% 87.1%;
+  --content-bg: 214.3 28% 95.1%;
+  --success: 152.8 33.7% 37.3%;
+  --warning: 36.6 42.3% 38%;
+  --info: 219.7 32% 38%;
+  --terra: 22.6 42.3% 32%;
+  --chart-1: 210.9 30.4% 22.5%;
+  --chart-2: 209.1 25.8% 48.6%;
+  --chart-3: 152.8 33.7% 37.3%;
+  --chart-4: 36.6 42.3% 38%;
+  --chart-5: 211.2 30.9% 31.8%;
+  --glass-tint: rgba(255, 255, 255, 0.62);
+  --glass-border: rgba(255, 255, 255, 0.55);
+  --gloss: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.12) 32%,
+    transparent 62%
+  );
+  --accent-grad: linear-gradient(135deg, #1d2a37 0%, #28394b 46%, #a8c0d6 100%);
+  --glow-color: #a8c0d6;
+}
+
+/* Shadow Peonies — dark */
+[data-theme='dark'][data-preset='shadow-peonies'] {
+  --background: 222.9 41.2% 6.7%;
+  --foreground: 226.2 41.9% 93.9%;
+  --card: 225 35.1% 22.4%;
+  --card-foreground: 226.2 41.9% 93.9%;
+  --popover: 225 35.1% 22.4%;
+  --popover-foreground: 226.2 41.9% 93.9%;
+  --primary: 220.4 19.3% 53.3%;
+  --primary-foreground: 240 18.2% 8.6%;
+  --secondary: 225 40% 11.8%;
+  --secondary-foreground: 226 41.7% 85.9%;
+  --muted: 222.9 40% 13.7%;
+  --muted-foreground: 225.8 23.2% 67.8%;
+  --accent: 223.8 40.7% 17.8%;
+  --accent-foreground: 227.5 42.9% 89%;
+  --destructive: 4.8 40.2% 50.8%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 223.1 40% 15.7%;
+  --input: 222.9 40% 13.7%;
+  --ring: 220.4 19.3% 53.3%;
+  --card-border: 223.1 41.1% 18.6%;
+  --sidebar-bg: 223.6 37.9% 5.7%;
+  --sidebar-fg: 226.2 41.9% 93.9%;
+  --sidebar-muted: 225.8 23.2% 67.8%;
+  --sidebar-accent: 220.4 19.3% 53.3%;
+  --sidebar-border: 223.1 40% 15.7%;
+  --topbar-bg: 225 40% 9.8%;
+  --tab-active-bg: 227.5 23.6% 44.1%;
+  --tab-active-fg: 226.2 41.9% 93.9%;
+  --tab-hover-bg: 225 40% 11.8%;
+  --rightpanel-bg: 223.6 37.9% 5.7%;
+  --rightpanel-border: 223.1 40% 15.7%;
+  --content-bg: 225 40% 7.8%;
+  --success: 153.1 33.1% 46.3%;
+  --warning: 36.5 38% 50%;
+  --info: 220.4 19.3% 53.3%;
+  --terra: 22.6 37.8% 55.9%;
+  --chart-1: 220.4 19.3% 53.3%;
+  --chart-2: 227 23.7% 38%;
+  --chart-3: 153.1 33.1% 46.3%;
+  --chart-4: 36.5 38% 50%;
+  --chart-5: 230.2 24.9% 48%;
+  --glass-tint: rgba(37, 47, 77, 0.44);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --gloss: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.02) 32%,
+    transparent 62%
+  );
+  --accent-grad: linear-gradient(135deg, #96a1b8 0%, #71809f 46%, #252f4d 100%);
+  --glow-color: #252f4d;
+}
+
+/* Shadow Peonies — light */
+[data-theme='light'][data-preset='shadow-peonies'] {
+  --background: 230 37.5% 96.9%;
+  --foreground: 224.4 41.5% 12.7%;
+  --card: 0 0% 100%;
+  --card-foreground: 224.4 41.5% 12.7%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 224.4 41.5% 12.7%;
+  --primary: 225 35.1% 22.4%;
+  --primary-foreground: 253.3 60% 97.1%;
+  --secondary: 228.7 38.1% 91.8%;
+  --secondary-foreground: 225 41.5% 20.8%;
+  --muted: 228 38.5% 89.8%;
+  --muted-foreground: 227 23.7% 38%;
+  --accent: 228.9 37% 85.7%;
+  --accent-foreground: 224.2 42.2% 17.6%;
+  --destructive: 4.4 47.4% 44.7%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 230 38.7% 87.8%;
+  --input: 228 38.5% 89.8%;
+  --ring: 225 35.1% 22.4%;
+  --card-border: 229.7 37.7% 84.9%;
+  --sidebar-bg: 240 40% 98%;
+  --sidebar-fg: 224.4 41.5% 12.7%;
+  --sidebar-muted: 227 23.7% 38%;
+  --sidebar-accent: 225 35.1% 22.4%;
+  --sidebar-border: 230 38.7% 87.8%;
+  --topbar-bg: 230 37.5% 93.7%;
+  --tab-active-bg: 219.6 19.5% 47.3%;
+  --tab-active-fg: 224.4 41.5% 12.7%;
+  --tab-hover-bg: 228.7 38.1% 91.8%;
+  --rightpanel-bg: 240 40% 98%;
+  --rightpanel-border: 230 38.7% 87.8%;
+  --content-bg: 225 36.4% 95.7%;
+  --success: 152.8 33.7% 37.3%;
+  --warning: 36.6 42.3% 38%;
+  --info: 227 23.7% 38%;
+  --terra: 22.6 42.3% 32%;
+  --chart-1: 225 35.1% 22.4%;
+  --chart-2: 220.4 19.3% 53.3%;
+  --chart-3: 152.8 33.7% 37.3%;
+  --chart-4: 36.6 42.3% 38%;
+  --chart-5: 227 23.7% 38%;
+  --glass-tint: rgba(255, 255, 255, 0.62);
+  --glass-border: rgba(255, 255, 255, 0.55);
+  --gloss: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.12) 32%,
+    transparent 62%
+  );
+  --accent-grad: linear-gradient(135deg, #1b2238 0%, #252f4d 46%, #b3bdd6 100%);
+  --glow-color: #b3bdd6;
+}
+
+/* Dark Indigo — dark */
+[data-theme='dark'][data-preset='dark-indigo'] {
+  --background: 228 53.2% 9.2%;
+  --foreground: 228 45.5% 93.5%;
+  --card: 228.9 52.8% 14.1%;
+  --card-foreground: 228 45.5% 93.5%;
+  --popover: 228.9 52.8% 14.1%;
+  --popover-foreground: 228 45.5% 93.5%;
+  --primary: 229.3 34.7% 52.5%;
+  --primary-foreground: 253.3 60% 97.1%;
+  --secondary: 227.7 53.4% 14.3%;
+  --secondary-foreground: 227.6 45.9% 85.5%;
+  --muted: 227.7 53.7% 16.1%;
+  --muted-foreground: 226.4 27.2% 68.2%;
+  --accent: 228 53.4% 20.2%;
+  --accent-foreground: 226.7 45.8% 88.4%;
+  --destructive: 4.8 40.2% 50.8%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 227.8 52.7% 18.2%;
+  --input: 227.7 53.7% 16.1%;
+  --ring: 229.3 34.7% 52.5%;
+  --card-border: 227.6 53.7% 21.2%;
+  --sidebar-bg: 229.1 52.4% 8.2%;
+  --sidebar-fg: 228 45.5% 93.5%;
+  --sidebar-muted: 226.4 27.2% 68.2%;
+  --sidebar-accent: 229.3 34.7% 52.5%;
+  --sidebar-border: 227.8 52.7% 18.2%;
+  --topbar-bg: 229.1 52.4% 12.4%;
+  --tab-active-bg: 226 42.5% 35.5%;
+  --tab-active-fg: 228 45.5% 93.5%;
+  --tab-hover-bg: 227.7 53.4% 14.3%;
+  --rightpanel-bg: 229.1 52.4% 8.2%;
+  --rightpanel-border: 227.8 52.7% 18.2%;
+  --content-bg: 227.1 53.8% 10.2%;
+  --success: 153.1 33.1% 46.3%;
+  --warning: 36.5 38% 50%;
+  --info: 229.8 38.9% 67.3%;
+  --terra: 22.6 37.8% 55.9%;
+  --chart-1: 229.8 38.9% 67.3%;
+  --chart-2: 225.9 42.7% 29.4%;
+  --chart-3: 153.1 33.1% 46.3%;
+  --chart-4: 36.5 38% 50%;
+  --chart-5: 229.3 34.7% 52.5%;
+  --glass-tint: rgba(17, 24, 55, 0.46);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --gloss: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.02) 32%,
+    transparent 62%
+  );
+  --accent-grad: linear-gradient(135deg, #8590c4 0%, #5c6bb0 46%, #111837 100%);
+  --glow-color: #111837;
+}
+
+/* Dark Indigo — light */
+[data-theme='light'][data-preset='dark-indigo'] {
+  --background: 231.4 41.2% 96.7%;
+  --foreground: 228.9 52.8% 14.1%;
+  --card: 0 0% 100%;
+  --card-foreground: 228.9 52.8% 14.1%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 228.9 52.8% 14.1%;
+  --primary: 226.4 44.9% 19.2%;
+  --primary-foreground: 253.3 60% 97.1%;
+  --secondary: 232.9 39.5% 91.6%;
+  --secondary-foreground: 228.8 52.2% 22.2%;
+  --muted: 231.4 39.6% 89.6%;
+  --muted-foreground: 227.1 29.5% 33.9%;
+  --accent: 230 40.5% 85.5%;
+  --accent-foreground: 229.4 52.6% 19%;
+  --destructive: 4.4 47.4% 44.7%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 232.8 39.7% 87.6%;
+  --input: 231.4 39.6% 89.6%;
+  --ring: 226.4 44.9% 19.2%;
+  --card-border: 232.5 41% 84.7%;
+  --sidebar-bg: 240 33.3% 97.6%;
+  --sidebar-fg: 228.9 52.8% 14.1%;
+  --sidebar-muted: 227.1 29.5% 33.9%;
+  --sidebar-accent: 226.4 44.9% 19.2%;
+  --sidebar-border: 232.8 39.7% 87.6%;
+  --topbar-bg: 230.8 39.4% 93.5%;
+  --tab-active-bg: 229.2 35% 46.5%;
+  --tab-active-fg: 228.9 52.8% 14.1%;
+  --tab-hover-bg: 232.9 39.5% 91.6%;
+  --rightpanel-bg: 240 33.3% 97.6%;
+  --rightpanel-border: 232.8 39.7% 87.6%;
+  --content-bg: 226.7 39.1% 95.5%;
+  --success: 152.8 33.7% 37.3%;
+  --warning: 36.6 42.3% 38%;
+  --info: 227.1 29.5% 33.9%;
+  --terra: 22.6 42.3% 32%;
+  --chart-1: 226.4 44.9% 19.2%;
+  --chart-2: 229.3 34.7% 52.5%;
+  --chart-3: 152.8 33.7% 37.3%;
+  --chart-4: 36.6 42.3% 38%;
+  --chart-5: 229.8 38.9% 67.3%;
+  --glass-tint: rgba(255, 255, 255, 0.62);
+  --glass-border: rgba(255, 255, 255, 0.55);
+  --gloss: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.12) 32%,
+    transparent 62%
+  );
+  --accent-grad: linear-gradient(135deg, #131931 0%, #1b2547 46%, #98a2c4 100%);
+  --glow-color: #98a2c4;
+}
+
+/* Frost — dark */
+[data-theme='dark'][data-preset='frost'] {
+  --background: 230.8 20.6% 12.4%;
+  --foreground: 231.4 30.4% 95.5%;
+  --card: 230.8 16% 15.9%;
+  --card-foreground: 231.4 30.4% 95.5%;
+  --popover: 230.8 16% 15.9%;
+  --popover-foreground: 231.4 30.4% 95.5%;
+  --primary: 251.2 47.8% 64.7%;
+  --primary-foreground: 240 18.2% 8.6%;
+  --secondary: 230 20.5% 17.3%;
+  --secondary-foreground: 231 31.2% 87.5%;
+  --muted: 231.4 21.2% 19.4%;
+  --muted-foreground: 229.1 14.1% 69.4%;
+  --accent: 230.4 21% 23.3%;
+  --accent-foreground: 232 30.6% 90.4%;
+  --destructive: 4.8 40.2% 50.8%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 229.6 21.1% 21.4%;
+  --input: 231.4 21.2% 19.4%;
+  --ring: 251.2 47.8% 64.7%;
+  --card-border: 230.8 21% 24.3%;
+  --sidebar-bg: 230 20.7% 11.4%;
+  --sidebar-fg: 231.4 30.4% 95.5%;
+  --sidebar-muted: 229.1 14.1% 69.4%;
+  --sidebar-accent: 251.2 47.8% 64.7%;
+  --sidebar-border: 229.6 21.1% 21.4%;
+  --topbar-bg: 228.8 20.5% 15.3%;
+  --tab-active-bg: 229.2 36.9% 44.1%;
+  --tab-active-fg: 231.4 30.4% 95.5%;
+  --tab-hover-bg: 230 20.5% 17.3%;
+  --rightpanel-bg: 230 20.7% 11.4%;
+  --rightpanel-border: 229.6 21.1% 21.4%;
+  --content-bg: 231.4 20.6% 13.3%;
+  --success: 153.1 33.1% 46.3%;
+  --warning: 36.5 38% 50%;
+  --info: 230 30.4% 69%;
+  --terra: 22.6 37.8% 55.9%;
+  --chart-1: 251.2 47.8% 64.7%;
+  --chart-2: 229.2 37.1% 38%;
+  --chart-3: 153.1 33.1% 46.3%;
+  --chart-4: 36.5 38% 50%;
+  --chart-5: 229 23% 58.2%;
+  --glass-tint: rgba(255, 255, 255, 0.07);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --gloss: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.02) 32%,
+    transparent 62%
+  );
+  --accent-grad: linear-gradient(135deg, #b2a7e0 0%, #8a7ad0 46%, #5a4d9e 100%);
+  --glow-color: #5a4d9e;
+}
+
+/* Frost — light */
+[data-theme='light'][data-preset='frost'] {
+  --background: 222 41.7% 95.3%;
+  --foreground: 232.9 24.6% 13.5%;
+  --card: 0 0% 100%;
+  --card-foreground: 232.9 24.6% 13.5%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 232.9 24.6% 13.5%;
+  --primary: 249.6 34.5% 46.1%;
+  --primary-foreground: 253.3 60% 97.1%;
+  --secondary: 222.9 42.9% 90.4%;
+  --secondary-foreground: 231.1 24.8% 21.4%;
+  --muted: 223.2 42.4% 88.4%;
+  --muted-foreground: 227.1 13.5% 40.8%;
+  --accent: 222.4 42.5% 84.3%;
+  --accent-foreground: 234.8 24.2% 18.6%;
+  --destructive: 4.4 47.4% 44.7%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 222 42.9% 86.3%;
+  --input: 223.2 42.4% 88.4%;
+  --ring: 249.6 34.5% 46.1%;
+  --card-border: 222.9 41.2% 83.3%;
+  --sidebar-bg: 222.9 36.8% 96.3%;
+  --sidebar-fg: 232.9 24.6% 13.5%;
+  --sidebar-muted: 227.1 13.5% 40.8%;
+  --sidebar-accent: 249.6 34.5% 46.1%;
+  --sidebar-border: 222 42.9% 86.3%;
+  --topbar-bg: 222.4 43.6% 92.4%;
+  --tab-active-bg: 251.3 47.9% 58.6%;
+  --tab-active-fg: 232.9 24.6% 13.5%;
+  --tab-hover-bg: 222.9 42.9% 90.4%;
+  --rightpanel-bg: 222.9 36.8% 96.3%;
+  --rightpanel-border: 222 42.9% 86.3%;
+  --content-bg: 221.5 44.8% 94.3%;
+  --success: 152.8 33.7% 37.3%;
+  --warning: 36.6 42.3% 38%;
+  --info: 230.2 24.9% 48%;
+  --terra: 22.6 42.3% 32%;
+  --chart-1: 249.6 34.5% 46.1%;
+  --chart-2: 251.2 47.8% 64.7%;
+  --chart-3: 152.8 33.7% 37.3%;
+  --chart-4: 36.6 42.3% 38%;
+  --chart-5: 230.8 15.4% 49.6%;
+  --glass-tint: rgba(255, 255, 255, 0.68);
+  --glass-border: rgba(255, 255, 255, 0.55);
+  --gloss: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.12) 32%,
+    transparent 62%
+  );
+  --accent-grad: linear-gradient(135deg, #4e4389 0%, #5a4d9e 46%, #a99ce0 100%);
+  --glow-color: #a99ce0;
+}
+
+/* Carbon — dark */
+[data-theme='dark'][data-preset='carbon'] {
+  --background: 0 0% 7.5%;
+  --foreground: 0 0% 91%;
+  --card: 0 0% 14.5%;
+  --card-foreground: 0 0% 91%;
+  --popover: 0 0% 14.5%;
+  --popover-foreground: 0 0% 91%;
+  --primary: 0 0% 69%;
+  --primary-foreground: 240 18.2% 8.6%;
+  --secondary: 0 0% 12.5%;
+  --secondary-foreground: 0 0% 83.1%;
+  --muted: 0 0% 14.5%;
+  --muted-foreground: 0 0% 60.4%;
+  --accent: 0 0% 18.4%;
+  --accent-foreground: 0 0% 85.9%;
+  --destructive: 4.8 40.2% 50.8%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 16.5%;
+  --input: 0 0% 14.5%;
+  --ring: 0 0% 69%;
+  --card-border: 0 0% 19.6%;
+  --sidebar-bg: 0 0% 6.3%;
+  --sidebar-fg: 0 0% 91%;
+  --sidebar-muted: 0 0% 60.4%;
+  --sidebar-accent: 0 0% 69%;
+  --sidebar-border: 0 0% 16.5%;
+  --topbar-bg: 0 0% 10.6%;
+  --tab-active-bg: 0 0% 25.9%;
+  --tab-active-fg: 0 0% 91%;
+  --tab-hover-bg: 0 0% 12.5%;
+  --rightpanel-bg: 0 0% 6.3%;
+  --rightpanel-border: 0 0% 16.5%;
+  --content-bg: 0 0% 8.6%;
+  --success: 143.1 22% 53.7%;
+  --warning: 37.8 33.9% 53.1%;
+  --info: 0 0% 60.4%;
+  --terra: 23.7 34% 59%;
+  --chart-1: 0 0% 76.9%;
+  --chart-2: 0 0% 54.1%;
+  --chart-3: 143.1 22% 53.7%;
+  --chart-4: 37.8 33.9% 53.1%;
+  --chart-5: 0 0% 43.1%;
+  --glass-tint: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --gloss: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.02) 32%,
+    transparent 62%
+  );
+  --accent-grad: linear-gradient(135deg, #cfcfcf 0%, #b0b0b0 46%, #3a3a3a 100%);
+  --glow-color: #3a3a3a;
+}
+
+/* Carbon — light */
+[data-theme='light'][data-preset='carbon'] {
+  --background: 0 0% 95.7%;
+  --foreground: 0 0% 9.4%;
+  --card: 0 0% 100%;
+  --card-foreground: 0 0% 9.4%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 0 0% 9.4%;
+  --primary: 0 0% 18%;
+  --primary-foreground: 253.3 60% 97.1%;
+  --secondary: 0 0% 90.6%;
+  --secondary-foreground: 0 0% 17.3%;
+  --muted: 0 0% 88.6%;
+  --muted-foreground: 0 0% 32.9%;
+  --accent: 0 0% 84.7%;
+  --accent-foreground: 0 0% 14.5%;
+  --destructive: 4.4 47.4% 44.7%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 86.7%;
+  --input: 0 0% 88.6%;
+  --ring: 0 0% 18%;
+  --card-border: 0 0% 83.5%;
+  --sidebar-bg: 0 0% 96.9%;
+  --sidebar-fg: 0 0% 9.4%;
+  --sidebar-muted: 0 0% 32.9%;
+  --sidebar-accent: 0 0% 18%;
+  --sidebar-border: 0 0% 86.7%;
+  --topbar-bg: 0 0% 92.5%;
+  --tab-active-bg: 0 0% 48.2%;
+  --tab-active-fg: 0 0% 9.4%;
+  --tab-hover-bg: 0 0% 90.6%;
+  --rightpanel-bg: 0 0% 96.9%;
+  --rightpanel-border: 0 0% 86.7%;
+  --content-bg: 0 0% 94.5%;
+  --success: 152.8 33.7% 37.3%;
+  --warning: 36.6 42.3% 38%;
+  --info: 0 0% 32.9%;
+  --terra: 22.6 42.3% 32%;
+  --chart-1: 0 0% 18%;
+  --chart-2: 0 0% 54.1%;
+  --chart-3: 152.8 33.7% 37.3%;
+  --chart-4: 36.6 42.3% 38%;
+  --chart-5: 0 0% 32.9%;
+  --glass-tint: rgba(255, 255, 255, 0.64);
+  --glass-border: rgba(255, 255, 255, 0.55);
+  --gloss: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.12) 32%,
+    transparent 62%
+  );
+  --accent-grad: linear-gradient(135deg, #1f1f1f 0%, #2e2e2e 46%, #c9c9c9 100%);
+  --glow-color: #c9c9c9;
+}

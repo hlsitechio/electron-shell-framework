@@ -25,6 +25,7 @@ import { Switch } from '@renderer/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@renderer/components/ui/tabs'
 import { useBranding } from '@renderer/lib/useBranding'
 import { useTheme } from '@renderer/components/theme/ThemeProvider'
+import { PresetSwitcher } from '@renderer/components/theme/PresetSwitcher'
 import type { UpdateStatus } from '@shared/updater-types'
 
 type ThemePref = 'dark' | 'light'
@@ -68,7 +69,7 @@ function UpdateState({ status }: { status: UpdateStatus }): React.JSX.Element {
 }
 
 export function SettingsPage() {
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme, preset } = useTheme()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [animations, setAnimations] = useState(true)
   const [appVersion, setAppVersion] = useState('0.1.0')
@@ -182,6 +183,23 @@ export function SettingsPage() {
               <CardDescription>Theme and shell behaviour</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
+              <div>
+                <div className="mb-3 flex items-center justify-between">
+                  <div>
+                    <Label>Theme preset</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Ten app shells — applies to the frame, panels and widgets
+                    </p>
+                  </div>
+                  <span className="mono rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                    {preset}
+                  </span>
+                </div>
+                <PresetSwitcher />
+              </div>
+
+              <Separator />
+
               <div className="flex items-center justify-between">
                 <div>
                   <Label>Theme</Label>
