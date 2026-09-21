@@ -11,7 +11,8 @@ const api = {
   },
   app: {
     version: (): Promise<string> => ipcRenderer.invoke('app:getVersion'),
-    ping: (): Promise<{ pong: boolean; platform: string }> => ipcRenderer.invoke('app:ping')
+    ping: (): Promise<{ pong: boolean; platform: string }> => ipcRenderer.invoke('app:ping'),
+    logPath: (): Promise<string> => ipcRenderer.invoke('app:logPath')
   },
   update: {
     getStatus: (): Promise<UpdateStatus> => ipcRenderer.invoke('update:getStatus'),

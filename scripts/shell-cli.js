@@ -515,6 +515,47 @@ const commands = {
     console.log('    •  git push origin main                – publish (no email block)\n')
   },
 
+  /**
+   * log — print (and optionally tail) the app's log file.
+   *
+   * The log lives in the OS user-data dir, which differs per platform and per
+   * app name, so finding it by hand is guesswork. This resolves it from the
+   * package name.
+   */
+  log() {
+    banner()
+    section('App log')
+
+    const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf-8'))
+    // Electron's userData dir is based on package `name` (not productName) —
+    // verified by running the app: it wrote to .../electron-shell-framework/.
+    const appName = pkg.name
+
+    let dir
+    if (os.platform() === 'win32') {
+      dir = path.join(process.env.APPDATA || '', appName)
+    } else {
+      // Windows + Linux are the supported targets.
+      dir = path.join(process.env.XDG_CONFIG_HOME || path.join(os.homedir(), '.config'), appName)
+    }
+    const file = path.join(dir, 'logs', 'main.log')
+
+    if (!fs.existsSync(file)) {
+      warn(`No log file yet at ${file}`)
+      console.log(`  ${c.dim}The app writes it on first launch: npm start${c.reset}\n`)
+      return
+    }
+
+    const { size } = fs.statSync(file)
+    ok(`main.log  ${(size / 1024).toFixed(1)} kB`)
+    console.log(`  ${c.dim}${file}${c.reset}\n`)
+
+    const tail = fs.readFileSync(file, 'utf-8').split('\n').slice(-25)
+    section('Last 25 lines')
+    for (const l of tail) console.log(`  ${l}`)
+    console.log('')
+  },
+
   help() {
     banner()
     console.log(`  ${c.bold}Usage:${c.reset} node scripts/shell-cli.js <command>\n`)
@@ -528,6 +569,7 @@ const commands = {
       run: 'build then launch the app',
       test: 'unit tests + e2e tests',
       package: 'build NSIS installer + portable exe',
+      log: 'open the log file / print the log path',
       help: 'this help'
     })) {
       console.log(`  ${c.green}${name.padEnd(9)}${c.reset}${desc}`)

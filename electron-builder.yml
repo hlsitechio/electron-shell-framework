@@ -6,15 +6,35 @@
 
   'directories': { 'output': 'release/${version}', 'buildResources': 'build' },
 
-  'files': ['out/**/*', 'package.json', 'build/icon.png'],
+  'files': ['out/**/*', 'package.json', 'build/icon.png', '!**/*.map', '!**/*.ts', '!**/*.tsx'],
 
   'asar': true,
   'compression': 'normal',
+
+  'electronFuses':
+    {
+      'runAsNode': false,
+      'enableNodeOptionsEnvironmentVariable': false,
+      'enableNodeCliInspectArguments': false,
+      'onlyLoadAppFromAsar': true,
+      'enableEmbeddedAsarIntegrityValidation': true
+    },
+
+  'removePackageScripts': true,
+  'removePackageKeywords': true,
 
   'win':
     {
       'target': [{ 'target': 'nsis', 'arch': ['x64'] }, { 'target': 'portable', 'arch': ['x64'] }],
       'icon': 'build/icon.ico'
+    },
+
+  'linux':
+    {
+      'target': ['AppImage', 'deb'],
+      'category': 'Utility',
+      'icon': 'build/icon.png',
+      'maintainer': 'hlsitechio'
     },
 
   'nsis':

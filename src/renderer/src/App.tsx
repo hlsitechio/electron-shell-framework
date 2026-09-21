@@ -3,6 +3,7 @@ import { AppShell } from '@renderer/components/shell/AppShell'
 import { ThemeProvider } from '@renderer/components/theme/ThemeProvider'
 import { PAGES } from '@renderer/pages/registry'
 import { TemplatesPage } from '@renderer/pages/templates/TemplatesPage'
+import { ErrorBoundary } from '@renderer/components/ErrorBoundary'
 import { useTemplateStore, FRAMEWORK_ID } from '@renderer/templates'
 import { applyTemplate } from '@renderer/lib/apps'
 import { useTheme } from '@renderer/components/theme/ThemeProvider'
@@ -44,7 +45,12 @@ function Shell() {
 
   const pages = useMemo(() => [...(active ? active.pages : PAGES), APPS_PAGE], [active])
 
-  return <AppShell pages={pages} />
+  // Per-render boundary: a throw in one page keeps the shell (and the user) alive.
+  return (
+    <ErrorBoundary label="shell">
+      <AppShell pages={pages} />
+    </ErrorBoundary>
+  )
 }
 
 export default function App() {
