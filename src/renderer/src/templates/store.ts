@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import type { AppTemplate } from './types'
+import { DEFAULT_TEMPLATE_ID } from './default'
 
 /**
  * Which app template is live.
@@ -11,8 +12,8 @@ import type { AppTemplate } from './types'
  * Applying a template swaps the page set, the shell layout and the color
  * preset together — that is what makes it an "app" and not a theme.
  *
- * The default is the framework's own demo registry (FRAMEWORK_ID), so a
- * fresh clone opens on the shell showcase rather than a random app.
+ * The default comes from templates/default.ts, which a scaffolded app
+ * rewrites to its own template id.
  */
 export const FRAMEWORK_ID = 'framework'
 
@@ -26,7 +27,7 @@ interface TemplateState {
 }
 
 export const useTemplateStore = create<TemplateState>((set) => ({
-  activeId: FRAMEWORK_ID,
+  activeId: DEFAULT_TEMPLATE_ID,
   active: null,
   setActive: (id, template) => set({ activeId: id, active: template }),
   reset: () => set({ activeId: FRAMEWORK_ID, active: null })

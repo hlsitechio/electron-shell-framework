@@ -3,18 +3,17 @@ import { AppShell } from '@renderer/components/shell/AppShell'
 import { ThemeProvider } from '@renderer/components/theme/ThemeProvider'
 import { PAGES } from '@renderer/pages/registry'
 import { TemplatesPage } from '@renderer/pages/templates/TemplatesPage'
-import { useTemplateStore } from '@renderer/templates'
+import { useTemplateStore, FRAMEWORK_ID } from '@renderer/templates'
+import { applyTemplate } from '@renderer/lib/apps'
+import { useTheme } from '@renderer/components/theme/ThemeProvider'
 import { Sparkles } from 'lucide-react'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import type { PageDefinition } from '@renderer/types/pages'
 
 /**
  * The "Apps" page is injected into EVERY page set. Without it, applying a
  * template would be a one-way door: you could never get back to the
  * catalog to switch apps.
- *
- * It stays out of the sidebar (the template owns that space) and lives in
- * the tab bar under its own category.
  */
 const APPS_PAGE: PageDefinition = {
   id: 'apps',
@@ -26,22 +25,25 @@ const APPS_PAGE: PageDefinition = {
   showInSidebar: false
 }
 
-/**
- * Page set resolution:
- *
- *   active template loaded → that template's pages + the Apps switcher
- *   otherwise              → the framework demo registry
- *
- * Templates load lazily, so this reads the loaded object from the store
- * rather than importing every template up front.
- */
-function useActivePages(): PageDefinition[] {
-  const active = useTemplateStore((s) => s.active)
-  return useMemo(() => [...(active ? active.pages : PAGES), APPS_PAGE], [active])
-}
-
 function Shell() {
-  const pages = useActivePages()
+  const activeId = useTemplateStore((s) => s.activeId)
+  const active = useTemplateStore((s) => s.active)
+  const { setPreset } = useTheme()
+
+  /**
+   * A scaffolded app sets DEFAULT_TEMPLATE_ID (templates/default.ts) to its own
+   * template, so the app boots straight into its screen instead of the demo.
+   * Templates load lazily, so fetch it on first mount when the store only has
+   * an id but no loaded template.
+   */
+  useEffect(() => {
+    if (activeId !== FRAMEWORK_ID && !active) {
+      void applyTemplate(activeId, { setPreset })
+    }
+  }, [activeId, active, setPreset])
+
+  const pages = useMemo(() => [...(active ? active.pages : PAGES), APPS_PAGE], [active])
+
   return <AppShell pages={pages} />
 }
 

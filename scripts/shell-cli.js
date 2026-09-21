@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 /**
- * shell-cli — zero-dependency setup/run/package CLI for the framework.
+ * shell-cli — zero-dependency setup/run/package/create CLI for the framework.
  *
+ *   node scripts/shell-cli.js create    # scaffold a STANDALONE app from a template
+ *   node scripts/shell-cli.js login     # GitHub CLI auth + commit identity
  *   node scripts/shell-cli.js install   # IRM: full step-by-step install
  *   node scripts/shell-cli.js check     # environment preflight only
  *   node scripts/shell-cli.js dev       # run dev server (HMR)
@@ -15,6 +17,7 @@
 'use strict'
 
 const { execSync, spawnSync } = require('node:child_process')
+const fs = require('node:fs')
 const os = require('node:os')
 const path = require('node:path')
 
@@ -110,6 +113,58 @@ function gitConfig(key, value) {
   const r = spawnSync('git', ['config', key, value], { cwd: ROOT, stdio: 'ignore' })
   return r.status === 0
 }
+
+/** Recursively copy a directory, skipping named entries. */
+function copyTree(from, to, skip) {
+  fs.mkdirSync(to, { recursive: true })
+  for (const entry of fs.readdirSync(from, { withFileTypes: true })) {
+    if (skip.has(entry.name)) continue
+    const src = path.join(from, entry.name)
+    const dst = path.join(to, entry.name)
+    if (entry.isDirectory()) copyTree(src, dst, skip)
+    else if (entry.isFile()) fs.copyFileSync(src, dst)
+  }
+}
+
+/**
+ * The registry a scaffolded app starts with.
+ *
+ * The demo pages are gone, so the app owns this file outright. It keeps one
+ * page wired to the shell contract so `npm start` shows something real — the
+ * app's own screens come from the template in templates/<id>.tsx.
+ */
+const DEMO_REGISTRY_STUB = `import { LayoutDashboard } from 'lucide-react'
+import { SettingsPage } from '@renderer/pages/settings/SettingsPage'
+import type { PageDefinition } from '@renderer/types/pages'
+
+/**
+ * Your app's framework pages.
+ *
+ * The app's real screens come from the template set as DEFAULT_TEMPLATE_ID in
+ * templates/default.ts — this registry only holds pages that should exist for
+ * EVERY template (settings, and anything you add here).
+ *
+ * Adding a page: create the component, then add an entry below.
+ */
+export const PAGES: PageDefinition[] = [
+  {
+    id: 'home',
+    label: 'Home',
+    description: 'Your first page',
+    icon: LayoutDashboard,
+    component: () => null,
+    showInSidebar: false
+  },
+  {
+    id: 'settings',
+    label: 'Settings',
+    description: 'App preferences',
+    icon: LayoutDashboard,
+    component: SettingsPage,
+    showInSidebar: false
+  }
+]
+`
 
 // ---------------------------------------------------------------------------
 // preflight
@@ -246,18 +301,168 @@ const commands = {
   },
 
   /**
-   * Identity + auth, through the GitHub CLI login.
+   * create — scaffold a STANDALONE app from a template.
    *
-   * Nothing here stores a token: `gh` already keeps credentials in the OS
-   * keyring, so we only (a) check the login exists, (b) point git's credential
-   * helper at it, and (c) set the commit identity to the account's noreply
-   * address — which is what GitHub's "block pushes that expose my email"
-   * protection requires.
+   *   node scripts/shell-cli.js create ../my-app --template finance --name "My Finance"
+   *
+   * Copies the framework, strips the demo pages, sets the default template and
+   * rewrites the app identity. The result is a real project, not a fork you
+   * have to hand-clean.
    */
+  create() {
+    banner()
+    section('Create a standalone app')
+
+    const args = process.argv.slice(3)
+    const target = args.find((a) => !a.startsWith('--'))
+    const flag = (name, fallback) => {
+      const i = args.indexOf(`--${name}`)
+      return i >= 0 && args[i + 1] ? args[i + 1] : fallback
+    }
+    const templateId = flag('template', null)
+    const appName = flag('name', null)
+
+    // Discover available templates without importing TypeScript: read the ids
+    // straight out of the catalog's lazy-loader map.
+    const catalogSrc = fs.readFileSync(
+      path.join(ROOT, 'src/renderer/src/templates/catalog.ts'),
+      'utf-8'
+    )
+    const ids = [...catalogSrc.matchAll(/^\s{2}([a-z0-9-]+):\s*\(\)\s*=>/gm)].map((m) => m[1])
+
+    if (!target) {
+      section('Usage')
+      console.log(
+        '  node scripts/shell-cli.js create <dir> [--template <id>] [--name "<App Name>"]\n'
+      )
+      console.log(`  ${c.bold}Available templates:${c.reset}`)
+      for (const id of ids) console.log(`    ${c.green}${id}${c.reset}`)
+      console.log('')
+      die('Missing target directory.', 1)
+    }
+    if (!templateId || !ids.includes(templateId)) {
+      if (templateId) fail(`Unknown template: ${templateId}`)
+      section('Pick one of these templates (--template <id>)')
+      for (const id of ids) console.log(`    ${c.green}${id}${c.reset}`)
+      console.log('')
+      die('A valid --template is required so the app has a home screen.', 1)
+    }
+
+    const dest = path.resolve(process.cwd(), target)
+    if (fs.existsSync(dest) && fs.readdirSync(dest).length > 0) {
+      die(`Target already exists and is not empty: ${dest}`, 1)
+    }
+
+    const SKIP = new Set([
+      'node_modules',
+      'out',
+      'release',
+      'dist',
+      '.git',
+      '.proof',
+      'test-results',
+      'playwright-report',
+      'docs',
+      '.github'
+    ])
+
+    log(1, `Copying framework → ${dest}`)
+    fs.mkdirSync(dest, { recursive: true })
+    copyTree(ROOT, dest, SKIP)
+    ok('Framework copied.')
+
+    log(2, `Setting the app's default template → ${templateId}`)
+    const defaultFile = path.join(dest, 'src/renderer/src/templates/default.ts')
+    const dsrc = fs.readFileSync(defaultFile, 'utf-8')
+    fs.writeFileSync(
+      defaultFile,
+      dsrc.replace(
+        /export const DEFAULT_TEMPLATE_ID = '[^']*'/,
+        `export const DEFAULT_TEMPLATE_ID = '${templateId}'`
+      ),
+      'utf-8'
+    )
+    ok(`App boots into the "${templateId}" template.`)
+
+    if (appName) {
+      log(3, `Renaming the app → ${appName}`)
+      // package.json
+      const pkgFile = path.join(dest, 'package.json')
+      const pkg = JSON.parse(fs.readFileSync(pkgFile, 'utf-8'))
+      const slug = appName
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '')
+      pkg.name = slug
+      pkg.productName = appName
+      pkg.private = true
+      delete pkg.description
+      fs.writeFileSync(pkgFile, JSON.stringify(pkg, null, 2) + '\n', 'utf-8')
+
+      // In-app branding — the sidebar + footer read this default, so renaming
+      // package.json alone still shows "App Shell" in the running app.
+      const brandFile = path.join(dest, 'src/renderer/src/lib/useBranding.ts')
+      if (fs.existsSync(brandFile)) {
+        let b = fs.readFileSync(brandFile, 'utf-8')
+        b = b.replace(
+          /const DEFAULT_BRANDING: Branding = \{ appName: '[^']*', logo: null \}/,
+          `const DEFAULT_BRANDING: Branding = { appName: '${appName.replace(/'/g, "\\'")}', logo: null }`
+        )
+        fs.writeFileSync(brandFile, b, 'utf-8')
+      }
+
+      // electron-builder productName + appId.
+      // NOTE: electron-builder.yml is JSON-with-quoted-keys here, so the
+      // patterns must tolerate 'key': 'value' as well as key: value.
+      const ebFile = path.join(dest, 'electron-builder.yml')
+      if (fs.existsSync(ebFile)) {
+        let eb = fs.readFileSync(ebFile, 'utf-8')
+        const before = eb
+        eb = eb.replace(/(['"]?productName['"]?\s*:\s*)(['"]?)[^,'"\n]+\2/, `$1'${appName}'`)
+        eb = eb.replace(/(['"]?appId['"]?\s*:\s*)(['"]?)[^,'"\n]+\2/, `$1'com.example.${slug}'`)
+        if (eb === before)
+          warn('electron-builder.yml: no productName/appId pattern matched — check it by hand.')
+        else fs.writeFileSync(ebFile, eb, 'utf-8')
+      }
+      ok(`package.json + useBranding.ts + electron-builder.yml → ${appName} (${slug})`)
+    }
+
+    log(4, 'Removing the framework demo pages')
+    for (const d of ['pages/themes', 'pages/widgets']) {
+      const p = path.join(dest, 'src/renderer/src', d)
+      if (fs.existsSync(p)) fs.rmSync(p, { recursive: true, force: true })
+    }
+    // trim the demo registry to a single home page owned by the app
+    const regFile = path.join(dest, 'src/renderer/src/pages/registry.tsx')
+    fs.writeFileSync(regFile, DEMO_REGISTRY_STUB, 'utf-8')
+    ok('Demo pages removed — registry is now yours.')
+
+    log(5, 'Removing tests that covered the demo pages')
+    for (const t of [
+      'pages/registry.test.ts',
+      'lib/presets.test.ts',
+      'templates/templates.test.ts'
+    ]) {
+      const p = path.join(dest, 'src/renderer/src', t)
+      if (fs.existsSync(p)) fs.rmSync(p, { force: true })
+    }
+    ok('Trimmed.')
+
+    section(`App created: ${appName || path.basename(dest)}`)
+    console.log('  Next steps:')
+    console.log(`    cd ${target}`)
+    console.log('    npm install')
+    console.log('    npm start              – builds + launches YOUR app')
+    console.log('')
+    console.log(
+      `  ${c.dim}Your screens live in src/renderer/src/templates/${templateId}.tsx${c.reset}`
+    )
+    console.log(`  ${c.dim}Read AGENTS.md before editing — it is the build contract.${c.reset}\n`)
+  },
+
   login() {
     banner()
     section('GitHub login')
-
     const authed = has('gh')
     if (!authed) {
       fail('gh (GitHub CLI) not found — install it, then re-run.')
