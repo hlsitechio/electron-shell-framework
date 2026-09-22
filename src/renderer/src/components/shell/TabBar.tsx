@@ -98,8 +98,26 @@ export function TabBar({ pages, platform }: TabBarProps) {
             {all.map((group, gi) => (
               <div
                 key={group.category ?? group.pages[0].id}
-                className="flex min-w-0 flex-1"
+                className="flex"
                 style={{
+                  /*
+                   * Share the strip by CONTENT, and never shrink below it.
+                   *
+                   * Two different failures came from equal-per-group flex:
+                   *  - a lone uncategorized page sprawled across a quarter of the
+                   *    bar (Settings at 316px for a 48px label), while
+                   *  - the three-page SHIP group truncated "PR Queue" to "PRQ…".
+                   *
+                   * `flexGrow` proportional to the page count distributes free
+                   * space fairly on a wide window; `minWidth: max-content` +
+                   * `flexShrink: 0` guarantee a label is NEVER cut — when the
+                   * window is too narrow the strip scrolls (it is already
+                   * `overflow-x-auto`) instead of lying about its own items.
+                   */
+                  flexGrow: Math.max(1, group.pages.length),
+                  flexShrink: 0,
+                  flexBasis: 'auto',
+                  minWidth: 'max-content',
                   borderRight: gi < all.length - 1 ? '1px solid hsl(var(--border))' : undefined
                 }}
               >
@@ -120,11 +138,11 @@ export function TabBar({ pages, platform }: TabBarProps) {
                       key={page.id}
                       onClick={() => setActive(page.id)}
                       className={cn(
-                        'flex min-w-0 items-center justify-center gap-1.5 px-2 text-[13px] font-medium transition-colors whitespace-nowrap',
+                        'flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap px-2.5 text-[13px] font-medium transition-colors',
                         active ? '' : 'hover:bg-tab-hover-bg text-muted-foreground'
                       )}
                       style={{
-                        flex: width ?? 1,
+                        flex: width ?? '1 1 auto',
                         borderRadius: 0,
                         background: active ? 'hsl(var(--tab-active-bg))' : 'transparent',
                         color: active ? 'hsl(var(--tab-active-fg))' : undefined,
@@ -134,7 +152,7 @@ export function TabBar({ pages, platform }: TabBarProps) {
                       aria-current={active ? 'page' : undefined}
                     >
                       <Icon className={cn('h-3.5 w-3.5 shrink-0', active && 'stroke-[2.4]')} />
-                      <span className="truncate">{page.label}</span>
+                      <span>{page.label}</span>
                     </button>
                   )
                 })}
