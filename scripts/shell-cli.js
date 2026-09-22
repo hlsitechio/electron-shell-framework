@@ -301,6 +301,86 @@ const commands = {
   },
 
   /**
+   * sign — Windows code signing helper.
+   *
+   *   node scripts/shell-cli.js sign demo    create a self-signed demo cert
+   *   node scripts/shell-cli.js sign check   verify signatures in release/
+   *
+   * Signing yourself:
+   *   pwsh scripts/signing/sign.ps1 -PfxPath .signing/demo-codesign.pfx -Password demo-password -Path release
+   *
+   * Read docs/CODE-SIGNING.md first — a self-signed certificate will NOT stop
+   * the "unknown publisher" warning on anyone else's machine.
+   */
+  sign() {
+    banner()
+    const what = (process.argv[3] || 'help').toLowerCase()
+
+    if (what === 'demo') {
+      section('Create a self-signed demo certificate')
+      warn('A self-signed cert will NOT clear SmartScreen for other people.')
+      console.log(`  ${c.dim}See docs/CODE-SIGNING.md for what actually works.${c.reset}\n`)
+      const r = spawnSync(
+        'pwsh',
+        [
+          '-NoProfile',
+          '-ExecutionPolicy',
+          'Bypass',
+          '-File',
+          path.join(ROOT, 'scripts', 'signing', 'new-demo-cert.ps1'),
+          '-OutputDir',
+          path.join(ROOT, '.signing')
+        ],
+        { stdio: 'inherit' }
+      )
+      if (r.status !== 0) die('Certificate creation failed. Is PowerShell 7 (pwsh) installed?')
+      return
+    }
+
+    if (what === 'check') {
+      section('Verify signatures in release/')
+      const dir = path.join(ROOT, 'release')
+      if (!fs.existsSync(dir)) {
+        warn('No release/ folder yet — run: node scripts/shell-cli.js package')
+        return
+      }
+      const r = spawnSync(
+        'pwsh',
+        [
+          '-NoProfile',
+          '-ExecutionPolicy',
+          'Bypass',
+          '-File',
+          path.join(ROOT, 'scripts', 'signing', 'verify-signature.ps1'),
+          '-Path',
+          dir
+        ],
+        { stdio: 'inherit' }
+      )
+      if (r.status !== 0) die('Verification failed.')
+      return
+    }
+
+    section('Windows code signing')
+    console.log(`  ${c.bold}Commands:${c.reset}`)
+    console.log(
+      `    ${c.green}sign demo ${c.reset} create a self-signed demo certificate in .signing/`
+    )
+    console.log(`    ${c.green}sign check${c.reset} verify signatures on everything in release/`)
+    console.log('')
+    console.log(`  ${c.bold}Sign a build:${c.reset}`)
+    console.log(
+      `    pwsh scripts/signing/sign.ps1 -PfxPath .signing/demo-codesign.pfx -Password <pw> -Path release`
+    )
+    console.log(`    pwsh scripts/signing/sign.ps1 -Thumbprint <thumbprint> -Path release`)
+    console.log('')
+    console.log(
+      `  ${c.bold}Docs:${c.reset} docs/CODE-SIGNING.md — what SmartScreen wants, and what it costs in 2026`
+    )
+    console.log('')
+  },
+
+  /**
    * create — scaffold a STANDALONE app from a template.
    *
    *   node scripts/shell-cli.js create ../my-app --template finance --name "My Finance"
@@ -569,6 +649,7 @@ const commands = {
       run: 'build then launch the app',
       test: 'unit tests + e2e tests',
       package: 'build NSIS installer + portable exe',
+      sign: 'code signing — demo cert + signature check (read docs/CODE-SIGNING.md)',
       log: 'open the log file / print the log path',
       help: 'this help'
     })) {

@@ -11,3 +11,6 @@ Thumbs.db
 .env.*
 *.tsbuildinfo
 .proof/
+.signing/
+*.pfx
+*.p12

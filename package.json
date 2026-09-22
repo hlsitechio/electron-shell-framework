@@ -24,6 +24,8 @@
     "dist:win": "npm run build && electron-builder --win",
     "dist:dir": "npm run build && electron-builder --dir",
     "icon": "node scripts/generate-icon.js",
+    "sign:demo": "node scripts/shell-cli.js sign demo",
+    "sign:check": "node scripts/shell-cli.js sign check",
     "postinstall": "electron-builder install-app-deps"
   },
   "devDependencies": {
