@@ -84,8 +84,30 @@ export function RightPanel({ children }: RightPanelProps) {
           </button>
         </div>
       ) : hasDock ? (
-        /* the app owns the panel body */
-        <div className="flex h-full min-h-0 flex-col">{children}</div>
+        /*
+         * The app owns the panel body — but the COLLAPSE AFFORDANCE is the
+         * shell's job, not each app's. An app that supplies a dock should not
+         * have to re-implement the control, and if it forgets, the panel can
+         * only be closed by restarting. Render a hairline header with the
+         * collapse button, then the dock below it.
+         */
+        <>
+          <div
+            className="flex h-9 shrink-0 items-center justify-end px-1.5"
+            style={{ borderBottom: '1px solid hsl(var(--rightpanel-border))' }}
+          >
+            <button
+              onClick={toggleRight}
+              className="flex h-7 w-7 items-center justify-center text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              style={{ borderRadius: 2 }}
+              aria-label="Collapse panel"
+              title="Collapse panel"
+            >
+              <PanelRightClose className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="flex min-h-0 flex-1 flex-col">{children}</div>
+        </>
       ) : (
         <>
           {/* header: Bell + Log toggle */}

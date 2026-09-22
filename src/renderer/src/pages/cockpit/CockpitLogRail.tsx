@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Bell, Braces, ScrollText, Search } from 'lucide-react'
+import { Bell, Braces, PanelRightClose, ScrollText, Search } from 'lucide-react'
 import { Button } from '@renderer/components/ui/button'
 import { Input } from '@renderer/components/ui/input'
 import { useCockpitStore } from '@renderer/stores/cockpit-store'
+import { useUiStore } from '@renderer/stores/ui-store'
 
 /**
  * The right rail — a real activity log.
@@ -32,6 +33,8 @@ function timeOf(iso: string): string {
 
 export function CockpitLogRail(): React.JSX.Element {
   const logs = useCockpitStore((s) => s.logs)
+  const connected = useCockpitStore((s) => s.connected)
+  const toggleRight = useUiStore((s) => s.toggleRight)
   const [view, setView] = useState<'log' | 'notify'>('log')
   const [query, setQuery] = useState('')
   const [unread, setUnread] = useState(0)
@@ -110,6 +113,25 @@ export function CockpitLogRail(): React.JSX.Element {
             </span>
           )}
         </Button>
+
+        <div className="flex-1" />
+
+        {/*
+          The shell's own collapse control lives in RightPanel, but when an app
+          supplies a rightDock that control is no longer rendered — and the
+          framework's "Hide panel" quick-action only existed on the Dashboard
+          page this app replaced. Without this button the right rail could not be
+          collapsed at all when it contains app content.
+        */}
+        <button
+          onClick={toggleRight}
+          className="flex h-7 w-7 shrink-0 items-center justify-center text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          style={{ borderRadius: 2 }}
+          aria-label="Collapse panel"
+          title="Collapse panel"
+        >
+          <PanelRightClose className="h-4 w-4" />
+        </button>
       </div>
 
       {/* filter */}
@@ -163,8 +185,7 @@ export function CockpitLogRail(): React.JSX.Element {
         className="mono shrink-0 px-3 py-1.5 text-[9.5px] text-muted-foreground"
         style={{ borderTop: '1px solid hsl(var(--border))' }}
       >
-        live from the main process ·{' '}
-        {useCockpitStore.getState().connected ? 'connected' : 'offline'}
+        live from the main process · {connected ? 'connected' : 'offline'}
       </div>
     </div>
   )
