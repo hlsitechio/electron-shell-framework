@@ -1,8 +1,10 @@
 import { BrowserWindow, clipboard, dialog, ipcMain, shell, type IpcMainInvokeEvent } from 'electron'
-import { store, configFilePath } from './store'
+import { existsSync, mkdirSync } from 'node:fs'
+import { store, configFilePath, cloneRoot, setCloneRoot } from './store'
 import { BuildSupervisor, setFavouriteScript } from './builds'
 import { PtySupervisor, getLastTerminalRepo, setLastTerminalRepo } from './pty'
-import { addWorktree, isRepo, pruneWorktrees, resolveRoot } from './git'
+import { addWorktree, cloneRepo, isRepo, pruneWorktrees, resolveRoot } from './git'
+import { getCachedRemoteRepos } from './remote'
 import { isTrustedSender } from '../ipc-policy'
 import { log } from '../logging'
 import {
@@ -300,6 +302,77 @@ export function registerCockpitIpc(): CockpitIpc {
 
   handle('cockpit:configPath', () => configFilePath())
   handle('cockpit:lastTerminalRepo', () => getLastTerminalRepo())
+
+  /* --------------------------------------------------- remote repo listing */
+
+  handle('cockpit:listRemoteRepos', async (_e, force: unknown) => {
+    return store.listRemoteRepos(Boolean(force))
+  })
+
+  handle('cockpit:pickCloneParent', async (event) => {
+    const win = windowOf(event)
+    const result = win
+      ? await dialog.showOpenDialog(win, {
+          title: 'Where should clones go?',
+          properties: ['openDirectory', 'createDirectory'],
+          buttonLabel: 'Use this folder'
+        })
+      : await dialog.showOpenDialog({ properties: ['openDirectory'] })
+    if (result.canceled || !result.filePaths.length) return null
+    const dir = result.filePaths[0]
+    if (!isUsableDirectory(dir)) return null
+    setCloneRoot(dir)
+    store.addLog(`Clone destination set to ${dir}`, 'success')
+    return dir
+  })
+
+  /**
+   * Clone ONE repo on demand. The slug is validated against the LIVE remote list
+   * — the renderer cannot ask us to clone an arbitrary URL or path, and the
+   * destination is always a direct child of a directory the user chose.
+   */
+  handle('cockpit:cloneRepo', async (_e, slug: unknown, parentDir: unknown, full: unknown) => {
+    if (typeof slug !== 'string' || !/^[\w.-]+\/[\w.-]+$/.test(slug)) {
+      return { ok: false, slug: String(slug), path: null, message: 'Invalid repository slug' }
+    }
+
+    const remote = getCachedRemoteRepos()
+    if (!remote.repos.some((r) => r.slug.toLowerCase() === slug.toLowerCase())) {
+      store.addLog(`Refused: ${slug} is not in the listed GitHub repositor`, 'warn')
+      return {
+        ok: false,
+        slug,
+        path: null,
+        message: 'Not in the listed GitHub repositories — refresh the list first'
+      }
+    }
+
+    const parent =
+      typeof parentDir === 'string' && isUsableDirectory(parentDir) ? parentDir : cloneRoot()
+    try {
+      if (!existsSync(parent)) mkdirSync(parent, { recursive: true })
+    } catch (err) {
+      store.addLog(`Cannot create ${parent}: ${String(err)}`, 'error')
+      return { ok: false, slug, path: null, message: `Cannot create ${parent}` }
+    }
+
+    const mode = full ? 'full' : 'blobless + depth 1'
+    store.addLog(`Cloning ${slug} into ${parent} (${mode})…`, 'info')
+
+    const result = await cloneRepo(slug, parent, Boolean(full), (text) => {
+      store.emit({ type: 'clone-progress', slug, text })
+    })
+
+    if (result.ok && result.path) {
+      store.addRepoPath(result.path)
+      store.addLog(`${result.message} — added to the workspace`, 'success')
+      await store.refresh(false)
+    } else {
+      store.addLog(`Clone failed for ${slug}: ${result.message}`, 'error')
+    }
+
+    return { ok: result.ok, slug, path: result.path, message: result.message }
+  })
 
   const dispose = (): void => {
     builds.killAll()

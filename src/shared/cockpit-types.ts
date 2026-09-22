@@ -123,8 +123,50 @@ export interface GithubState {
   checkedAt: string | null
 }
 
+/**
+ * A repository as GitHub knows it — listed from ONE GraphQL call, without
+ * cloning. `cloned` is filled in by matching against the local working copies,
+ * which is what lets the UI show all 88 repos and only fetch the ones you ask
+ * for.
+ */
+export interface RemoteRepo {
+  slug: string
+  name: string
+  owner: string
+  isPrivate: boolean
+  /** true when this repo is a fork of someone else's — excluded by the "mine" view */
+  isFork: boolean
+  pushedAt: string
+  /** GitHub reports diskUsage in kilobytes */
+  sizeKb: number
+  language: string | null
+  defaultBranch: string
+  headOid: string
+  headMessage: string
+  headDate: string
+  openPrs: number
+  url: string
+  /** true when a working copy of this repo is on this machine */
+  cloned: boolean
+}
+
+export interface RemoteRepoState {
+  repos: RemoteRepo[]
+  total: number
+  fetchedAt: string | null
+  error: string | null
+}
+
+export interface CloneResult {
+  ok: boolean
+  slug: string
+  path: string | null
+  message: string
+}
+
 export interface CockpitSnapshot {
   repos: Repo[]
+  remote: RemoteRepoState
   prs: PullRequest[]
   runs: CiRun[]
   builds: BuildRun[]
@@ -134,6 +176,8 @@ export interface CockpitSnapshot {
   heartbeat: Heartbeat
   /** absolute path to the encrypted config file — shown in Settings */
   configPath: string | null
+  /** clone root offered by default when cloning a remote repo */
+  cloneRoot: string
 }
 
 export type CockpitEvent =
@@ -143,6 +187,7 @@ export type CockpitEvent =
   | { type: 'terminal-data'; repoId: string; data: string; sequence: number; pid: number }
   | { type: 'terminal-exit'; repoId: string; exitCode: number }
   | { type: 'heartbeat'; heartbeat: Heartbeat }
+  | { type: 'clone-progress'; slug: string; text: string }
 
 export interface TerminalSession {
   repoId: string
@@ -174,6 +219,11 @@ export interface CockpitApi {
   startBuild(repoId: string, script: string): Promise<BuildRun>
   stopBuild(buildId: string): Promise<boolean>
   buildOutput(buildId: string): Promise<string>
+  /** List every GitHub repo for the account — one GraphQL call, no clones. */
+  listRemoteRepos(force: boolean): Promise<CockpitSnapshot>
+  /** Fetch ONE repo on demand (blobless + shallow unless `full`). */
+  cloneRepo(slug: string, parentDir: string | null, full: boolean): Promise<CloneResult>
+  pickCloneParent(): Promise<string | null>
   terminalAttach(repoId: string, cols: number, rows: number): Promise<TerminalSession>
   terminalWrite(repoId: string, data: string): Promise<boolean>
   terminalResize(repoId: string, cols: number, rows: number): Promise<boolean>

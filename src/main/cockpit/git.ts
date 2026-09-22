@@ -1,5 +1,7 @@
 import { basename, join } from 'node:path'
+import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
+import { spawn } from 'node:child_process'
 import type { Repo } from '../../shared/cockpit-types'
 import { run, hashId } from './exec'
 import { parseCommitLine, parseGithubSlug, parseStatusZ, parseWorktreesZ } from '../cockpit-parsers'
@@ -132,4 +134,74 @@ export async function pruneWorktrees(root: string): Promise<{ ok: boolean; messa
     ok: res.ok,
     message: (res.stdout || res.stderr || '').trim().slice(0, 300) || 'Nothing to prune'
   }
+}
+
+/**
+ * Clone ONE remote repo on demand.
+ *
+ * Default is a **blobless partial clone** (`--filter=blob:none`) at depth 1:
+ * it fetches commit and tree metadata but not file contents, materialising blobs
+ * lazily when something actually reads them. For a multi-gigabyte repo this is
+ * the difference between a 15 MB and a 3.4 GB download, and it stays a fully
+ * functional git checkout — `git log`, `status` and `checkout` all work.
+ *
+ * `full: true` is the escape hatch for anyone who wants every blob up front.
+ */
+export async function cloneRepo(
+  slug: string,
+  parentDir: string,
+  full: boolean,
+  onProgress: (text: string) => void
+): Promise<{ ok: boolean; path: string | null; message: string }> {
+  const name = slug.split('/')[1] ?? slug
+  const target = join(parentDir, name)
+
+  if (existsSync(target)) {
+    return { ok: false, path: null, message: `${target} already exists — refusing to overwrite` }
+  }
+
+  const url = `https://github.com/${slug}.git`
+  const args = full
+    ? ['clone', '--progress', url, target]
+    : ['clone', '--progress', '--filter=blob:none', '--depth', '1', url, target]
+
+  onProgress(`git ${args.join(' ')}`)
+
+  return new Promise((resolve) => {
+    const child = spawn('git', args, {
+      windowsHide: true,
+      env: { ...process.env, GIT_TERMINAL_PROMPT: '0' }
+    })
+
+    let lastLine = ''
+    const handle = (chunk: Buffer): void => {
+      const text = chunk.toString('utf8')
+      // git progress is carriage-return delimited; surface the last segment.
+      const parts = text.split(/[\r\n]/).filter((s) => s.trim())
+      const tail = parts[parts.length - 1]
+      if (tail && tail !== lastLine) {
+        lastLine = tail
+        onProgress(tail.trim())
+      }
+    }
+
+    child.stdout?.on('data', handle)
+    child.stderr?.on('data', handle)
+
+    child.on('error', (err) => {
+      resolve({ ok: false, path: null, message: `spawn failed: ${err.message}` })
+    })
+
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolve({ ok: true, path: target, message: `Cloned to ${target}` })
+      } else {
+        resolve({
+          ok: false,
+          path: null,
+          message: `git clone exited ${code}${lastLine ? ` — ${lastLine}` : ''}`
+        })
+      }
+    })
+  })
 }

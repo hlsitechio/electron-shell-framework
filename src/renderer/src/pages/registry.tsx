@@ -3,12 +3,14 @@ import {
   FolderGit2,
   FolderTree,
   GitPullRequest,
+  Globe,
   Hammer,
   LayoutGrid,
   Palette,
   Settings as SettingsIcon
 } from 'lucide-react'
 import { ReposPage } from '@renderer/pages/cockpit/ReposPage'
+import { GithubPage } from '@renderer/pages/cockpit/GithubPage'
 import { WorktreesPage } from '@renderer/pages/cockpit/WorktreesPage'
 import { BuildsPage } from '@renderer/pages/cockpit/BuildsPage'
 import { PullRequestsPage } from '@renderer/pages/cockpit/PullRequestsPage'
@@ -40,6 +42,14 @@ export const PAGES: PageDefinition[] = [
     category: 'Workspace',
     icon: FolderGit2,
     component: ReposPage
+  },
+  {
+    id: 'github',
+    label: 'GitHub',
+    description: 'Every repo you own — listed, not cloned',
+    category: 'Workspace',
+    icon: Globe,
+    component: GithubPage
   },
   {
     id: 'worktrees',

@@ -3,6 +3,7 @@ import type { UpdateStatus } from '../shared/updater-types'
 import type {
   CockpitEvent,
   CockpitSnapshot,
+  CloneResult,
   Heartbeat,
   TerminalSession,
   BuildRun
@@ -60,6 +61,14 @@ const api = {
     revealRepo: (repoId: string): Promise<boolean> =>
       ipcRenderer.invoke('cockpit:revealRepo', repoId),
     openPath: (target: string): Promise<boolean> => ipcRenderer.invoke('cockpit:openPath', target),
+
+    /** One GraphQL call lists every GitHub repo — nothing is cloned. */
+    listRemoteRepos: (force = false): Promise<CockpitSnapshot> =>
+      ipcRenderer.invoke('cockpit:listRemoteRepos', force),
+    /** Fetch exactly one repo, on demand (blobless + shallow unless `full`). */
+    cloneRepo: (slug: string, parentDir: string | null, full = false): Promise<CloneResult> =>
+      ipcRenderer.invoke('cockpit:cloneRepo', slug, parentDir, full),
+    pickCloneParent: (): Promise<string | null> => ipcRenderer.invoke('cockpit:pickCloneParent'),
 
     createWorktree: (repoId: string, branch: string): Promise<CockpitSnapshot> =>
       ipcRenderer.invoke('cockpit:createWorktree', repoId, branch),

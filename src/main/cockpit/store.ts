@@ -14,6 +14,7 @@ import type {
   Repo
 } from '../../shared/cockpit-types'
 import { getCachedGithub, refreshGithub } from './github'
+import { annotateCloned, fetchAllRemoteRepos, getCachedRemoteRepos } from './remote'
 
 /**
  * The cockpit's single source of truth, owned by the MAIN process.
@@ -220,8 +221,18 @@ class CockpitStore {
   }
 
   snapshot(): CockpitSnapshot {
+    const remote = getCachedRemoteRepos()
     return {
       repos: this.repos,
+      remote: {
+        repos: annotateCloned(
+          remote.repos,
+          this.repos.map((r) => r.githubSlug).filter((s): s is string => !!s)
+        ),
+        total: remote.total,
+        fetchedAt: remote.fetchedAt ? new Date(remote.fetchedAt).toISOString() : null,
+        error: remote.error
+      },
       prs: getCachedGithub().prs,
       runs: getCachedGithub().runs,
       builds: this.buildsProvider ? this.buildsProvider() : [],
@@ -229,8 +240,29 @@ class CockpitStore {
       github: this.github,
       refreshedAt: this.refreshedAt,
       heartbeat: this.heartbeat(),
-      configPath: configFilePath()
+      configPath: configFilePath(),
+      cloneRoot: cloneRoot()
     }
+  }
+
+  /**
+   * List every GitHub repo for the account — one GraphQL call, no clones.
+   * Opt-in from the UI, and cached for two minutes so paging around the list
+   * does not re-hit the API.
+   */
+  async listRemoteRepos(force: boolean): Promise<CockpitSnapshot> {
+    const before = getCachedRemoteRepos().repos.length
+    await fetchAllRemoteRepos((text, level) => this.addLog(text, level), force)
+    const after = getCachedRemoteRepos().repos.length
+    if (force && after !== before) {
+      this.addLog(`Remote repo list refreshed (${after} repos)`, 'info')
+    }
+    return this.snapshot()
+  }
+
+  /** Register a freshly cloned path so it appears as a local repo immediately. */
+  adoptClonedRepo(path: string): void {
+    this.addRepoPath(path)
   }
 
   emitSnapshot(): void {
@@ -249,6 +281,23 @@ export function configFilePath(): string | null {
   } catch {
     return null
   }
+}
+
+/**
+ * Where a one-click clone lands. Defaults to a `GitHub` folder under the user's
+ * home — the conventional location, and a path the user can change by picking a
+ * different parent in the UI. Never written to inside a repo we already track.
+ */
+const CLONE_ROOT_KEY = 'cockpit:cloneRoot'
+
+export function cloneRoot(): string {
+  const stored = configStore.get<string | null>(CLONE_ROOT_KEY, null)
+  if (stored && existsSync(stored)) return stored
+  return join(app.getPath('home'), 'GitHub')
+}
+
+export function setCloneRoot(dir: string): void {
+  if (existsSync(dir)) configStore.set(CLONE_ROOT_KEY as never, dir as never)
 }
 
 export const store = new CockpitStore()

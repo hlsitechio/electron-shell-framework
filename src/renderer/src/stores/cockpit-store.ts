@@ -32,6 +32,9 @@ interface CockpitState {
   githubBusy: boolean
   error: string | null
 
+  /** slug -> latest git progress line, for in-flight clones */
+  cloning: Record<string, string>
+
   /** repo id the bottom-panel PTY is attached to */
   terminalRepoId: string | null
 
@@ -44,6 +47,9 @@ interface CockpitState {
   removeRepo: (repoId: string) => Promise<void>
   createWorktree: (repoId: string, branch: string) => Promise<void>
   pruneWorktrees: (repoId: string) => Promise<void>
+  listRemoteRepos: (force?: boolean) => Promise<void>
+  cloneRepo: (slug: string, full?: boolean) => Promise<void>
+  pickCloneParent: () => Promise<void>
   selectRepo: (repoId: string | null) => void
   openTerminal: (repoId: string) => void
   setTerminalRepoId: (repoId: string | null) => void
@@ -61,6 +67,7 @@ export const useCockpitStore = create<CockpitState>((set, get) => ({
   loading: false,
   githubBusy: false,
   error: null,
+  cloning: {},
   terminalRepoId: null,
   selectedRepoId: null,
 
@@ -97,6 +104,9 @@ export const useCockpitStore = create<CockpitState>((set, get) => ({
           break
         case 'heartbeat':
           set({ heartbeat: event.heartbeat, connected: true })
+          break
+        case 'clone-progress':
+          set((s) => ({ cloning: { ...s.cloning, [event.slug]: event.text } }))
           break
         default:
           break
@@ -197,6 +207,63 @@ export const useCockpitStore = create<CockpitState>((set, get) => ({
     try {
       const snapshot = await api.pruneWorktrees(repoId)
       set({ snapshot, logs: snapshot.logs })
+    } catch (err) {
+      set({ error: String(err) })
+    }
+  },
+
+  /* ------------------------------------------------------ remote repos */
+
+  /**
+   * List every GitHub repo in ONE call — nothing is downloaded. Cached in main
+   * for two minutes, so browsing the list does not keep hitting the API.
+   */
+  listRemoteRepos: async (force = false) => {
+    const api = window.api?.cockpit
+    if (!api) return
+    set({ githubBusy: true, error: null })
+    try {
+      const snapshot = await api.listRemoteRepos(force)
+      set({ snapshot, logs: snapshot.logs })
+    } catch (err) {
+      set({ error: String(err) })
+    } finally {
+      set({ githubBusy: false })
+    }
+  },
+
+  /** Fetch ONE repo on demand, then refresh so it shows up as a local repo. */
+  cloneRepo: async (slug, full = false) => {
+    const api = window.api?.cockpit
+    if (!api) return
+    set((s) => ({ cloning: { ...s.cloning, [slug]: 'starting…' } }))
+    try {
+      const result = await api.cloneRepo(slug, null, full)
+      const snapshot = await api.snapshot()
+      set((s) => {
+        const next = { ...s.cloning }
+        delete next[slug]
+        return { snapshot, logs: snapshot.logs, cloning: next }
+      })
+      if (!result.ok) set({ error: result.message })
+    } catch (err) {
+      set((s) => {
+        const next = { ...s.cloning }
+        delete next[slug]
+        return { error: String(err), cloning: next }
+      })
+    }
+  },
+
+  pickCloneParent: async () => {
+    const api = window.api?.cockpit
+    if (!api) return
+    try {
+      const dir = await api.pickCloneParent()
+      if (dir) {
+        const snapshot = await api.snapshot()
+        set({ snapshot })
+      }
     } catch (err) {
       set({ error: String(err) })
     }
