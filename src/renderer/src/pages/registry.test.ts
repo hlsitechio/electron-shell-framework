@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { PAGES } from './registry'
+import { getPageLabel } from '@renderer/types/pages'
 
 describe('page registry', () => {
   it('exposes at least the four framework pages', () => {
@@ -31,5 +32,30 @@ describe('page registry', () => {
     const settings = PAGES.find((p) => p.id === 'settings')
     expect(settings).toBeDefined()
     expect(settings?.showInSidebar).toBe(false)
+  })
+
+  it('every page has a non-empty label for control accessible name (collapsed sidebar invariant)', () => {
+    for (const p of PAGES) {
+      const label = getPageLabel(p)
+      expect(typeof label).toBe('string')
+      expect(label.trim().length).toBeGreaterThan(0)
+    }
+  })
+})
+
+describe('getPageLabel automatic derivation', () => {
+  it('returns explicit label when provided', () => {
+    expect(getPageLabel({ id: 'dash', label: 'Custom Dashboard' })).toBe('Custom Dashboard')
+  })
+
+  it('automatically derives capitalized label from single-word id when label is omitted or empty', () => {
+    expect(getPageLabel({ id: 'analytics' })).toBe('Analytics')
+    expect(getPageLabel({ id: 'billing', label: '' })).toBe('Billing')
+    expect(getPageLabel({ id: 'settings', label: '   ' })).toBe('Settings')
+  })
+
+  it('automatically formats kebab-case and snake_case ids into human-readable words', () => {
+    expect(getPageLabel({ id: 'user-profile' })).toBe('User Profile')
+    expect(getPageLabel({ id: 'system_health_monitor' })).toBe('System Health Monitor')
   })
 })

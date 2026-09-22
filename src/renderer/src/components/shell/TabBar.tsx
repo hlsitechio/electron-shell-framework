@@ -1,9 +1,11 @@
+import { useEffect, useRef, useState } from 'react'
 import { ChevronDown, ChevronUp, Minus, Square, X } from 'lucide-react'
 import { cn } from '@renderer/lib/utils'
 import { useTabsStore } from '@renderer/stores/tabs-store'
 import { useUiStore } from '@renderer/stores/ui-store'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
-import type { PageDefinition } from '@renderer/types/pages'
+import { getPageLabel, type PageDefinition } from '@renderer/types/pages'
+import { SvglIcon } from '@renderer/components/ui/SvglIcon'
 
 interface TabBarProps {
   pages: PageDefinition[]
@@ -26,6 +28,26 @@ export function TabBar({ pages, platform }: TabBarProps) {
   const { activeId, setActive } = useTabsStore()
   const { tabsCollapsed, toggleTabs } = useUiStore()
 
+  const [isCompact, setIsCompact] = useState(false)
+  const tabStripRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const el = tabStripRef.current
+    if (!el) return
+
+    const check = () => {
+      const width = el.clientWidth
+      // If available width is tight, dynamically collapse tabs to icon-only mode
+      const neededWidth = Math.max(pages.length * 105, 620)
+      setIsCompact(width < neededWidth)
+    }
+
+    check()
+    const ro = new ResizeObserver(check)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [pages.length])
+
   const handleMaximize = () => window.api?.window?.maximize?.()
   const handleMinimize = () => window.api?.window?.minimize?.()
   const handleClose = () => window.api?.window?.close?.()
@@ -46,7 +68,8 @@ export function TabBar({ pages, platform }: TabBarProps) {
   for (const p of flat) all.push({ pages: [p] })
   for (const [category, arr] of cats) all.push({ category, pages: arr })
 
-  const activeLabel = pages.find((p) => p.id === activeId)?.label ?? ''
+  const activePage = pages.find((p) => p.id === activeId)
+  const activeLabel = activePage ? getPageLabel(activePage) : ''
 
   return (
     <div
@@ -94,16 +117,19 @@ export function TabBar({ pages, platform }: TabBarProps) {
       ) : (
         <>
           <div className="h-4 w-px shrink-0" style={{ background: 'hsl(var(--border))' }} />
-          <div className="app-no-drag flex h-full min-w-0 flex-1 items-stretch overflow-x-auto">
+          <div
+            ref={tabStripRef}
+            className="app-no-drag flex h-full min-w-0 flex-1 items-stretch overflow-x-auto"
+          >
             {all.map((group, gi) => (
               <div
                 key={group.category ?? group.pages[0].id}
-                className="flex min-w-0 flex-1"
+                className="flex min-w-0 flex-1 items-stretch"
                 style={{
                   borderRight: gi < all.length - 1 ? '1px solid hsl(var(--border))' : undefined
                 }}
               >
-                {group.category && (
+                {group.category && !isCompact && (
                   <div
                     className="flex shrink-0 items-center px-2.5 text-[10px] font-bold uppercase tracking-widest"
                     style={{ color: 'hsl(var(--muted-foreground) / 0.75)' }}
@@ -113,14 +139,23 @@ export function TabBar({ pages, platform }: TabBarProps) {
                 )}
                 {group.pages.map((page, pgi) => {
                   const active = page.id === activeId
-                  const Icon = page.icon
-                  const width = group.category ? undefined : '100%'
-                  return (
+                  const label = getPageLabel(page)
+                  const isSvglSlug = typeof page.icon === 'string'
+                  const IconComponent =
+                    typeof page.icon === 'function' || typeof page.icon === 'object'
+                      ? page.icon
+                      : null
+                  const width = group.category && !isCompact ? undefined : '100%'
+
+                  const tabButton = (
                     <button
                       key={page.id}
                       onClick={() => setActive(page.id)}
+                      aria-label={label}
+                      aria-current={active ? 'page' : undefined}
                       className={cn(
-                        'flex min-w-0 items-center justify-center gap-1.5 px-2 text-[13px] font-medium transition-colors whitespace-nowrap',
+                        'flex min-w-0 items-center justify-center gap-1.5 transition-colors whitespace-nowrap',
+                        isCompact ? 'px-2.5 text-xs' : 'px-2 text-[13px] font-medium',
                         active ? '' : 'hover:bg-tab-hover-bg text-muted-foreground'
                       )}
                       style={{
@@ -131,12 +166,49 @@ export function TabBar({ pages, platform }: TabBarProps) {
                         borderRight:
                           pgi < group.pages.length - 1 ? '1px solid hsl(var(--border))' : undefined
                       }}
-                      aria-current={active ? 'page' : undefined}
                     >
-                      <Icon className={cn('h-3.5 w-3.5 shrink-0', active && 'stroke-[2.4]')} />
-                      <span className="truncate">{page.label}</span>
+                      {isSvglSlug ? (
+                        <SvglIcon
+                          name={page.icon as string}
+                          size={14}
+                          className={cn(
+                            'h-3.5 w-3.5 shrink-0',
+                            active && 'drop-shadow-[0_0_6px_hsl(var(--sidebar-accent)/0.6)]'
+                          )}
+                        />
+                      ) : IconComponent ? (
+                        <IconComponent
+                          aria-hidden="true"
+                          className={cn('h-3.5 w-3.5 shrink-0', active && 'stroke-[2.4]')}
+                        />
+                      ) : null}
+                      {isCompact ? (
+                        <span className="sr-only">{label}</span>
+                      ) : (
+                        <span className="truncate">{label}</span>
+                      )}
                     </button>
                   )
+
+                  if (isCompact) {
+                    return (
+                      <Tooltip key={page.id}>
+                        <TooltipTrigger asChild>{tabButton}</TooltipTrigger>
+                        <TooltipContent side="bottom">
+                          <div className="flex flex-col text-xs">
+                            <span className="font-semibold">{label}</span>
+                            {page.category && (
+                              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                                {page.category}
+                              </span>
+                            )}
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    )
+                  }
+
+                  return tabButton
                 })}
               </div>
             ))}

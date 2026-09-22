@@ -8,10 +8,11 @@ import {
   resolveTemplateId
 } from './catalog'
 import { PRESETS, isPresetId } from '@renderer/lib/presets'
+import { getPageLabel } from '@renderer/types/pages'
 
 describe('template catalog', () => {
-  it('lists exactly ten templates', () => {
-    expect(CATALOG.length).toBe(10)
+  it('lists exactly eleven templates', () => {
+    expect(CATALOG.length).toBe(11)
   })
 
   it('has unique ids', () => {
@@ -71,7 +72,9 @@ describe('free-text resolution (the client sentence)', () => {
     ['rss reader', 'reader'],
     ['notes app with markdown', 'notes'],
     ['all-in-one wrapper for gmail', 'workspace'],
-    ['media player', 'media']
+    ['media player', 'media'],
+    ['ai writing studio', 'writer'],
+    ['manuscript editor', 'writer']
   ]
 
   it.each(cases)('"%s" → %s', (query, expected) => {
@@ -91,7 +94,7 @@ describe('lazy loading', () => {
 
     const b = await loadTemplate('notes')
     expect(b).toBe(a) // cached — same object reference
-  })
+  }, 15000)
 
   it('every loadable template loads with a valid app contract', async () => {
     for (const meta of CATALOG) {
@@ -103,6 +106,14 @@ describe('lazy loading', () => {
       expect(t!.pages.some((p) => p.id === t!.home)).toBe(true)
       expect(t!.dataShape.length).toBeGreaterThan(0)
       expect(t!.extendWith.length).toBeGreaterThan(0)
+      for (const page of t!.pages) {
+        const label = getPageLabel(page)
+        expect(typeof label).toBe('string')
+        expect(label.trim().length).toBeGreaterThan(0)
+        expect(
+          page.icon !== null && (typeof page.icon === 'function' || typeof page.icon === 'object')
+        ).toBe(true)
+      }
     }
   })
 

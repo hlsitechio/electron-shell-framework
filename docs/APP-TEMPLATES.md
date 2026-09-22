@@ -14,7 +14,7 @@ That sentence is the product. Everything here serves it.
 A bare Electron shell still leaves a day of work: lay out pages, wire a sidebar,
 build a table, style a chart, add an empty state. Those are solved problems.
 
-Ten templates solve the _shape_, and they are not invented — each one matches a
+Eleven templates solve the _shape_, and they are not invented — each one matches a
 shape that hundreds of shipped apps already use (source: `electron/electron-apps`,
 613 apps, plus public GitHub topic counts):
 
@@ -30,6 +30,7 @@ shape that hundreds of shipped apps already use (source: `electron/electron-apps
 | `workspace` | All-in-one web wrapper               | 11 shipped pure wrappers (Franz, Rambox, Station)  |
 | `reader`    | RSS / ebook reader                   | 24 shipped apps                                    |
 | `finance`   | Finance / budget / portfolio         | 21 shipped apps                                    |
+| `writer`    | AI Writing Studio / document review  | 41 shipped apps (Lex, Notion AI, Hemingway)        |
 
 ## The architecture: lean core, lazy templates
 

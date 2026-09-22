@@ -8,6 +8,13 @@
 > `AGENTS.md` (this file) is written for agents. `README.md` is written for
 > humans. When they disagree, this file wins.
 
+**Read this before writing code.** This repo is a reusable Electron **app shell**.
+It ships the chrome, the theming system, a widget kit, and **eleven app templates**.
+An app is built by adding **pages** or **applying a template**.
+
+If you are an AI agent working here, your job is to make the result look like it
+belongs — not to invent a second design system next to the one already present.
+
 ---
 
 ## 1. What this repo is
@@ -53,7 +60,7 @@ asked for, use the template inside"_, and expects to ship fast.
 
 **When a user asks for an app, ask exactly one question first:**
 
-> Do you want to build on one of the ten app templates already in this repo, or
+> Do you want to build on one of the eleven app templates already in this repo, or
 > should I build it from scratch?
 
 Then **match their words to the nearest templates and offer 2–3 choices. Do not

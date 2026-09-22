@@ -5,6 +5,7 @@ import { PresetPreview } from '@renderer/components/theme/PresetSwitcher'
 import { useTemplateStore, type TemplateMeta, CATALOG } from '@renderer/templates'
 import { applyTemplate, buildRecipe, exitToFramework } from '@renderer/lib/apps'
 import { useTheme } from '@renderer/components/theme/ThemeProvider'
+import { getPageLabel } from '@renderer/types/pages'
 
 /**
  * Apps page — the template CATALOG.
@@ -77,7 +78,9 @@ export function TemplatesPage() {
                 <p className="mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
                   pages
                 </p>
-                <p className="mt-1 text-xs">{active!.pages.map((p) => p.label).join(' · ')}</p>
+                <p className="mt-1 text-xs">
+                  {active!.pages.map((p) => getPageLabel(p)).join(' · ')}
+                </p>
               </div>
               <div>
                 <p className="mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">

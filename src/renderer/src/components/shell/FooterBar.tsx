@@ -13,7 +13,7 @@ interface FooterBarProps {
  * content by a hairline only — no heavy border.
  */
 export function FooterBar({ appName = 'App Shell' }: FooterBarProps) {
-  const [version, setVersion] = useState('0.1.0')
+  const [version, setVersion] = useState('0.2.0')
   const { branding } = useBranding()
   const displayName = branding.appName || appName
 
