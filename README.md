@@ -1,6 +1,8 @@
 # Electron Shell Framework
 
-A reusable Electron desktop app-shell — a **platform**, not an app. Dark/light theming, a single merged top bar (tabs + window controls), collapsible sidebars, a page registry, encrypted config storage, framework UI blocks, auto-update, and a one-command installation CLI. Build a new app (chat, dashboard, tools) by dropping in pages — never rewrite the shell.
+A reusable Electron desktop app-shell — a **platform**, not an app. Dark/light theming, a single merged top bar (tabs + window controls), collapsible sidebars, dynamic compact tabs, page registry, native SVGL brand kit, encrypted config storage, framework UI blocks, auto-update, and 11 production app templates. Build a new app by dropping in pages — never rewrite the shell.
+
+![App Shell Dashboard Preview](docs/dashboard-preview.png)
 
 **Pure desktop**: no web attach, no server. In production the renderer loads via `file://`.
 
@@ -69,10 +71,12 @@ The CLI is zero-dependency (Node stdlib only) — it works even before `npm inst
 ```
 
 - **Single top bar** — the tab strip and the window controls (min/max/close at 60% opacity) share one 40px bar. The `⇅` toggle collapses the tabs; the bar stays as a slim strip with the active page name.
-- **Left sidebar** — collapsible, drag-resizable; profile + collapse + settings footer.
+- **Dynamic responsive tabs** — on narrow viewports or small window sizes, the tab strip automatically collapses to icon-only mode with rich floating tooltips to prevent label truncation.
+- **Left sidebar** — collapsible (64px icon rail), drag-resizable; centered vertical icon stack in collapsed mode, clean toolbar in expanded mode without text button crowding.
+- **Native SVGL brand kit** — first-class integration with [svgl.app](https://svgl.app) for brand & tech stack SVG logos with offline caching and light/dark theme variants.
 - **Right panel** — Notifications + Activity log views (toast composer demo included), collapsible to an arrow-only rail.
 - **Bottom panel** — collapsible terminal-style strip.
-- **Theme** — dark/light, both sidebars included, persisted.
+- **Theme** — 10 curated color presets, dark/light modes, both sidebars included, persisted.
 
 ## Create a new app in 5 steps
 
