@@ -84,6 +84,8 @@ export interface ShellSlots {
   content?: ReactNode
   /** Any mode: right dock content. */
   rightDock?: ReactNode
+  /** Any mode: bottom dock content (sits inside the collapsible panel). */
+  bottomDock?: ReactNode
 }
 
 /** Convenience alias for a mode's component signature. */
