@@ -89,10 +89,15 @@ against a real window rather than a stub:
 
 ```bash
 ./node_modules/.bin/electron . --remote-debugging-port=9334 --remote-allow-origins=*
-python scripts/cdp-read-ui.py     # asserts the sidebar/tabs/KPIs/PTY painted
-python scripts/cdp-test-build.py  # starts a real build, asserts running → passed
-python scripts/cdp-shot.py        # sets the preset, captures docs/cockpit-ui.png
+python scripts/cdp-read-ui.py          # asserts sidebar/tabs/KPIs/PTY painted
+python scripts/cdp-test-build.py       # starts a real build, asserts running → passed
+python scripts/cdp-shot-default.py     # captures the app's boot state
 ```
+
+> `cdp-shot-default.py` is the screenshot tool, not `cdp-shot.py`: the latter
+> exists to apply a preset, and applying one reloads the page — a reload
+> collapses the bottom panel (a devtools-only state, never reachable by a user),
+> so it produces a misleading image.
 
 `cdp-test-build.py` output is the proof the build supervisor is real:
 
