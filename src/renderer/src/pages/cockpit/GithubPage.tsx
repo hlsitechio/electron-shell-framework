@@ -161,10 +161,11 @@ function RepoCard({ repo }: { repo: RemoteRepo }): React.JSX.Element {
 }
 
 export function GithubPage(): React.JSX.Element {
-  const { snapshot, listRemoteRepos, githubBusy, cloning, refresh } = useCockpitStore()
+  const { snapshot, listRemoteRepos, githubBusy, cloning, refresh, pickCloneParent } =
+    useCockpitStore()
   const [filter, setFilter] = useState<Filter>('mine')
   const [query, setQuery] = useState('')
-  const [pickedDir, setPickedDir] = useState(false)
+
   /**
    * `Date.now()` inside a `useMemo` is impure — the lint rule is right, and it
    * also stops the "active" filter from recomputing on unrelated renders.
@@ -206,13 +207,17 @@ export function GithubPage(): React.JSX.Element {
   const stats = useMemo(() => {
     const mine = repos.filter((r) => !r.isFork)
     const forks = repos.filter((r) => r.isFork)
+    /** Repos on this machine that map to a GitHub repo — i.e. actually fetched. */
+    const clonedHere = repos.filter((r) => r.cloned).length
+    /** Workspace repos with no GitHub remote at all (local working copies). */
+    const local = snapshot?.repos.length ?? 0
     return {
       total: remote?.total ?? repos.length,
       mine: mine.length,
       forks: forks.length,
-      cloned: repos.filter((r) => r.cloned).length,
-      remoteOnly: mine.filter((r) => !r.cloned).length,
-      local: snapshot?.repos.length ?? 0,
+      clonedHere,
+      localOnly: Math.max(0, local - clonedHere),
+      local,
       /** total size of YOUR repos not yet on disk — what a "clone all" would cost */
       pendingGb: mine.filter((r) => !r.cloned).reduce((s, r) => s + r.sizeKb, 0) / 1024 / 1024
     }
@@ -231,10 +236,16 @@ export function GithubPage(): React.JSX.Element {
           progress={listed ? 100 : 0}
         />
         <StatTile
-          label="In workspace"
-          value={String(stats.local)}
-          delta="checked out"
-          progress={stats.local ? 100 : 0}
+          label="Cloned here"
+          value={String(stats.clonedHere)}
+          delta={
+            stats.clonedHere
+              ? 'cloned on this machine'
+              : listed
+                ? 'nothing cloned yet'
+                : 'not listed yet'
+          }
+          progress={stats.mine ? (stats.clonedHere / Math.max(stats.mine, 1)) * 100 : 0}
         />
         <StatTile
           label="Cloning"
@@ -305,24 +316,21 @@ export function GithubPage(): React.JSX.Element {
         style={{ background: 'hsl(var(--muted) / 0.4)' }}
       >
         <FolderOpen className="h-3 w-3 shrink-0" />
-        <span className="shrink-0">clones go to</span>
+        <span className="shrink-0">
+          {stats.clonedHere > 0 ? `${stats.clonedHere} cloned` : 'clones'} into
+        </span>
         <span className="min-w-0 truncate text-foreground">{cloneRoot || '—'}</span>
         <Button
           size="sm"
           variant="ghost"
           className="h-5 px-1.5 text-[10.5px]"
-          onClick={async () => {
-            await useCockpitStore.getState().pickCloneParent()
-            setPickedDir(true)
-          }}
+          onClick={() => void pickCloneParent()}
+          title="Choose where future clones land (saved)"
         >
           change
         </Button>
-        {pickedDir && <span className="shrink-0">· saved</span>}
         <div className="flex-1" />
-        <span className="shrink-0">
-          Clone uses a blobless partial fetch — files download on demand.
-        </span>
+        <span className="shrink-0">Blobless partial fetch — file contents download on demand.</span>
       </div>
 
       {/* the list was restored from disk and is old — say so, don't hide it */}
@@ -403,8 +411,9 @@ export function GithubPage(): React.JSX.Element {
       {listed && (
         <p className="mono shrink-0 text-[10px] text-muted-foreground">
           {filtered.length} of {repos.length} shown · {stats.mine} yours · {stats.forks} forks ·{' '}
-          {remote?.fetchedAt ? `listed ${relative(remote.fetchedAt)}` : 'not listed'} ·{' '}
-          {stats.cloned} local
+          {stats.clonedHere} cloned here
+          {stats.localOnly > 0 ? ` · ${stats.localOnly} local non-GitHub` : ''}
+          {remote?.fetchedAt ? ` · listed ${relative(remote.fetchedAt)}` : ''}
         </p>
       )}
     </div>
