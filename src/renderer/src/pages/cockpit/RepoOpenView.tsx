@@ -19,6 +19,7 @@ import {
   Binary
 } from 'lucide-react'
 import { Button } from '@renderer/components/ui/button'
+import { MarkdownView } from '@renderer/components/MarkdownView'
 import { cn } from '@renderer/lib/utils'
 import type {
   RemoteFile,
@@ -308,23 +309,49 @@ export function RepoOpenView({ slug, onClose, onClone, cloning }: Props): React.
                 {openFile.file?.truncated && (
                   <span style={{ color: 'hsl(var(--warning))' }}>· truncated for display</span>
                 )}
+                {isMarkdown(openFile.path) && <span>· markdown, rendered</span>}
               </div>
-              <pre
-                className="mono overflow-auto rounded-md p-2 text-[10.5px] leading-[1.55]"
-                style={{
-                  background: 'hsl(var(--background) / 0.6)',
-                  border: '1px solid hsl(var(--border))',
-                  whiteSpace: 'pre',
-                  tabSize: 2
-                }}
-              >
-                {openFile.file?.text ?? ''}
-              </pre>
+              {/* A .md file in the tree gets the same treatment as the README. */}
+              {isMarkdown(openFile.path) ? (
+                <div className="glass p-3">
+                  <MarkdownView text={openFile.file?.text ?? ''} />
+                </div>
+              ) : (
+                <pre
+                  className="mono overflow-auto rounded-md p-2 text-[10.5px] leading-[1.55]"
+                  style={{
+                    background: 'hsl(var(--background) / 0.6)',
+                    border: '1px solid hsl(var(--border))',
+                    whiteSpace: 'pre',
+                    tabSize: 2
+                  }}
+                >
+                  {openFile.file?.text ?? ''}
+                </pre>
+              )}
             </>
           )
         ) : tab === 'overview' ? (
           /* ------------------------------------------------------- overview tab */
           <div className="space-y-2">
+            {/* The README is the point of this tab — it leads, rendered. */}
+            {detail?.readme ? (
+              <div className="glass p-3">
+                <div
+                  className="mono mb-2 flex items-center gap-1.5 border-b pb-1.5 text-[10px] text-muted-foreground"
+                  style={{ borderColor: 'hsl(var(--border))' }}
+                >
+                  <FileText className="h-3 w-3 shrink-0" />
+                  {detail.readme.name}
+                </div>
+                <MarkdownView text={detail.readme.text} />
+              </div>
+            ) : (
+              <p className="text-[11.5px] text-muted-foreground">
+                No README — open the Files tab to browse the tree.
+              </p>
+            )}
+
             {detail?.description && (
               <p className="text-[11.5px] leading-relaxed text-muted-foreground">
                 {detail.description}
@@ -366,25 +393,6 @@ export function RepoOpenView({ slug, onClose, onClone, cloning }: Props): React.
                 ))}
               </div>
             ) : null}
-
-            {detail?.readme ? (
-              <div className="glass p-3">
-                <div className="mono mb-2 flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                  <FileText className="h-3 w-3" />
-                  {detail.readme.name}
-                </div>
-                <pre
-                  className="mono text-[10.5px] leading-[1.6] whitespace-pre-wrap break-words"
-                  style={{ color: 'hsl(var(--foreground) / 0.88)' }}
-                >
-                  {detail.readme.text}
-                </pre>
-              </div>
-            ) : (
-              <p className="text-[11.5px] text-muted-foreground">
-                No README — open the Files tab to browse the tree.
-              </p>
-            )}
 
             <p className="mono pt-1 text-[9.5px] text-muted-foreground/70">
               {detail?.requests} GitHub requests · nothing written to disk
