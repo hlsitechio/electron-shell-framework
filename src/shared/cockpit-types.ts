@@ -146,8 +146,69 @@ export interface RemoteRepo {
   headDate: string
   openPrs: number
   url: string
-  /** true when a working copy of this repo is on this machine */
+  /** true when this repo also exists as a working copy on this machine */
   cloned: boolean
+  /** repo description (filled by the detail fetch) */
+  description?: string
+  stars?: number
+  watchers?: number
+  license?: string | null
+  topics?: string[]
+}
+
+/** One entry in a repo's root tree. */
+export interface RemoteTreeEntry {
+  path: string
+  type: 'file' | 'dir' | 'submodule' | 'symlink'
+  size: number
+  sha: string
+}
+
+/** A file's decoded content, fetched on demand. */
+export interface RemoteFile {
+  path: string
+  size: number
+  /** utf-8 text when the file is text and small enough; null for binary/oversized */
+  text: string | null
+  truncated: boolean
+  /** true when GitHub reports a non-text encoding (images, archives…) */
+  binary: boolean
+  /** present when the file could not be read at all */
+  error?: string
+}
+
+export interface RemoteCommit {
+  sha: string
+  message: string
+  author: string
+  date: string
+}
+
+export interface RemoteBranch {
+  name: string
+  sha: string
+  isDefault: boolean
+}
+
+/**
+ * Everything needed to render a repo in full WITHOUT cloning it — one request
+ * per facet, all against the GitHub API.
+ */
+export interface RepoDetail {
+  slug: string
+  readme: { name: string; text: string } | null
+  tree: RemoteTreeEntry[]
+  commits: RemoteCommit[]
+  branches: RemoteBranch[]
+  description: string
+  stars: number
+  watchers: number
+  license: string | null
+  topics: string[]
+  defaultBranch: string
+  /** how many requests this view cost — shown so the cost is never a mystery */
+  requests: number
+  error: string | null
 }
 
 export interface RemoteRepoState {
@@ -226,6 +287,10 @@ export interface CockpitApi {
   /** Fetch ONE repo on demand (blobless + shallow unless `full`). */
   cloneRepo(slug: string, parentDir: string | null, full: boolean): Promise<CloneResult>
   pickCloneParent(): Promise<string | null>
+  /** Open a repo for READING without cloning it — metadata, tree, readme. */
+  repoDetail(slug: string): Promise<RepoDetail>
+  /** Read one file's text straight from GitHub, no clone. */
+  repoFile(slug: string, path: string, ref: string | null): Promise<RemoteFile>
   terminalAttach(repoId: string, cols: number, rows: number): Promise<TerminalSession>
   terminalWrite(repoId: string, data: string): Promise<boolean>
   terminalResize(repoId: string, cols: number, rows: number): Promise<boolean>

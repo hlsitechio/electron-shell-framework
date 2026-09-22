@@ -5,6 +5,7 @@ import { BuildSupervisor, setFavouriteScript } from './builds'
 import { PtySupervisor, getLastTerminalRepo, setLastTerminalRepo } from './pty'
 import { addWorktree, cloneRepo, isRepo, pruneWorktrees, resolveRoot } from './git'
 import { getCachedRemoteRepos } from './remote'
+import { fetchRepoDetail, fetchRepoFile } from './repo-detail'
 import { isTrustedSender } from '../ipc-policy'
 import { log } from '../logging'
 import {
@@ -49,6 +50,12 @@ function handle(
 
 function windowOf(event: IpcMainInvokeEvent): BrowserWindow | null {
   return BrowserWindow.fromWebContents(event.sender)
+}
+
+/** The slug must exist in the most recently fetched remote list. */
+function isListedSlug(slug: string): boolean {
+  const list = getCachedRemoteRepos().repos
+  return list.some((r) => r.slug.toLowerCase() === slug.toLowerCase())
 }
 
 export interface CockpitIpc {
@@ -375,6 +382,46 @@ export function registerCockpitIpc(): CockpitIpc {
     }
 
     return { ok: result.ok, slug, path: result.path, message: result.message }
+  })
+
+  /* --------------------------------------------------- remote read (no clone) */
+
+  /**
+   * Open a repo for READING. Five API requests, zero disk. The slug is checked
+   * against the live list, so the renderer cannot make us query arbitrary
+   * repositories on someone else's behalf.
+   */
+  handle('cockpit:repoDetail', async (_e, slug: unknown) => {
+    const known = typeof slug === 'string' && isListedSlug(slug)
+    if (!known) {
+      return { error: 'Not in the listed GitHub repositories — refresh the list first' }
+    }
+    const detail = await fetchRepoDetail(slug as string)
+    store.addLog(
+      detail.error
+        ? `Repo detail failed for ${slug}: ${detail.error}`
+        : `Opened ${slug} — ${detail.tree.length} entries, ${detail.commits.length} commits (${detail.requests} requests, no clone)`,
+      detail.error ? 'error' : 'info'
+    )
+    return detail
+  })
+
+  handle('cockpit:repoFile', async (_e, slug: unknown, path: unknown, ref: unknown) => {
+    if (typeof slug !== 'string' || !isListedSlug(slug) || typeof path !== 'string' || !path) {
+      return {
+        path: String(path),
+        size: 0,
+        text: null,
+        truncated: false,
+        binary: false,
+        error: 'Invalid request'
+      }
+    }
+    // A path is a repo-relative path, never absolute and never traversing up.
+    if (path.startsWith('/') || path.includes('..')) {
+      return { path, size: 0, text: null, truncated: false, binary: false, error: 'Invalid path' }
+    }
+    return fetchRepoFile(slug, path, typeof ref === 'string' && ref ? ref : null)
   })
 
   const dispose = (): void => {

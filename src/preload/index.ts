@@ -5,6 +5,8 @@ import type {
   CockpitSnapshot,
   CloneResult,
   Heartbeat,
+  RemoteFile,
+  RepoDetail,
   TerminalSession,
   BuildRun
 } from '../shared/cockpit-types'
@@ -69,6 +71,12 @@ const api = {
     cloneRepo: (slug: string, parentDir: string | null, full = false): Promise<CloneResult> =>
       ipcRenderer.invoke('cockpit:cloneRepo', slug, parentDir, full),
     pickCloneParent: (): Promise<string | null> => ipcRenderer.invoke('cockpit:pickCloneParent'),
+    /** Read a repo in full without cloning it (metadata + tree + readme). */
+    repoDetail: (slug: string): Promise<RepoDetail> =>
+      ipcRenderer.invoke('cockpit:repoDetail', slug),
+    /** Read one file's text straight from GitHub. */
+    repoFile: (slug: string, path: string, ref: string | null = null): Promise<RemoteFile> =>
+      ipcRenderer.invoke('cockpit:repoFile', slug, path, ref),
 
     createWorktree: (repoId: string, branch: string): Promise<CockpitSnapshot> =>
       ipcRenderer.invoke('cockpit:createWorktree', repoId, branch),
