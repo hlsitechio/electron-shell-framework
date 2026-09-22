@@ -6,6 +6,7 @@ import { ErrorBoundary } from '@renderer/components/ErrorBoundary'
 import { CockpitTerminal } from '@renderer/pages/cockpit/CockpitTerminal'
 import { CockpitLogRail } from '@renderer/pages/cockpit/CockpitLogRail'
 import { useCockpitStore } from '@renderer/stores/cockpit-store'
+import { hydrateLayout } from '@renderer/stores/ui-store'
 import { useEffect } from 'react'
 
 /**
@@ -32,6 +33,12 @@ function Cockpit() {
     void refresh(false)
     return unsubscribe
   }, [init, refresh])
+
+  // Restore the last arranged layout (panel open, sidebar widths) before the
+  // user sees anything, so a restart does not reset their workspace.
+  useEffect(() => {
+    void hydrateLayout()
+  }, [])
 
   return (
     <ErrorBoundary label="cockpit">

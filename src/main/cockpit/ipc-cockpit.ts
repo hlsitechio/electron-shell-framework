@@ -349,6 +349,9 @@ export function registerCockpitIpc(): CockpitIpc {
 
     const parent =
       typeof parentDir === 'string' && isUsableDirectory(parentDir) ? parentDir : cloneRoot()
+    // Remember where the user actually cloned to, so the next clone defaults
+    // there instead of resetting to ~/GitHub.
+    if (typeof parentDir === 'string' && isUsableDirectory(parentDir)) setCloneRoot(parentDir)
     try {
       if (!existsSync(parent)) mkdirSync(parent, { recursive: true })
     } catch (err) {

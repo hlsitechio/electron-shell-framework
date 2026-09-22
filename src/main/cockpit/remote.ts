@@ -1,4 +1,5 @@
 import { run } from './exec'
+import { configStore } from '../config-store'
 import type { RemoteRepo } from '../../shared/cockpit-types'
 
 /**
@@ -129,6 +130,12 @@ interface GqlResponse {
   errors?: Array<{ message: string }>
 }
 
+const CACHE_KEY = 'cockpit:remoteRepos'
+/** Cap what we persist — an account with thousands of repos stays a small file. */
+const CACHE_MAX_PERSISTED = 1000
+/** A cached list older than this is shown but flagged as stale. */
+export const CACHE_STALE_MS = 6 * 60 * 60 * 1000
+
 interface Cache {
   repos: RemoteRepo[]
   fetchedAt: number
@@ -138,13 +145,71 @@ interface Cache {
 }
 
 const cache: Cache = { repos: [], fetchedAt: 0, total: 0, error: null }
+let hydrated = false
+
+/** Mark the store as hydrated so a later lazy call cannot overwrite fresh data. */
+function hydrateDone(): void {
+  hydrated = true
+}
+
+/**
+ * Load the last fetched list from the encrypted config.
+ *
+ * The list has to SURVIVE A RESTART: it is 88 repos of metadata that cost one
+ * API call to build, and losing it on every launch would mean the app can never
+ * show your account without re-hitting GitHub. Hydration is lazy and idempotent.
+ */
+export function hydrateRemoteCache(): void {
+  if (hydrated) return
+  hydrated = true
+  try {
+    const stored = configStore.get<string | null>(CACHE_KEY, null)
+    if (!stored) return
+    const parsed = JSON.parse(stored) as {
+      repos?: RemoteRepo[]
+      fetchedAt?: number
+      total?: number
+    }
+    if (!Array.isArray(parsed.repos) || !parsed.repos.length) return
+    cache.repos = parsed.repos
+    cache.fetchedAt = typeof parsed.fetchedAt === 'number' ? parsed.fetchedAt : 0
+    cache.total = typeof parsed.total === 'number' ? parsed.total : parsed.repos.length
+    cache.error = null
+  } catch {
+    /* a corrupt cache is not worth failing over — just start empty */
+  }
+}
+
+function persistRemoteCache(): void {
+  try {
+    configStore.set(
+      CACHE_KEY as never,
+      JSON.stringify({
+        repos: cache.repos.slice(0, CACHE_MAX_PERSISTED),
+        fetchedAt: cache.fetchedAt,
+        total: cache.total
+      }) as never
+    )
+  } catch {
+    /* cache write failure must never break a successful fetch */
+  }
+}
 
 export function getCachedRemoteRepos(): Cache {
+  hydrateRemoteCache()
   return cache
 }
 
 export function remoteCacheFresh(): boolean {
+  hydrateRemoteCache()
   return cache.repos.length > 0 && Date.now() - cache.fetchedAt < CACHE_TTL_MS
+}
+
+/** True when the list came from disk and is old enough to warrant a refresh. */
+export function remoteCacheStale(): boolean {
+  hydrateRemoteCache()
+  if (!cache.repos.length) return false
+  return Date.now() - cache.fetchedAt > CACHE_STALE_MS
 }
 
 /**
@@ -221,6 +286,8 @@ export async function fetchAllRemoteRepos(
   cache.total = accountTotal || all.length
   cache.fetchedAt = Date.now()
   cache.error = null
+  hydrateDone()
+  persistRemoteCache()
 
   report(
     `GitHub: ${all.length} repositor${all.length === 1 ? 'y' : 'ies'} listed` +

@@ -14,7 +14,12 @@ import type {
   Repo
 } from '../../shared/cockpit-types'
 import { getCachedGithub, refreshGithub } from './github'
-import { annotateCloned, fetchAllRemoteRepos, getCachedRemoteRepos } from './remote'
+import {
+  annotateCloned,
+  fetchAllRemoteRepos,
+  getCachedRemoteRepos,
+  remoteCacheStale
+} from './remote'
 
 /**
  * The cockpit's single source of truth, owned by the MAIN process.
@@ -231,7 +236,8 @@ class CockpitStore {
         ),
         total: remote.total,
         fetchedAt: remote.fetchedAt ? new Date(remote.fetchedAt).toISOString() : null,
-        error: remote.error
+        error: remote.error,
+        stale: remoteCacheStale()
       },
       prs: getCachedGithub().prs,
       runs: getCachedGithub().runs,

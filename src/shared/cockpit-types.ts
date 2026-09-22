@@ -155,6 +155,8 @@ export interface RemoteRepoState {
   total: number
   fetchedAt: string | null
   error: string | null
+  /** true when the list was restored from disk and is old — offer a refresh */
+  stale: boolean
 }
 
 export interface CloneResult {

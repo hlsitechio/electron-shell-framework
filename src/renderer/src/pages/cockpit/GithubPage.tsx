@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import {
   AlertCircle,
   Cloud,
+  Clock,
   Download,
   ExternalLink,
   FolderGit2,
@@ -323,6 +324,32 @@ export function GithubPage(): React.JSX.Element {
           Clone uses a blobless partial fetch — files download on demand.
         </span>
       </div>
+
+      {/* the list was restored from disk and is old — say so, don't hide it */}
+      {listed && remote?.stale && (
+        <div
+          className="flex flex-wrap items-center gap-2 rounded-md px-3 py-1.5 text-[11px]"
+          style={{
+            background: 'hsl(var(--warning) / 0.08)',
+            border: '1px solid hsl(var(--warning) / 0.22)'
+          }}
+        >
+          <Clock className="h-3.5 w-3.5 shrink-0" style={{ color: 'hsl(var(--warning))' }} />
+          <span>
+            Restored from your last sync
+            {remote.fetchedAt ? ` (${relative(remote.fetchedAt)})` : ''} — it survived the restart.
+          </span>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="h-5 px-1.5 text-[10.5px]"
+            disabled={githubBusy}
+            onClick={() => void listRemoteRepos(true)}
+          >
+            Refresh now
+          </Button>
+        </div>
+      )}
 
       {/* error from the API, verbatim */}
       {remote?.error && (
