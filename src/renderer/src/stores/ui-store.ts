@@ -26,7 +26,7 @@ export const useUiStore = create<UiState>((set) => ({
   rightWidth: 260,
   leftWidth: 220,
   tabsCollapsed: false,
-  bottomOpen: false,
+  bottomOpen: true,
   toggleLeft: () => set((s) => ({ leftCollapsed: !s.leftCollapsed })),
   setLeftCollapsed: (v) => set({ leftCollapsed: v }),
   toggleRight: () => set((s) => ({ rightOpen: !s.rightOpen })),

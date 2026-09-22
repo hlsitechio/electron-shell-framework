@@ -1,65 +1,90 @@
 import { TooltipProvider } from '@renderer/components/ui/tooltip'
 import { AppShell } from '@renderer/components/shell/AppShell'
-import { ThemeProvider } from '@renderer/components/theme/ThemeProvider'
+import { ThemeProvider, useTheme } from '@renderer/components/theme/ThemeProvider'
 import { PAGES } from '@renderer/pages/registry'
-import { TemplatesPage } from '@renderer/pages/templates/TemplatesPage'
 import { ErrorBoundary } from '@renderer/components/ErrorBoundary'
-import { useTemplateStore, FRAMEWORK_ID } from '@renderer/templates'
-import { applyTemplate } from '@renderer/lib/apps'
-import { useTheme } from '@renderer/components/theme/ThemeProvider'
-import { Sparkles } from 'lucide-react'
-import { useEffect, useMemo } from 'react'
-import type { PageDefinition } from '@renderer/types/pages'
+import { CockpitTerminal } from '@renderer/pages/cockpit/CockpitTerminal'
+import { CockpitLogRail } from '@renderer/pages/cockpit/CockpitLogRail'
+import { useCockpitStore } from '@renderer/stores/cockpit-store'
+import { useEffect } from 'react'
 
 /**
- * The "Apps" page is injected into EVERY page set. Without it, applying a
- * template would be a one-way door: you could never get back to the
- * catalog to switch apps.
+ * Repo Cockpit.
+ *
+ * The shell is used exactly as the framework intends: pages come from the
+ * registry, and the two dock regions are filled through `AppShell` slots —
+ *  - `bottomDock` → the real PTY terminal (one shell per repo)
+ *  - `rightDock`  → the activity/notify rail fed by main-process events
+ *
+ * Nothing under components/shell was rewritten to make this app work; the only
+ * shell edits are the two optional slot props, which default to the previous
+ * behaviour when an app does not pass them.
  */
-const APPS_PAGE: PageDefinition = {
-  id: 'apps',
-  label: 'Apps',
-  description: 'Browse app templates',
-  category: 'Templates',
-  icon: Sparkles,
-  component: TemplatesPage,
-  showInSidebar: false
-}
 
-function Shell() {
-  const activeId = useTemplateStore((s) => s.activeId)
-  const active = useTemplateStore((s) => s.active)
-  const { setPreset } = useTheme()
+function Cockpit() {
+  const init = useCockpitStore((s) => s.init)
+  const refresh = useCockpitStore((s) => s.refresh)
 
-  /**
-   * A scaffolded app sets DEFAULT_TEMPLATE_ID (templates/default.ts) to its own
-   * template, so the app boots straight into its screen instead of the demo.
-   * Templates load lazily, so fetch it on first mount when the store only has
-   * an id but no loaded template.
-   */
+  // Subscribe to main, then pull the first snapshot. `init` returns its own
+  // unsubscribe, so a strict-mode double-mount cannot double-subscribe.
   useEffect(() => {
-    if (activeId !== FRAMEWORK_ID && !active) {
-      void applyTemplate(activeId, { setPreset })
-    }
-  }, [activeId, active, setPreset])
+    const unsubscribe = init()
+    void refresh(false)
+    return unsubscribe
+  }, [init, refresh])
 
-  const pages = useMemo(() => [...(active ? active.pages : PAGES), APPS_PAGE], [active])
-
-  // Per-render boundary: a throw in one page keeps the shell (and the user) alive.
-  // `mode` comes from the applied template — a studio app gets a navigation tree
-  // and a document bar instead of a tab strip, without forking the shell.
   return (
-    <ErrorBoundary label="shell">
-      <AppShell pages={pages} mode={active?.mode ?? 'dashboard'} />
+    <ErrorBoundary label="cockpit">
+      <AppShell
+        pages={PAGES}
+        title="Repo Cockpit"
+        slots={{
+          bottomDock: <CockpitTerminal />,
+          rightDock: <CockpitLogRail />
+        }}
+      />
     </ErrorBoundary>
   )
+}
+
+/**
+ * Preset chosen for an instrument-panel feel: `poiesis-blue` (cold steel-blue,
+ * the framework's own preset for monitoring and developer tools). It is a
+ * stored preference, so switching presets in Themes sticks across launches.
+ */
+const COCKPIT_PRESET = 'poiesis-blue'
+
+function Boot() {
+  const { setPreset, setTheme } = useTheme()
+
+  // Adopt the app's preset and dark mode only when the user has no stored
+  // choice — `localStorage` is written by ThemeProvider on every change, so a
+  // real preference always wins. Also applied from the encrypted config on
+  // boot, which is what the ThemeProvider reads first.
+  useEffect(() => {
+    const api = window.api
+    void Promise.all([
+      api?.config?.get?.('theme') ?? Promise.resolve(null),
+      api?.config?.get?.('theme:preset') ?? Promise.resolve(null)
+    ])
+      .then(([storedTheme, storedPreset]) => {
+        if (!storedTheme) setTheme('dark')
+        if (!storedPreset) setPreset(COCKPIT_PRESET)
+      })
+      .catch(() => {
+        /* config unavailable — framework defaults are fine */
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  return <Cockpit />
 }
 
 export default function App() {
   return (
     <ThemeProvider>
       <TooltipProvider delayDuration={200}>
-        <Shell />
+        <Boot />
       </TooltipProvider>
     </ThemeProvider>
   )

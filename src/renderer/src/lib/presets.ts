@@ -127,7 +127,7 @@ export const PRESETS: ThemePreset[] = [
   }
 ]
 
-export const DEFAULT_PRESET = 'muted-violet'
+export const DEFAULT_PRESET = 'poiesis-blue'
 
 const BY_ID = new Map(PRESETS.map((p) => [p.id, p]))
 

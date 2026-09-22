@@ -29,7 +29,15 @@ const now = (): string => new Date().toLocaleTimeString([], { hour: '2-digit', m
 
 /**
  * Right sidebar — hosts the Bell (notifications) and Log (activity) views.
- * Ships with a demo toast + a sample user-log entry to show the pattern.
+ *
+ * When an app passes `children` (the `AppShell` `rightDock` slot) that content
+ * BECOMES the panel body and the framework's demo views step aside. Without
+ * this, the demo would take the full height and bury the app's own rail in a
+ * small box at the bottom — and shipping the demo next to real data reads as
+ * fake content.
+ *
+ * With no children the demo renders exactly as before, so existing apps that
+ * rely on it are unaffected.
  */
 export function RightPanel({ children }: RightPanelProps) {
   const { rightOpen, rightWidth, toggleRight } = useUiStore()
@@ -39,15 +47,16 @@ export function RightPanel({ children }: RightPanelProps) {
   ])
   const [log, setLog] = useState<string[]>([`[${now()}] user joined — demo session started`])
   const [draft, setDraft] = useState('')
+  const hasDock = Boolean(children)
 
-  const addToast = () => {
+  const addToast = (): void => {
     const text = draft.trim() || 'New toast notification'
     setNotices((n) => [{ id: Date.now(), text, time: now(), read: false }, ...n])
     setLog((l) => [`[${now()}] action: "${text}"`, ...l])
     setDraft('')
   }
 
-  const markAll = () => setNotices((n) => n.map((x) => ({ ...x, read: true })))
+  const markAll = (): void => setNotices((n) => n.map((x) => ({ ...x, read: true })))
 
   return (
     <div
@@ -59,7 +68,25 @@ export function RightPanel({ children }: RightPanelProps) {
         transition: 'width 160ms ease'
       }}
     >
-      {rightOpen ? (
+      {!rightOpen ? (
+        /* collapsed: slim rail with the reopen arrow only */
+        <div className="flex h-full flex-col items-center py-2">
+          <button
+            onClick={toggleRight}
+            className={cn(
+              'flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors',
+              'hover:bg-accent hover:text-accent-foreground'
+            )}
+            aria-label="Open panel"
+            title="Open panel"
+          >
+            <PanelRightOpen className="h-4 w-4" />
+          </button>
+        </div>
+      ) : hasDock ? (
+        /* the app owns the panel body */
+        <div className="flex h-full min-h-0 flex-col">{children}</div>
+      ) : (
         <>
           {/* header: Bell + Log toggle */}
           <div
@@ -108,7 +135,7 @@ export function RightPanel({ children }: RightPanelProps) {
           </div>
 
           {/* body */}
-          <div className="flex flex-1 flex-col overflow-hidden">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
             {view === 'notifications' ? (
               <>
                 <div
@@ -131,7 +158,7 @@ export function RightPanel({ children }: RightPanelProps) {
                     <Send className="h-3.5 w-3.5" />
                   </Button>
                 </div>
-                <div className="flex-1 overflow-y-auto p-2">
+                <div className="min-h-0 flex-1 overflow-y-auto p-2">
                   {notices.length === 0 ? (
                     <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
                       <BellOff className="h-6 w-6 text-muted-foreground" />
@@ -170,7 +197,7 @@ export function RightPanel({ children }: RightPanelProps) {
               </>
             ) : (
               <>
-                <div className="flex-1 overflow-y-auto p-2 font-mono text-[11px] leading-5">
+                <div className="min-h-0 flex-1 overflow-y-auto p-2 font-mono text-[11px] leading-5">
                   {log.map((line, i) => (
                     <div key={i} className="flex items-start gap-1.5">
                       <TerminalSquare className="mt-0.5 h-3 w-3 shrink-0 text-muted-foreground" />
@@ -187,24 +214,8 @@ export function RightPanel({ children }: RightPanelProps) {
                 </button>
               </>
             )}
-            {children && <div className="shrink-0 border-t border-border p-3">{children}</div>}
           </div>
         </>
-      ) : (
-        /* collapsed: slim rail with reopen arrow only */
-        <div className="flex h-full flex-col items-center py-2">
-          <button
-            onClick={toggleRight}
-            className={cn(
-              'flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors',
-              'hover:bg-accent hover:text-accent-foreground'
-            )}
-            aria-label="Open panel"
-            title="Open panel"
-          >
-            <PanelRightOpen className="h-4 w-4" />
-          </button>
-        </div>
       )}
     </div>
   )

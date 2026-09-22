@@ -2,6 +2,8 @@ import { BrowserWindow, app, nativeImage, shell } from 'electron'
 import { join } from 'node:path'
 import { configStore } from './config-store'
 import { registerIpc } from './ipc'
+import { registerCockpitIpc } from './cockpit/ipc-cockpit'
+import { ownWindow } from './ipc-policy'
 import { initUpdater } from './updater'
 import { windowStateKeeper } from './window-state'
 import { attachRendererLogging, initLogging, log, logFilePath } from './logging'
@@ -67,6 +69,10 @@ if (!gotLock) {
 
     stateKeeper.track(win)
 
+    // Register this window as OURS — the cockpit IPC gate only accepts
+    // messages from a window we created. Must happen before any renderer call.
+    ownWindow(win)
+
     // Navigation, popups, webviews, devtools, external links — one call.
     hardenWindow(win)
 
@@ -105,8 +111,13 @@ if (!gotLock) {
     hardenApp()
 
     registerIpc()
+    const cockpit = registerCockpitIpc()
     initUpdater()
     createWindow()
+
+    // A PTY or a build child outliving the window is the classic desktop leak:
+    // kill both before the process goes away.
+    app.on('before-quit', () => cockpit.dispose())
 
     log.info('ready — log file:', logFilePath())
 

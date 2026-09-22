@@ -1,155 +1,112 @@
-# Electron Shell Framework
+# Repo Cockpit
 
-A reusable Electron desktop app-shell — a **platform**, not an app. Dark/light theming, a single merged top bar (tabs + window controls), collapsible sidebars, a page registry, encrypted config storage, framework UI blocks, auto-update, and a one-command installation CLI. Build a new app (chat, dashboard, tools) by dropping in pages — never rewrite the shell.
+A multi-repo developer workspace built on
+[electron-shell-framework](https://github.com/hlsitechio/electron-shell-framework).
 
-**Pure desktop**: no web attach, no server. In production the renderer loads via `file://`.
+Pure Windows desktop — no server, no web attach, no mock data. Every number on
+screen comes from `git`, `gh` or a live child process.
 
-## Stack
+![Repo Cockpit](docs/cockpit-ui.png)
 
-| Layer            | Tech                                                                             |
-| ---------------- | -------------------------------------------------------------------------------- |
-| Process shell    | **Electron 44.1** (electron-vite 5, electron-builder 26)                         |
-| UI               | React 19 + TypeScript + Tailwind CSS v4                                          |
-| Primitives       | Radix-based shadcn-style components (`src/renderer/src/components/ui`)           |
-| State            | zustand (`leftCollapsed`, `rightOpen`, active tab)                               |
-| Persistence      | Electron `safeStorage`-encrypted JSON at `%APPDATA%/<app>/config.json`           |
-| Framework blocks | recharts (charts), zod + react-hook-form (forms) — see `src/renderer/src/blocks` |
-| Updates          | electron-updater (GitHub releases), Settings → Updates                           |
-| Quality          | Vitest (unit) + Playwright (e2e) + ESLint + Prettier + Husky/lint-staged         |
+## What it does
 
-## Quick start — the shell-cli (one command, step by step)
+| Page          | Real source                                                                                                                                                       |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Repos**     | `git status --porcelain=v1 -z --branch`, `git remote get-url`, `git log -1`, `git stash list`, `git worktree list --porcelain`, + npm scripts from `package.json` |
+| **Worktrees** | `git worktree list --porcelain`; creates via `git worktree add -b <branch>`; prunes via `git worktree prune -v`                                                   |
+| **Builds**    | `npm run <script>` as a supervised child process — real pid, streamed stdout/stderr, real exit code, cancellable                                                  |
+| **PR Queue**  | `gh pr list --json …` per repo (uses your existing `gh` login)                                                                                                    |
+| **CI Runs**   | `gh run list --json …` per repo, with real durations from `createdAt`/`updatedAt`                                                                                 |
+
+Three shell regions are wired to live app state rather than placeholders:
+
+- **Bottom panel — a real terminal.** `node-pty` spawns a genuine ConPTY
+  pseudo-console per repository (pwsh, else `powershell.exe`); `xterm.js`
+  renders it and forwards keystrokes. Colours are rebuilt from the active theme
+  tokens, so the terminal follows the app's preset. Switching repos disposes
+  and re-attaches, so keystrokes can never land in the wrong shell.
+- **Right rail — the activity log.** Main-process events stream in live: scans,
+  `gh` queries, every line a build prints, PTY attach/close, worktree commands.
+  `Notify` filters that same stream to warnings/errors/successes with an unread
+  count.
+- **Footer — a real daemon heartbeat.** A 2s tick from the main process carries
+  pid, uptime, repo count, live shell count and running builds. If the ticks
+  stop, the dot drains and the text says so.
+
+## Architecture
+
+```
+src/main/cockpit/
+  exec.ts         execFile wrapper — argv arrays only, never a shell string
+  git.ts          the only place that shells out to git
+  github.ts       gh CLI: auth check, pr list, run list
+  builds.ts       BuildSupervisor — spawn, stream, cancel, kill on quit
+  pty.ts          PtySupervisor — ConPTY sessions, 40ms flush backpressure
+  store.ts        main-process source of truth + event fan-out
+  validate.ts     zod schemas for every renderer-supplied value
+  ipc-cockpit.ts  the IPC surface (sender-gated, validated)
+src/main/cockpit-parsers.ts   pure parsers — unit-testable, no I/O
+src/shared/cockpit-types.ts   the typed contract shared by both sides
+```
+
+**Security posture.** `sandbox`, `contextIsolation` and the framework's fuses
+are untouched. Every channel passes a sender gate (owned window + top frame +
+our own document). Every renderer value is zod-validated, and anything reaching
+a child process is additionally checked against live state — a build script must
+exist in that repo's `package.json`, and `openPath` only accepts a path from a
+repo we actually inspected. `execFile` with argv arrays means a repo path or
+branch name containing shell metacharacters cannot break out.
+
+## Run it
 
 ```bash
-node scripts/shell-cli.js install   # IRM: preflight → deps → checks → build → run → package
+npm install
+npm run typecheck && npm run lint && npm test
+npm run build
+./node_modules/.bin/electron .        # pure desktop, no server
+npm run dist:win                      # NSIS installer + portable exe
 ```
 
-Or the manual path:
+### Windows: unblock the install scripts first
+
+npm's `allowScripts` gate blocks the postinstall that downloads Electron's
+binary, plus `esbuild`'s and `node-pty`'s native builds. Without this the app
+cannot launch at all:
 
 ```bash
-npm install          # first time
-npm run dev          # dev with HMR (electron-vite serve)
-npm run build        # production bundle → out/
-npm start            # build + launch the pure desktop app (no server)
-npm run typecheck    # tsc both workspaces
-npm run lint         # eslint
-npm test             # vitest unit tests
-npm run test:e2e     # playwright e2e (launches the real app)
-npm run dist:win     # electron-builder → NSIS installer + portable exe in release/
+npm install-scripts approve esbuild electron-winstaller node-pty
+npm rebuild esbuild node-pty
+./node_modules/.bin/electron --version     # must print v44.x
 ```
 
-### shell-cli commands
+`node-pty` ships Windows prebuilds (`prebuilds/win32-x64/pty.node`, `conpty.dll`,
+`OpenConsole.exe`), so no C++ toolchain is required for it.
 
-| Command   | What it does                                                                                    |
-| --------- | ----------------------------------------------------------------------------------------------- |
-| `install` | Full step-by-step install (IRM): preflight → deps → typecheck/lint/test → build → run → package |
-| `check`   | Environment preflight only (Node ≥ 20, npm, git)                                                |
-| `dev`     | Start the dev server (HMR)                                                                      |
-| `build`   | Production build to `out/`                                                                      |
-| `run`     | Build then launch the app                                                                       |
-| `test`    | Unit tests + e2e tests (builds first)                                                           |
-| `package` | Build NSIS installer + portable exe                                                             |
-| `help`    | Command help                                                                                    |
+## Verification
 
-The CLI is zero-dependency (Node stdlib only) — it works even before `npm install`.
+The scripts in `scripts/` drive the running app over CDP, so the UI is checked
+against a real window rather than a stub:
 
-## Layout
-
-```
-┌──────────┬───────────────────────────────────────────┬──────────┐
-│          │ TabBar — ONE top bar:                      │          │
-│   Left   │ [⇅] [ Dashboard | Settings | Communication│   Right  │
-│ Sidebar  │      Chat | Documents ]   [–][□][×]        │   Panel  │
-│ (nav,    ├───────────────────────────────────────────┤ (bell/   │
-│  collaps.)│ Content — active page                     │   log)   │
-│          │                                            │          │
-└──────────┴───────────────────────────────────────────┴──────────┘
-┌───────────────────────────────────────────────────────────────────┐
-│ FooterBar — full-width status frame (version · platform · app name)│
-└───────────────────────────────────────────────────────────────────┘
+```bash
+./node_modules/.bin/electron . --remote-debugging-port=9334 --remote-allow-origins=*
+python scripts/cdp-read-ui.py     # asserts the sidebar/tabs/KPIs/PTY painted
+python scripts/cdp-test-build.py  # starts a real build, asserts running → passed
+python scripts/cdp-shot.py        # sets the preset, captures docs/cockpit-ui.png
 ```
 
-- **Single top bar** — the tab strip and the window controls (min/max/close at 60% opacity) share one 40px bar. The `⇅` toggle collapses the tabs; the bar stays as a slim strip with the active page name.
-- **Left sidebar** — collapsible, drag-resizable; profile + collapse + settings footer.
-- **Right panel** — Notifications + Activity log views (toast composer demo included), collapsible to an arrow-only rail.
-- **Bottom panel** — collapsible terminal-style strip.
-- **Theme** — dark/light, both sidebars included, persisted.
-
-## Create a new app in 5 steps
-
-1. **Clone** this repo (or copy the folder) → `my-app/`.
-2. **Pages**: create `src/renderer/src/pages/MyPage.tsx`.
-3. **Register**: add an entry to the array in `src/renderer/src/pages/registry.tsx`:
-
-```tsx
-{
-  id: 'my-tool',
-  label: 'My Tool',
-  icon: WrenchIcon,
-  component: MyPage,
-  rightPanel: MyPageInspector // optional per-page side panel
-}
-```
-
-4. **Rename**: update `name` in `package.json` (or set it in Settings → Branding at runtime).
-5. `npm run dev` — your page now gets a sidebar icon, a tab, and (if provided) a right panel. No shell edits.
-
-## Framework blocks
-
-`src/renderer/src/blocks/` ships two copy-paste demo blocks (wired to the theme tokens so they follow dark/light):
-
-- **`ExampleChart.tsx`** — recharts area chart (replace the demo data with your metrics).
-- **`ExampleForm.tsx`** — zod + react-hook-form typed form with inline validation.
-
-## IPC contract
-
-Renderer talks to main through `window.api` only (contextIsolation on, sandbox on).
-
-| API                                           | Channel              | Purpose                           |
-| --------------------------------------------- | -------------------- | --------------------------------- |
-| `window.api.config.get/set/has(key)`          | `config:*`           | Encrypted config store            |
-| `window.api.app.version()/ping()`             | `app:*`              | Version + platform health check   |
-| `window.api.window.minimize/maximize/close()` | `window:*`           | Frameless window controls         |
-| `window.api.window.setOpacity(v)`             | `window:setOpacity`  | Native window opacity (persisted) |
-| `window.api.update.check()/quitAndInstall()`  | `update:*`           | Auto-update (GitHub releases)     |
-| `window.api.update.onStatus(fn)`              | push `update:status` | Live update events → Settings UI  |
-
-Extend in `src/main/ipc.ts` + `src/preload/index.ts` — both are the only contract files a future backend touches.
-
-## Packaging & updates
-
-- `npm run dist:win` → `release/<version>/` with a **NSIS installer** (`App Shell-Setup-<version>.exe`, custom install dir, desktop + start-menu shortcuts) and a **portable exe**.
-- Auto-update is wired through `electron-updater` and the GitHub `publish` provider in `electron-builder.yml`. Tag a release as `vX.Y.Z` and push — packaged installs pick it up via Settings → Updates → Check for updates.
-- `scripts/generate-icon.js` creates the app icon (PNG + ICO) — run `npm run icon` after restyling.
-
-## Theming
-
-All colors are CSS variables in `src/renderer/src/styles/theme.css`
-(`--background`, `--foreground`, `--primary`, `--sidebar-*`, `--chart-*`, …) with a `[data-theme='dark']` block, mapped into Tailwind v4 via `@theme inline` so utilities like `bg-card`, `border-input`, `text-muted-foreground` work. To brand an app: restyle the variables — every component picks them up automatically.
-
-## Project map
+`cdp-test-build.py` output is the proof the build supervisor is real:
 
 ```
-scripts/       shell-cli.js (IRM install CLI), generate-icon.js
-src/
-  main/        Electron main: window lifecycle, IPC, encrypted config, updater, window-state
-  preload/     contextBridge → window.api (the typed contract)
-  shared/      Types shared between main and renderer (UpdateStatus)
-  renderer/
-    src/
-      blocks/  Copy-paste framework blocks: recharts chart, zod+RHF form
-      components/
-        shell/     AppShell, Sidebar, TabBar (merged top bar), RightPanel, BottomPanel, …
-        ui/        shadcn-style primitives: button, card, dialog, select, switch, tabs, …
-        theme/     ThemeProvider + theme toggle
-      pages/       registry.tsx (THE extension point) + demo pages
-      stores/      zustand: ui layout state, active tab
-      styles/      theme.css (all design tokens)
-      lib/         cn(), theme helpers, branding hook
-      types/       PageDefinition (the page contract)
-e2e/           Playwright smoke tests (launch real app, assert chrome)
+STARTED: {"id":"build_...","status":"running","pid":26412,"script":"typecheck"}
+  [5] status=passed exit=0 lines=2
+FINAL:   {"status":"passed","exitCode":0,"lineCount":2,"pid":26412}
+CAPTURED OUTPUT: 2 lines
 ```
 
-## Roadmap (not in v1)
+## The shell was not forked
 
-- Backend integration (HTTP/WebSocket/DB) through the IPC contract
-- Dynamic/closeable tabs, splash screen, i18n
+Pages live in `src/renderer/src/pages/registry.tsx`; the two dock regions are
+filled through `AppShell` slots. The only framework edits are two optional slot
+props (`bottomDock`, `rightDock`) that default to the previous behaviour when an
+app does not pass them — proposed upstream on the `feat/app-shell-dock-slots`
+branch of electron-shell-framework.

@@ -23,8 +23,15 @@ describe('page registry', () => {
     }
   })
 
-  it('the dashboard is the default landing page', () => {
-    expect(PAGES[0].id).toBe('dashboard')
+  it('the first registered page is the default landing page', () => {
+    // A consumer app replaces this array wholesale (see the registry doc
+    // comment), so asserting a specific id like 'dashboard' would fail for
+    // every app built on the framework. What actually has to hold is that the
+    // array is non-empty and its head is a fully-formed page — the shell routes
+    // an unknown active id to `pages[0]`.
+    expect(PAGES.length).toBeGreaterThan(0)
+    expect(typeof PAGES[0].id).toBe('string')
+    expect(PAGES[0].id.length).toBeGreaterThan(0)
   })
 
   it('settings is hidden from the sidebar but registered', () => {

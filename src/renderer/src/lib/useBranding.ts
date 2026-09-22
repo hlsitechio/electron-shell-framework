@@ -7,7 +7,7 @@ export interface Branding {
 
 const BRANDING_KEY = 'settings:branding'
 
-const DEFAULT_BRANDING: Branding = { appName: 'App Shell', logo: null }
+const DEFAULT_BRANDING: Branding = { appName: 'Repo Cockpit', logo: null }
 
 /**
  * App branding — name + optional logo (data URL), persisted to the
