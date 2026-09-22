@@ -1,0 +1,42 @@
+# Electron Shell Framework
+
+> A reusable Electron desktop app-shell — a platform, not an app. It ships the window chrome, a two-layer theming system, an 11-component widget kit, and ten app templates. An app is built by adding pages or applying a template; the shell is never rewritten. Pure desktop: the production renderer loads from `file://`, there is no server and no web build.
+
+Stack: Electron 44, React 19, TypeScript, Tailwind v4, electron-vite, zustand, Vitest + Playwright.
+License: MIT. Windows and Linux are supported targets; macOS is intentionally unsupported.
+
+## Start here
+
+- [AGENTS.md](https://raw.githubusercontent.com/hlsitechio/electron-shell-framework/main/AGENTS.md): The contract for any agent or developer working in this repo. Read this first — it is the single source of truth and it outranks general Electron instinct. Covers the template-or-scratch question, the two extension axes, the theme model, the preset decision table, and the full list of things not to do.
+- [README.md](https://raw.githubusercontent.com/hlsitechio/electron-shell-framework/main/README.md): Human-facing overview, quick start, the shell-cli command table, IPC contract, and packaging.
+
+## Agent skill pack
+
+Five self-contained `SKILL.md` files, written to the SKILL.md convention so they load in Hermes Agent, Claude Code, Cursor, or any reader of that format. Load the relevant one before starting a task.
+
+- [electron-shell-framework](https://raw.githubusercontent.com/hlsitechio/electron-shell-framework/main/skills/electron-shell-framework/SKILL.md): Entry point — pick a template or go from scratch, then work the extension points.
+- [electron-shell-page-authoring](https://raw.githubusercontent.com/hlsitechio/electron-shell-framework/main/skills/electron-shell-page-authoring/SKILL.md): The `PageDefinition` contract, registering a page, optional right panels.
+- [electron-shell-theming](https://raw.githubusercontent.com/hlsitechio/electron-shell-framework/main/skills/electron-shell-theming/SKILL.md): The two-layer theme model, choosing a preset by job, adding a preset.
+- [electron-shell-template-authoring](https://raw.githubusercontent.com/hlsitechio/electron-shell-framework/main/skills/electron-shell-template-authoring/SKILL.md): Adding an app template without breaking the lazy-loading architecture.
+- [electron-shell-packaging](https://raw.githubusercontent.com/hlsitechio/electron-shell-framework/main/skills/electron-shell-packaging/SKILL.md): Building, signing, and releasing a Windows desktop app.
+
+## Reference documentation
+
+- [docs/APP-TEMPLATES.md](https://raw.githubusercontent.com/hlsitechio/electron-shell-framework/main/docs/APP-TEMPLATES.md): The ten templates, the shipped-app evidence behind each one, and the lazy-loading architecture.
+- [docs/THEMES.md](https://raw.githubusercontent.com/hlsitechio/electron-shell-framework/main/docs/THEMES.md): The theming system in depth — base tokens, presets, contrast guarantees.
+- [docs/CODE-SIGNING.md](https://raw.githubusercontent.com/hlsitechio/electron-shell-framework/main/docs/CODE-SIGNING.md): Windows code signing in 2026 — what SmartScreen actually requires, the June 2023 hardware-token change, and what each option costs.
+- [docs/framework-security-report.md](https://raw.githubusercontent.com/hlsitechio/electron-shell-framework/main/docs/framework-security-report.md): The security posture — CSP, permission handlers, IPC sender authorization, fuses.
+
+## Source layout
+
+- [src/main](https://github.com/hlsitechio/electron-shell-framework/tree/main/src/main): Electron main process — window lifecycle, IPC handlers, encrypted config, updater, window-state, logging, security policy.
+- [src/preload](https://github.com/hlsitechio/electron-shell-framework/tree/main/src/preload): The typed `contextBridge` contract exposed as `window.api`. With `src/main/ipc.ts`, the only files a future backend touches.
+- [src/renderer/src/templates](https://github.com/hlsitechio/electron-shell-framework/tree/main/src/renderer/src/templates): The ten app templates. `manifest.ts` is display metadata only by design — adding a page import there destroys lazy loading.
+- [src/renderer/src/widgets](https://github.com/hlsitechio/electron-shell-framework/tree/main/src/renderer/src/widgets): The 11-component widget kit. Every widget renders a demo with zero props.
+- [src/renderer/src/components/shell](https://github.com/hlsitechio/electron-shell-framework/tree/main/src/renderer/src/components/shell): The shell chrome. `AppShell` composes it; do not edit these to make one page work.
+- [src/renderer/src/pages/registry.tsx](https://raw.githubusercontent.com/hlsitechio/electron-shell-framework/main/src/renderer/src/pages/registry.tsx): The framework extension point — where pages are registered.
+
+## Optional
+
+- [scripts/signing](https://github.com/hlsitechio/electron-shell-framework/tree/main/scripts/signing): PowerShell signing scripts — demo certificate, signtool wrapper, signature verifier.
+- [LICENSE](https://raw.githubusercontent.com/hlsitechio/electron-shell-framework/main/LICENSE): MIT.

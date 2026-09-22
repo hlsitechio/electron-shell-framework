@@ -46,9 +46,11 @@ function Shell() {
   const pages = useMemo(() => [...(active ? active.pages : PAGES), APPS_PAGE], [active])
 
   // Per-render boundary: a throw in one page keeps the shell (and the user) alive.
+  // `mode` comes from the applied template — a studio app gets a navigation tree
+  // and a document bar instead of a tab strip, without forking the shell.
   return (
     <ErrorBoundary label="shell">
-      <AppShell pages={pages} />
+      <AppShell pages={pages} mode={active?.mode ?? 'dashboard'} />
     </ErrorBoundary>
   )
 }

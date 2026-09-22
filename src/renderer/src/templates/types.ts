@@ -30,6 +30,14 @@ export interface AppTemplate {
     tabsCollapsed: boolean
     bottomOpen: boolean
   }>
+  /**
+   * Shell composition mode this template wants. Omit for `dashboard`.
+   *
+   * A writing/notes app sets `studio` so it gets a navigation tree and a
+   * document action bar instead of a tab strip — which is the difference
+   * between using the shell and forking it.
+   */
+  mode?: 'dashboard' | 'studio' | 'compact'
   /** the color preset this app pairs with (see lib/presets.ts) */
   preset: string
   /** the shape of the data this app expects — the agent contract */

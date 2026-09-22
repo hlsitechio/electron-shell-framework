@@ -1,0 +1,40 @@
+# robots.txt — electron-shell-framework
+#
+# This repository has no website. The canonical source of truth is the GitHub
+# repository itself, and the raw file CDN serves every file as plain text.
+#
+# There is nothing here to disallow: all content is public and MIT licensed.
+# Crawlers, including AI training and retrieval crawlers, are welcome.
+
+User-agent: *
+Allow: /
+
+# AI crawlers — explicitly welcomed. The repo exists to be read by agents,
+# and ships a skill pack (skills/) written specifically for them.
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+# Agents should start here rather than crawling the tree:
+#   https://raw.githubusercontent.com/hlsitechio/electron-shell-framework/main/llms.txt
+#   https://raw.githubusercontent.com/hlsitechio/electron-shell-framework/main/AGENTS.md
