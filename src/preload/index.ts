@@ -17,6 +17,7 @@ import type {
   DiffFileSummary,
   BranchInfo
 } from '../shared/cockpit-types'
+import type { McpServerStatus, McpActionLogItem } from '../shared/mcp-types'
 
 /**
  * Typed renderer→main bridge. Exposed as `window.api`.
@@ -53,7 +54,18 @@ const api = {
     minimize: (): void => ipcRenderer.send('window:minimize'),
     maximize: (): void => ipcRenderer.send('window:maximize'),
     close: (): void => ipcRenderer.send('window:close'),
-    setOpacity: (value: number): void => ipcRenderer.send('window:setOpacity', value)
+    setOpacity: (value: number): void => ipcRenderer.send('window:setOpacity', value),
+    isMaximized: (): Promise<boolean> => ipcRenderer.invoke('window:isMaximized'),
+    dragStart: (point: { screenX: number; screenY: number }): void =>
+      ipcRenderer.send('window:drag-start', point),
+    dragMove: (point: { screenX: number; screenY: number }): void =>
+      ipcRenderer.send('window:drag-move', point),
+    dragEnd: (): void => ipcRenderer.send('window:drag-end'),
+    onWindowStateChanged: (fn: (state: { isMaximized: boolean }) => void): (() => void) => {
+      const listener = (_e: unknown, s: { isMaximized: boolean }): void => fn(s)
+      ipcRenderer.on('window:state-changed', listener)
+      return () => ipcRenderer.removeListener('window:state-changed', listener)
+    }
   },
 
   /* ------------------------------------------------------------- Repo Cockpit */
@@ -177,6 +189,43 @@ const api = {
       ipcRenderer.on('cockpit:event', listener)
       ipcRenderer.send('cockpit:subscribe')
       return () => ipcRenderer.removeListener('cockpit:event', listener)
+    }
+  },
+
+  /* ------------------------------------------------------------- Native MCP Server Bridge */
+
+  mcp: {
+    getStatus: (): Promise<McpServerStatus> => ipcRenderer.invoke('mcp:get-status'),
+    pushState: (state: unknown): void => ipcRenderer.send('mcp:push-state', state),
+    onMcpAction: (
+      handler: (action: {
+        id: string
+        toolName: string
+        params: Record<string, any>
+      }) => Promise<unknown>
+    ): (() => void) => {
+      const listener = async (
+        _e: unknown,
+        payload: { id: string; toolName: string; params: Record<string, any> }
+      ) => {
+        try {
+          const result = await handler(payload)
+          ipcRenderer.send('mcp:action-result', { id: payload.id, success: true, result })
+        } catch (err: any) {
+          ipcRenderer.send('mcp:action-result', {
+            id: payload.id,
+            success: false,
+            error: err?.message || 'Action failed'
+          })
+        }
+      }
+      ipcRenderer.on('mcp:invoke-action', listener)
+      return () => ipcRenderer.removeListener('mcp:invoke-action', listener)
+    },
+    onActionLog: (callback: (logItem: McpActionLogItem) => void): (() => void) => {
+      const listener = (_e: unknown, item: McpActionLogItem) => callback(item)
+      ipcRenderer.on('mcp:action-log', listener)
+      return () => ipcRenderer.removeListener('mcp:action-log', listener)
     }
   }
 }

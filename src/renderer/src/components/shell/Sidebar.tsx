@@ -1,8 +1,10 @@
-import { PanelLeftClose, PanelLeftOpen, Settings, User } from 'lucide-react'
+import { useState } from 'react'
+import { PanelLeftClose, PanelLeftOpen, Settings, User, Plus, GripVertical, X } from 'lucide-react'
 import { cn } from '@renderer/lib/utils'
 import { Avatar, AvatarFallback } from '@renderer/components/ui/avatar'
 import { useUiStore } from '@renderer/stores/ui-store'
 import { useCockpitTotals } from '@renderer/stores/cockpit-store'
+import { useCustomPagesStore } from '@renderer/stores/custom-pages-store'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
 import { getPageLabel, type PageDefinition } from '@renderer/types/pages'
 import { useBranding } from '@renderer/lib/useBranding'
@@ -18,6 +20,9 @@ export function Sidebar({ pages, activeId, onSelect }: SidebarProps) {
   const { leftCollapsed, leftWidth, toggleLeft } = useUiStore()
   const { branding } = useBranding()
   const totals = useCockpitTotals()
+  const { reorderPages, setIsAddTabOpen, removeCustomPage } = useCustomPagesStore()
+  const [draggedId, setDraggedId] = useState<string | null>(null)
+  const [dropTargetId, setDropTargetId] = useState<string | null>(null)
 
   const navPages = pages.filter((p) => p.showInSidebar !== false)
 
@@ -117,72 +122,145 @@ export function Sidebar({ pages, activeId, onSelect }: SidebarProps) {
           const isSvglSlug = typeof page.icon === 'string'
           const IconComponent =
             typeof page.icon === 'function' || typeof page.icon === 'object' ? page.icon : null
+          const isCustomTab = page.id.startsWith('custom-tab-')
 
           return (
-            <Tooltip key={page.id}>
-              <TooltipTrigger asChild>
-                <button
-                  onClick={() => onSelect(page.id)}
-                  aria-label={label}
-                  aria-current={active ? 'page' : undefined}
-                  className={cn(
-                    'relative flex h-8 items-center gap-2.5 rounded-md px-2.5 text-[13px] font-medium transition-all',
-                    leftCollapsed && 'justify-center px-0',
-                    active
-                      ? 'bg-accent/40 font-semibold'
-                      : 'text-muted-foreground hover:bg-accent/20 hover:text-foreground'
-                  )}
-                  style={{
-                    color: active ? 'hsl(var(--sidebar-accent))' : undefined
-                  }}
-                >
-                  {/* Left accent indicator bar when active */}
-                  {active && (
-                    <span
-                      className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r"
-                      style={{ background: 'hsl(var(--sidebar-accent))' }}
-                    />
-                  )}
-                  {isSvglSlug ? (
-                    <SvglIcon
-                      name={page.icon as string}
-                      size={16}
-                      className={cn(
-                        'h-4 w-4 shrink-0 transition-transform',
-                        active && 'drop-shadow-[0_0_6px_hsl(var(--sidebar-accent)/0.6)] scale-105'
-                      )}
-                    />
-                  ) : IconComponent ? (
-                    <IconComponent
-                      aria-hidden="true"
-                      className={cn(
-                        'h-4 w-4 shrink-0 transition-transform',
-                        active && 'stroke-[2.4] scale-105'
-                      )}
-                      style={
-                        active
-                          ? { filter: 'drop-shadow(0 0 6px hsl(var(--sidebar-accent) / 0.6))' }
-                          : undefined
-                      }
-                    />
-                  ) : null}
-                  {leftCollapsed ? (
-                    <span className="sr-only">{label}</span>
-                  ) : (
-                    <div className="flex min-w-0 flex-1 items-center justify-between">
-                      <span className="truncate">{label}</span>
-                      {badge}
-                    </div>
-                  )}
-                  {leftCollapsed && badge && (
-                    <span className="absolute top-1.5 right-2">{badge}</span>
-                  )}
-                </button>
-              </TooltipTrigger>
-              {leftCollapsed && <TooltipContent side="right">{label}</TooltipContent>}
-            </Tooltip>
+            <div
+              key={page.id}
+              draggable
+              onDragStart={(e) => {
+                e.dataTransfer.setData('text/plain', page.id)
+                setDraggedId(page.id)
+              }}
+              onDragOver={(e) => {
+                e.preventDefault()
+                if (draggedId && draggedId !== page.id) {
+                  setDropTargetId(page.id)
+                }
+              }}
+              onDragLeave={() => {
+                if (dropTargetId === page.id) setDropTargetId(null)
+              }}
+              onDrop={(e) => {
+                e.preventDefault()
+                if (draggedId && draggedId !== page.id) {
+                  reorderPages(draggedId, page.id)
+                }
+                setDraggedId(null)
+                setDropTargetId(null)
+              }}
+              onDragEnd={() => {
+                setDraggedId(null)
+                setDropTargetId(null)
+              }}
+              className={cn(
+                'relative group rounded-md transition-all',
+                draggedId === page.id && 'opacity-40 scale-95',
+                dropTargetId === page.id && 'border-t-2 border-blue-500 pt-0.5'
+              )}
+            >
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={() => onSelect(page.id)}
+                    aria-label={label}
+                    aria-current={active ? 'page' : undefined}
+                    className={cn(
+                      'relative flex h-8 w-full items-center gap-2 rounded-md px-2 text-[13px] font-medium transition-all group/btn',
+                      leftCollapsed && 'justify-center px-0',
+                      active
+                        ? 'bg-accent/40 font-semibold'
+                        : 'text-muted-foreground hover:bg-accent/20 hover:text-foreground'
+                    )}
+                    style={{
+                      color: active ? 'hsl(var(--sidebar-accent))' : undefined
+                    }}
+                  >
+                    {/* Drag grip icon on hover */}
+                    {!leftCollapsed && (
+                      <GripVertical className="h-3 w-3 text-muted-foreground/30 opacity-0 group-hover:opacity-100 transition-opacity shrink-0 cursor-grab -ml-0.5" />
+                    )}
+
+                    {/* Left accent indicator bar when active */}
+                    {active && (
+                      <span
+                        className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r"
+                        style={{ background: 'hsl(var(--sidebar-accent))' }}
+                      />
+                    )}
+                    {isSvglSlug ? (
+                      <SvglIcon
+                        name={page.icon as string}
+                        size={16}
+                        className={cn(
+                          'h-4 w-4 shrink-0 transition-transform',
+                          active && 'drop-shadow-[0_0_6px_hsl(var(--sidebar-accent)/0.6)] scale-105'
+                        )}
+                      />
+                    ) : IconComponent ? (
+                      <IconComponent
+                        aria-hidden="true"
+                        className={cn(
+                          'h-4 w-4 shrink-0 transition-transform',
+                          active && 'stroke-[2.4] scale-105'
+                        )}
+                        style={
+                          active
+                            ? { filter: 'drop-shadow(0 0 6px hsl(var(--sidebar-accent) / 0.6))' }
+                            : undefined
+                        }
+                      />
+                    ) : null}
+                    {leftCollapsed ? (
+                      <span className="sr-only">{label}</span>
+                    ) : (
+                      <div className="flex min-w-0 flex-1 items-center justify-between">
+                        <span className="truncate">{label}</span>
+                        <div className="flex items-center gap-1">
+                          {badge}
+                          {isCustomTab && (
+                            <span
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                removeCustomPage(page.id)
+                              }}
+                              className="p-0.5 rounded hover:bg-zinc-800 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                              title="Delete tab"
+                            >
+                              <X className="h-3 w-3" />
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {leftCollapsed && badge && (
+                      <span className="absolute top-1.5 right-2">{badge}</span>
+                    )}
+                  </button>
+                </TooltipTrigger>
+                {leftCollapsed && <TooltipContent side="right">{label}</TooltipContent>}
+              </Tooltip>
+            </div>
           )
         })}
+
+        {/* + Add Tab Button */}
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={() => setIsAddTabOpen(true)}
+              aria-label="Add new tab"
+              className={cn(
+                'relative flex h-8 items-center gap-2 rounded-md border border-dashed border-zinc-700/60 text-xs font-medium text-muted-foreground transition-all hover:border-blue-500/60 hover:bg-accent/20 hover:text-foreground mt-1.5',
+                leftCollapsed ? 'justify-center px-0 w-8 mx-auto' : 'px-2.5 w-full'
+              )}
+            >
+              <Plus className="h-3.5 w-3.5 shrink-0 text-blue-400" />
+              {!leftCollapsed && <span>Add Tab</span>}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right">Add new tab</TooltipContent>
+        </Tooltip>
       </nav>
 
       {/* Footer: profile picture + settings gear + collapse toggle */}

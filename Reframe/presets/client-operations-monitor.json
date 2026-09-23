@@ -1,0 +1,173 @@
+{
+  "id": "reframe-operations-v1",
+  "version": "1.0.0",
+  "meta": {
+    "name": "PulseOps Control Plane",
+    "description": "Distributed infrastructure telemetry, cluster health, and incident response.",
+    "targetClient": "Pulse Networks SRE",
+    "lastModified": "2026-09-23T13:00:00Z"
+  },
+  "mode": "client",
+  "framing": {
+    "header": {
+      "visible": true,
+      "title": "PulseOps Control Plane",
+      "subtitle": "Distributed SRE Telemetry & Observability Hub",
+      "badge": "Live Telemetry",
+      "fontFamily": "jetbrains",
+      "titleSize": "lg",
+      "titleWeight": "semibold",
+      "showLogo": true,
+      "logoIcon": "Activity",
+      "actions": [
+        { "id": "cycle", "label": "Drain Inactive", "icon": "Zap", "actionType": "alert" },
+        { "id": "refresh", "label": "Poll Health", "icon": "RefreshCw", "actionType": "refresh" }
+      ],
+      "showWindowControls": true
+    },
+    "footer": {
+      "visible": true,
+      "leftText": "Active Pods: 48/48 (100%)",
+      "centerText": "Event Ingest: 142k events/sec",
+      "rightText": "P99 Latency: 14ms",
+      "statusState": "online",
+      "statusLabel": "Nominal",
+      "fontFamily": "jetbrains",
+      "fontSize": "xs"
+    }
+  },
+  "theme": {
+    "mode": "dark",
+    "accentColor": "emerald",
+    "density": "comfortable"
+  },
+  "panels": {
+    "kpi-infra": {
+      "id": "kpi-infra",
+      "title": "Infrastructure Vital Signs",
+      "widgetType": "kpi",
+      "closable": false,
+      "widgetProps": {
+        "items": [
+          {
+            "label": "Cluster Uptime",
+            "value": "99.995%",
+            "delta": "+0.02%",
+            "deltaType": "positive",
+            "subtext": "Past 30 days"
+          },
+          {
+            "label": "Median Latency",
+            "value": "14.2ms",
+            "delta": "-2.1ms",
+            "deltaType": "positive",
+            "subtext": "Global edge cache"
+          },
+          {
+            "label": "CPU Allocation",
+            "value": "38.4%",
+            "delta": "+4.1%",
+            "deltaType": "neutral",
+            "subtext": "Autoscale ceiling 85%"
+          },
+          {
+            "label": "Ingest Rate",
+            "value": "142 k/s",
+            "delta": "+12 k/s",
+            "deltaType": "positive",
+            "subtext": "Zero dropped frames"
+          }
+        ]
+      }
+    },
+    "stream-activity": {
+      "id": "stream-activity",
+      "title": "Live Event Stream",
+      "widgetType": "activity",
+      "closable": true,
+      "widgetProps": {
+        "title": "Cluster Event Log",
+        "filterSeverity": "all"
+      }
+    },
+    "table-clusters": {
+      "id": "table-clusters",
+      "title": "Microservices & Endpoints",
+      "widgetType": "table",
+      "closable": true,
+      "widgetProps": {
+        "title": "Fleet Health Registry",
+        "columns": [
+          { "key": "service", "header": "Service" },
+          { "key": "replicas", "header": "Replicas" },
+          { "key": "latency", "header": "p95" },
+          { "key": "errorRate", "header": "Error %" },
+          { "key": "health", "header": "Health" }
+        ],
+        "rows": [
+          {
+            "service": "api-gateway-core",
+            "replicas": "12/12",
+            "latency": "8ms",
+            "errorRate": "0.001%",
+            "health": "Healthy"
+          },
+          {
+            "service": "auth-neon-token",
+            "replicas": "6/6",
+            "latency": "12ms",
+            "errorRate": "0.000%",
+            "health": "Healthy"
+          },
+          {
+            "service": "billing-stripe-worker",
+            "replicas": "4/4",
+            "latency": "45ms",
+            "errorRate": "0.005%",
+            "health": "Healthy"
+          },
+          {
+            "service": "lakebase-query-mesh",
+            "replicas": "8/8",
+            "latency": "19ms",
+            "errorRate": "0.000%",
+            "health": "Healthy"
+          },
+          {
+            "service": "notification-resend",
+            "replicas": "3/3",
+            "latency": "82ms",
+            "errorRate": "0.010%",
+            "health": "Healthy"
+          }
+        ]
+      }
+    },
+    "actionpad-ops": {
+      "id": "actionpad-ops",
+      "title": "Operational Controls",
+      "widgetType": "actionpad",
+      "closable": true,
+      "widgetProps": {
+        "title": "Fast Action Triggers",
+        "actions": [
+          {
+            "id": "flush-cache",
+            "label": "Purge Edge CDN Cache",
+            "description": "Invalidates edge caches worldwide"
+          },
+          {
+            "id": "cycle-auth",
+            "label": "Rotate Session Salts",
+            "description": "Gracefully rotates worker session keys"
+          },
+          {
+            "id": "run-diagnostics",
+            "label": "Run Full Node Diagnostics",
+            "description": "Synthesizes synthetic trace report"
+          }
+        ]
+      }
+    }
+  }
+}

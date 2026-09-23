@@ -14,6 +14,8 @@ import { CommandPalette } from '@renderer/components/palette/CommandPalette'
 import { GitDiffModal } from '@renderer/components/git/GitDiffModal'
 import { BranchSwitchboardDialog } from '@renderer/components/git/BranchSwitchboardDialog'
 import { GitUpdateDialog } from '@renderer/components/git/GitUpdateDialog'
+import { AddTabDialog } from '@renderer/components/shell/AddTabDialog'
+import { useCustomPagesStore } from '@renderer/stores/custom-pages-store'
 import { useEffect, useState } from 'react'
 import type { PageDefinition } from '@renderer/types/pages'
 import type { ShellMode, ShellSlots } from '@renderer/types/shell'
@@ -58,7 +60,14 @@ interface AppShellProps {
  *   document action bar, and contextual review dock (see docs/SHELL-MODES.md).
  * - `compact`: Streamlined utility layout with folded top bar navigation and full-bleed content.
  */
-export function AppShell({ pages, title = 'App Shell', mode = 'dashboard', slots }: AppShellProps) {
+export function AppShell({
+  pages: basePages,
+  title = 'App Shell',
+  mode = 'dashboard',
+  slots
+}: AppShellProps) {
+  const getOrderedPages = useCustomPagesStore((s) => s.getOrderedPages)
+  const pages = getOrderedPages(basePages)
   const { activeId, setActive } = useTabsStore()
   const {
     paletteOpen,
@@ -117,6 +126,7 @@ export function AppShell({ pages, title = 'App Shell', mode = 'dashboard', slots
         onOpenChange={(open) => !open && closeGitUpdate()}
         onUpdated={() => void refresh(false)}
       />
+      <AddTabDialog />
     </>
   )
 

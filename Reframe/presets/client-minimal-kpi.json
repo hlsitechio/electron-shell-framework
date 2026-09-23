@@ -1,0 +1,95 @@
+{
+  "id": "reframe-minimal-v1",
+  "version": "1.0.0",
+  "meta": {
+    "name": "Cockpit Minimal Hub",
+    "description": "Distraction-free executive status display with high-contrast mission metrics.",
+    "targetClient": "Executive Display Client",
+    "lastModified": "2026-09-23T13:00:00Z"
+  },
+  "mode": "client",
+  "framing": {
+    "header": {
+      "visible": true,
+      "title": "Cockpit Minimal Hub",
+      "subtitle": "Distraction-Free Executive Status Display",
+      "badge": "Live Client Display",
+      "fontFamily": "geist",
+      "titleSize": "xl",
+      "titleWeight": "bold",
+      "showLogo": true,
+      "logoIcon": "Sparkles",
+      "actions": [
+        { "id": "fullscreen", "label": "Fullscreen", "icon": "Maximize2", "actionType": "alert" }
+      ],
+      "showWindowControls": true
+    },
+    "footer": {
+      "visible": true,
+      "leftText": "Live Stream Connected",
+      "centerText": "Zero-Downtime Replication",
+      "rightText": "Client ID: 9482-B",
+      "statusState": "online",
+      "statusLabel": "Operating Normally",
+      "fontFamily": "geist",
+      "fontSize": "xs"
+    }
+  },
+  "theme": {
+    "mode": "dark",
+    "accentColor": "violet",
+    "density": "comfortable"
+  },
+  "panels": {
+    "kpi-primary": {
+      "id": "kpi-primary",
+      "title": "Primary Performance Indicators",
+      "widgetType": "kpi",
+      "closable": false,
+      "widgetProps": {
+        "items": [
+          {
+            "label": "Current Valuation",
+            "value": "$124.5M",
+            "delta": "+8.4%",
+            "deltaType": "positive",
+            "subtext": "Latest round evaluation"
+          },
+          {
+            "label": "Monthly Growth Rate",
+            "value": "18.4%",
+            "delta": "+2.1%",
+            "deltaType": "positive",
+            "subtext": "Compounded MoM"
+          },
+          {
+            "label": "Burn Multiple",
+            "value": "0.82x",
+            "delta": "-0.14x",
+            "deltaType": "positive",
+            "subtext": "Capital efficiency benchmark"
+          },
+          {
+            "label": "Net Promoter Score",
+            "value": "74",
+            "delta": "+6",
+            "deltaType": "positive",
+            "subtext": "Top decile benchmark"
+          }
+        ]
+      }
+    },
+    "chart-trajectory": {
+      "id": "chart-trajectory",
+      "title": "Growth Trajectory",
+      "widgetType": "chart",
+      "closable": true,
+      "widgetProps": {
+        "title": "3-Year Revenue Scaling ($M)",
+        "chartType": "area",
+        "dataKey": "revenue",
+        "timeRange": "Trailing 36 Mo"
+      }
+    }
+  }
+}

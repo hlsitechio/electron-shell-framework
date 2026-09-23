@@ -203,6 +203,8 @@ body {
 /* Frameless drag regions */
 .app-drag {
   -webkit-app-region: drag;
+  -webkit-user-select: none;
+  user-select: none;
 }
 .app-no-drag {
   -webkit-app-region: no-drag;

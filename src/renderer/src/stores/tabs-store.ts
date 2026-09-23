@@ -12,6 +12,6 @@ export const useTabsStore = create<TabState>((set) => ({
    * but starting on a wrong-yet-valid id is a silent misroute, not an error.
    * Keep it in sync with `pages/registry.tsx`.
    */
-  activeId: 'repos',
+  activeId: 'reframe',
   setActive: (id) => set({ activeId: id })
 }))

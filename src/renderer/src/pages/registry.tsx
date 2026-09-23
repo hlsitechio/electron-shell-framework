@@ -6,6 +6,7 @@ import {
   Globe,
   Hammer,
   LayoutGrid,
+  LayoutTemplate,
   Palette,
   Settings as SettingsIcon,
   Sparkles
@@ -20,6 +21,7 @@ import { SettingsPage } from '@renderer/pages/settings/SettingsPage'
 import { ThemesPage } from '@renderer/pages/themes/ThemesPage'
 import { WidgetsPage } from '@renderer/pages/widgets/WidgetsPage'
 import { TemplatesPage } from '@renderer/pages/templates/TemplatesPage'
+import { ReframeApp } from '@renderer/reframe/ReframeApp'
 import type { PageDefinition } from '@renderer/types/pages'
 
 /**
@@ -52,6 +54,15 @@ export const PAGES: PageDefinition[] = [
     category: 'Workspace',
     icon: Globe,
     component: GithubPage
+  },
+  {
+    id: 'reframe',
+    label: 'Reframe',
+    description: 'Dynamic Dockview visual builder & client deliverable platform',
+    category: 'Design',
+    icon: LayoutTemplate,
+    component: ReframeApp,
+    showInSidebar: true
   },
   {
     id: 'templates',

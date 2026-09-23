@@ -110,6 +110,50 @@ export function registerIpc(): void {
   on('update:quitAndInstall', () => quitAndInstall())
 
   // ---- window chrome ----
+  handle('window:isMaximized', (e) => {
+    const win = BrowserWindow.fromWebContents(e.sender)
+    return win?.isMaximized() ?? false
+  })
+
+  let dragOffset: { x: number; y: number } | null = null
+
+  on('window:drag-start', (e, { screenX, screenY }: { screenX: number; screenY: number }) => {
+    const win = BrowserWindow.fromWebContents(e.sender)
+    if (!win) return
+
+    if (win.isMaximized()) {
+      const [maxWidth] = win.getSize()
+      const [currentX] = win.getPosition()
+      const ratio = Math.min(Math.max((screenX - currentX) / (maxWidth || 1), 0.1), 0.9)
+
+      win.unmaximize()
+
+      const [normalWidth] = win.getSize()
+      const newOffsetX = Math.round(normalWidth * ratio)
+      const newOffsetY = 24
+      dragOffset = { x: newOffsetX, y: newOffsetY }
+      win.setPosition(Math.round(screenX - newOffsetX), Math.round(screenY - newOffsetY))
+    } else {
+      const [winX, winY] = win.getPosition()
+      dragOffset = { x: screenX - winX, y: screenY - winY }
+    }
+  })
+
+  on('window:drag-move', (e, { screenX, screenY }: { screenX: number; screenY: number }) => {
+    const win = BrowserWindow.fromWebContents(e.sender)
+    if (!win || !dragOffset) return
+
+    if (win.isMaximized()) {
+      win.unmaximize()
+    }
+
+    win.setPosition(Math.round(screenX - dragOffset.x), Math.round(screenY - dragOffset.y))
+  })
+
+  on('window:drag-end', () => {
+    dragOffset = null
+  })
+
   on('window:minimize', (e) => BrowserWindow.fromWebContents(e.sender)?.minimize())
   on('window:maximize', (e) => {
     const win = BrowserWindow.fromWebContents(e.sender)

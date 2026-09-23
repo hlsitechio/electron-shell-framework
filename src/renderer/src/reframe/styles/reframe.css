@@ -1,0 +1,96 @@
+@import 'dockview-react/dist/styles/dockview.css';
+
+/* ============================================================
+   REFRAME DOCKVIEW BRIDGE
+   Integrates Dockview layouts, tabs, sashes, and themes
+   seamlessly with client deliverables and builder controls.
+   ============================================================ */
+
+.reframe-canvas {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.reframe-dockview {
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  position: relative;
+}
+
+/* Ensure Dockview tabs look modern and responsive */
+.reframe-dockview .dv-tab {
+  font-family: inherit;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+  user-select: none;
+}
+
+.reframe-dockview .dv-tabs-container {
+  scrollbar-width: thin;
+}
+
+/* Custom styling for sash dividers */
+.reframe-dockview .dv-sash:hover {
+  background-color: rgba(99, 102, 241, 0.4);
+}
+
+/* Client Deliverable Mode adjustments (clean, distraction-free) */
+.reframe-client-mode .dv-tab-close-btn {
+  display: none !important;
+}
+
+.reframe-client-mode .dv-watermark {
+  background: transparent;
+}
+
+/* Device simulation frames */
+.reframe-frame-desktop {
+  width: 100%;
+  height: 100%;
+}
+
+.reframe-frame-tablet {
+  max-width: 960px;
+  height: 92%;
+  margin: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.reframe-frame-mobile {
+  max-width: 480px;
+  height: 90%;
+  margin: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+
+/* Scrollbar polish inside panels */
+.reframe-panel-body {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.reframe-panel-body::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.reframe-panel-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}

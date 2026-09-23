@@ -1,0 +1,159 @@
+{
+  "id": "reframe-executive-v1",
+  "version": "1.0.0",
+  "meta": {
+    "name": "Apex Executive Portfolio Suite",
+    "description": "Enterprise financial intelligence, portfolio scaling, and strategic operations.",
+    "targetClient": "Apex Capital Management",
+    "lastModified": "2026-09-23T13:00:00Z"
+  },
+  "mode": "client",
+  "framing": {
+    "header": {
+      "visible": true,
+      "title": "Apex Capital Analytics",
+      "subtitle": "Portfolio Performance & Executive Directive Console",
+      "badge": "Enterprise v2.4",
+      "fontFamily": "outfit",
+      "titleSize": "xl",
+      "titleWeight": "bold",
+      "showLogo": true,
+      "logoIcon": "Layers",
+      "actions": [
+        { "id": "sync", "label": "Sync Portfolios", "icon": "RefreshCw", "actionType": "refresh" },
+        { "id": "export-pdf", "label": "Export Brief", "icon": "Download", "actionType": "export" }
+      ],
+      "showWindowControls": true
+    },
+    "footer": {
+      "visible": true,
+      "leftText": "Region: us-east (Northern Virginia)",
+      "centerText": "Live Stream: 142 ms latency",
+      "rightText": "Apex Core Engine v2.4.1",
+      "statusState": "online",
+      "statusLabel": "Cluster Healthy",
+      "fontFamily": "outfit",
+      "fontSize": "xs"
+    }
+  },
+  "theme": {
+    "mode": "dark",
+    "accentColor": "blue",
+    "density": "comfortable"
+  },
+  "panels": {
+    "kpi-summary": {
+      "id": "kpi-summary",
+      "title": "Executive Metrics",
+      "widgetType": "kpi",
+      "closable": false,
+      "widgetProps": {
+        "items": [
+          {
+            "label": "Total AUM",
+            "value": "$48.2M",
+            "delta": "+14.2% YoY",
+            "deltaType": "positive",
+            "subtext": "vs $42.2M target"
+          },
+          {
+            "label": "Net Annual Recurring",
+            "value": "$8.9M",
+            "delta": "+22.4%",
+            "deltaType": "positive",
+            "subtext": "Across 142 accounts"
+          },
+          {
+            "label": "Sharpe Ratio",
+            "value": "2.84",
+            "delta": "+0.31",
+            "deltaType": "positive",
+            "subtext": "Risk-adjusted return"
+          },
+          {
+            "label": "Average LTV",
+            "value": "$68.4K",
+            "delta": "-1.2%",
+            "deltaType": "neutral",
+            "subtext": "98.4% retention rate"
+          }
+        ]
+      }
+    },
+    "chart-revenue": {
+      "id": "chart-revenue",
+      "title": "Revenue & Yield Trajectory",
+      "widgetType": "chart",
+      "closable": true,
+      "widgetProps": {
+        "title": "Monthly Recurring Revenue ($K)",
+        "chartType": "area",
+        "dataKey": "revenue",
+        "timeRange": "12 Months"
+      }
+    },
+    "table-holdings": {
+      "id": "table-holdings",
+      "title": "Enterprise Pipeline & Deal Flow",
+      "widgetType": "table",
+      "closable": true,
+      "widgetProps": {
+        "title": "Active Deal Pipeline",
+        "columns": [
+          { "key": "client", "header": "Client" },
+          { "key": "tier", "header": "Tier" },
+          { "key": "value", "header": "Est. Deal Value" },
+          { "key": "stage", "header": "Stage" },
+          { "key": "status", "header": "Status" }
+        ],
+        "rows": [
+          {
+            "client": "Acme Global Corp",
+            "tier": "Tier 1 Enterprise",
+            "value": "$1,200,000",
+            "stage": "Procurement Final",
+            "status": "Closing Soon"
+          },
+          {
+            "client": "Helios Biopharma",
+            "tier": "Strategic Growth",
+            "value": "$850,000",
+            "stage": "Security Review",
+            "status": "In Review"
+          },
+          {
+            "client": "Starlight Financial",
+            "tier": "Enterprise Plus",
+            "value": "$2,400,000",
+            "stage": "Contract Signed",
+            "status": "Onboarding"
+          },
+          {
+            "client": "Nexus HyperScale",
+            "tier": "Tier 1 Enterprise",
+            "value": "$1,750,000",
+            "stage": "Pilot Evaluation",
+            "status": "Active Pilot"
+          },
+          {
+            "client": "Crestline Mobility",
+            "tier": "Commercial",
+            "value": "$420,000",
+            "stage": "Proposal Sent",
+            "status": "Negotiating"
+          }
+        ]
+      }
+    },
+    "notes-briefing": {
+      "id": "notes-briefing",
+      "title": "Directive & Runbook",
+      "widgetType": "notes",
+      "closable": true,
+      "widgetProps": {
+        "title": "Q3 Executive Directive",
+        "content": "### Executive Liquidity & Expansion Directive (Q3)\n\n* **Capital Allocation Target:** $50M AUM threshold projected for October 1st.\n* **Key Deliverables:**\n  1. Complete automated compliance reporting across EU and North America entities.\n  2. Deploy high-frequency data pipelines for client portfolio visibility.\n  3. Harden internal access policies prior to SOC2 Type II audit."
+      }
+    }
+  }
+}

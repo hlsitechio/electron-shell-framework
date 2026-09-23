@@ -8,6 +8,7 @@ import { initUpdater } from './updater'
 import { windowStateKeeper } from './window-state'
 import { attachRendererLogging, initLogging, log, logFilePath } from './logging'
 import { hardenApp, hardenWindow, openExternalSafely } from './security'
+import { mcpServer } from './mcp/mcp-server'
 
 /**
  * Single-instance lock: a second launch focuses the existing window
@@ -90,6 +91,13 @@ if (!gotLock) {
     if (savedOpacity >= 0.3 && savedOpacity <= 1) {
       win.setOpacity(savedOpacity)
     }
+
+    win.on('maximize', () => {
+      if (!win.isDestroyed()) win.webContents.send('window:state-changed', { isMaximized: true })
+    })
+    win.on('unmaximize', () => {
+      if (!win.isDestroyed()) win.webContents.send('window:state-changed', { isMaximized: false })
+    })
 
     log.info('[main] createWindow bounds:', {
       x: stateKeeper.x,
@@ -178,15 +186,22 @@ if (!gotLock) {
   app.whenReady().then(() => {
     // App-wide policy before any window exists: CSP headers + permission deny-list.
     hardenApp()
-
     registerIpc()
     const cockpit = registerCockpitIpc()
     initUpdater()
+
+    // Start Native Model Context Protocol (MCP) Server for AI agents
+    mcpServer.start().catch((err) => {
+      log.error('[main] Failed to start native MCP Server:', err)
+    })
+
     createWindow()
 
-    // A PTY or a build child outliving the window is the classic desktop leak:
-    // kill both before the process goes away.
-    app.on('before-quit', () => cockpit.dispose())
+    // Clean up PTY, build children, and MCP server before quitting
+    app.on('before-quit', () => {
+      cockpit.dispose()
+      mcpServer.stop().catch(() => {})
+    })
 
     log.info('ready — log file:', logFilePath())
 
