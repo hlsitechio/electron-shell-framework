@@ -1,6 +1,6 @@
 {
   "name": "electron-shell-framework",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "license": "MIT",
   "description": "Reusable Electron app-shell framework — theming, collapsible sidebars, tab navigation, page registry. Pure desktop, no server.",
   "main": "./out/main/index.js",

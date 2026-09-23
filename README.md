@@ -8,17 +8,18 @@ A reusable Electron desktop app-shell framework and developer cockpit. Dark/ligh
 Pure Windows desktop — no server, no web attach, no mock data. Every number on
 screen comes from `git`, `gh` or a live child process.
 
-![Repo Cockpit](docs/cockpit-ui.png)
-
 ## What it does
 
-| Page          | Real source                                                                                                                                                       |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Repos**     | `git status --porcelain=v1 -z --branch`, `git remote get-url`, `git log -1`, `git stash list`, `git worktree list --porcelain`, + npm scripts from `package.json` |
-| **Worktrees** | `git worktree list --porcelain`; creates via `git worktree add -b <branch>`; prunes via `git worktree prune -v`                                                   |
-| **Builds**    | `npm run <script>` as a supervised child process — real pid, streamed stdout/stderr, real exit code, cancellable                                                  |
-| **PR Queue**  | `gh pr list --json …` per repo (uses your existing `gh` login)                                                                                                    |
-| **CI Runs**   | `gh run list --json …` per repo, with real durations from `createdAt`/`updatedAt`                                                                                 |
+| Page                  | Real source                                                                                                                                                       |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Repos**             | `git status --porcelain=v1 -z --branch`, `git remote get-url`, `git log -1`, `git stash list`, `git worktree list --porcelain`, + npm scripts from `package.json` |
+| **Worktrees**         | `git worktree list --porcelain`; creates via `git worktree add -b <branch>`; prunes via `git worktree prune -v`                                                   |
+| **Builds**            | `npm run <script>` as a supervised child process — real pid, streamed stdout/stderr, real exit code, cancellable                                                  |
+| **PR Queue**          | `gh pr list --json …` per repo (uses your existing `gh` login)                                                                                                    |
+| **CI Runs**           | `gh run list --json …` per repo, with real durations from `createdAt`/`updatedAt`                                                                                 |
+| **Reframe Studio**    | Dockview-powered multi-dock canvas for AI prototyping, live widgets, and dynamic layouts                                                                          |
+| **Native MCP Server** | Model Context Protocol HTTP (port 3988) + STDIO bridge for Claude, Hermes, and Antigravity agents                                                                 |
+| **Pro Suite**         | Command Palette (`Ctrl+K`), Branch switchboard, Git Diff visualizer, and 1-click external IDE launcher (VS Code, Cursor, Windsurf)                                |
 
 Three shell regions are wired to live app state rather than placeholders:
 
@@ -47,8 +48,17 @@ src/main/cockpit/
   store.ts        main-process source of truth + event fan-out
   validate.ts     zod schemas for every renderer-supplied value
   ipc-cockpit.ts  the IPC surface (sender-gated, validated)
+src/main/mcp/
+  mcp-server.ts   native HTTP MCP server (JSON-RPC 2.0 at http://127.0.0.1:3988/mcp)
+  mcp-ipc.ts      IPC bridge between MCP server and electron renderer
+src/renderer/src/reframe/
+  components/     Dockview canvas, MCP inspector, and native client grid
+  stores/         layout persistence, canvas tab state, and widget state
+scripts/
+  mcp-stdio-bridge.js  STDIO-to-HTTP bridge for external AI agents
 src/main/cockpit-parsers.ts   pure parsers — unit-testable, no I/O
 src/shared/cockpit-types.ts   the typed contract shared by both sides
+src/shared/mcp-types.ts       shared MCP protocol and tool definition types
 ```
 
 **Security posture.** `sandbox`, `contextIsolation` and the framework's fuses
@@ -58,6 +68,23 @@ a child process is additionally checked against live state — a build script mu
 exist in that repo's `package.json`, and `openPath` only accepts a path from a
 repo we actually inspected. `execFile` with argv arrays means a repo path or
 branch name containing shell metacharacters cannot break out.
+
+## Native Model Context Protocol (MCP) Server
+
+Repo Cockpit / Reframe runs an embedded native HTTP MCP server on port `3988` (`http://127.0.0.1:3988/mcp`) implementing JSON-RPC 2.0. External AI assistants (Claude Code, Hermes Agent, Antigravity, Cursor) can communicate with the running Electron app using the provided STDIO bridge:
+
+```bash
+# Launch the STDIO bridge to interface with any MCP-compatible AI agent:
+node scripts/mcp-stdio-bridge.js
+```
+
+### Registered MCP Tools & Capabilities
+
+- `reframe_list_workspaces`: returns all detected local git repositories, active branches, and dirty status.
+- `reframe_get_git_status`: deep inspection of repository branch, commits ahead/behind, stashes, and modified files.
+- `reframe_trigger_build`: starts a supervised background npm build script with live streaming logs.
+- `reframe_get_system_telemetry`: queries CPU, memory usage, uptime, and Electron process health.
+- `reframe_open_external_ide`: launches the current repository in the user's configured editor (VS Code, Cursor, Windsurf, or Explorer).
 
 ## Run it
 

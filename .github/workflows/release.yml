@@ -11,6 +11,9 @@ permissions:
 jobs:
   build:
     runs-on: windows-latest
+    env:
+      SpectreMitigation: 'false'
+      npm_config_SpectreMitigation: 'false'
 
     steps:
       - name: Checkout
