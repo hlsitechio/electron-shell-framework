@@ -857,11 +857,31 @@ export const useReframeStore = create<ReframeStoreState>((set, get) => ({
   activeTab: 'theme',
   deviceMode: 'desktop',
   selectedThemeKey: 'dockview-theme-abyss',
-  currentTemplateId: 'blank',
+  currentTemplateId: 'executive',
 
-  // 4 Dynamic Framing Zones (Clean Empty Playground Default)
-  headerTabs: [],
-  activeHeaderTabId: '',
+  // 4 Dynamic Framing Zones (Executive Dashboard Default)
+  headerTabs: [
+    { id: 'tab-executive', label: 'Executive Suite', templateId: 'executive', icon: 'Layers' },
+    {
+      id: 'tab-operations',
+      label: 'Operations & SRE',
+      templateId: 'operations',
+      icon: 'Activity'
+    },
+    {
+      id: 'tab-analytics',
+      label: 'Product Analytics',
+      templateId: 'analytics',
+      icon: 'BarChart3'
+    },
+    {
+      id: 'tab-engineering',
+      label: 'DevForge Matrix',
+      templateId: 'engineering',
+      icon: 'Terminal'
+    }
+  ],
+  activeHeaderTabId: 'tab-executive',
 
   // Per-Tab Layout & Widget Workspaces
   tabWorkspaces: {},
@@ -888,9 +908,9 @@ export const useReframeStore = create<ReframeStoreState>((set, get) => ({
 
   themeInspector: { ...DEFAULT_THEME_INSPECTOR },
 
-  headerConfig: { ...TEMPLATES.blank.header },
-  footerConfig: { ...TEMPLATES.blank.footer },
-  panels: {},
+  headerConfig: { ...TEMPLATES.executive.header },
+  footerConfig: { ...TEMPLATES.executive.footer },
+  panels: { ...TEMPLATES.executive.panels },
 
   dockviewApi: null,
 

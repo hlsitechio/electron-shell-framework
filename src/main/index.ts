@@ -123,10 +123,17 @@ if (!gotLock) {
     win.once('ready-to-show', () => {
       log.info('[main] ready-to-show event fired')
       showWindow()
+      if (!win.isMaximized()) {
+        win.center()
+      }
       win.setAlwaysOnTop(true)
+      win.focus()
       setTimeout(() => {
-        if (!win.isDestroyed()) win.setAlwaysOnTop(false)
-      }, 600)
+        if (!win.isDestroyed()) {
+          win.setAlwaysOnTop(false)
+          win.focus()
+        }
+      }, 500)
     })
 
     win.webContents.on('did-finish-load', () => {
