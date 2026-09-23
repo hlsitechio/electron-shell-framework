@@ -4,7 +4,7 @@ description: Build Electron desktop apps on this reusable shell.
 version: 1.0.0
 author: hlsitechio, Hermes Agent
 license: MIT
-platforms: [windows, macos, linux]
+platforms: [windows]
 metadata:
   hermes:
     tags: [electron, desktop, react, app-shell, templates, theming]

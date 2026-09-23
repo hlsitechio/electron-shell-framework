@@ -3,7 +3,7 @@
 > A reusable Electron desktop app-shell — a platform, not an app. It ships the window chrome, a two-layer theming system, an 11-component widget kit, and eleven app templates. An app is built by adding pages or applying a template; the shell is never rewritten. Pure desktop: the production renderer loads from `file://`, there is no server and no web build.
 
 Stack: Electron 44, React 19, TypeScript, Tailwind v4, electron-vite, zustand, Vitest + Playwright.
-License: MIT. Windows and Linux are supported targets; macOS is intentionally unsupported.
+License: MIT. Windows is the supported target (pure desktop).
 
 ## Start here
 

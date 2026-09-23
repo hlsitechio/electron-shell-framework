@@ -4,7 +4,7 @@ description: Work with presets, tokens, and light/dark in the shell.
 version: 1.0.0
 author: hlsitechio, Hermes Agent
 license: MIT
-platforms: [windows, macos, linux]
+platforms: [windows]
 metadata:
   hermes:
     tags: [electron, theming, css, tokens, presets, design-system]

@@ -4,7 +4,7 @@ description: Add or change a page in the Electron shell framework.
 version: 1.0.0
 author: hlsitechio, Hermes Agent
 license: MIT
-platforms: [windows, macos, linux]
+platforms: [windows]
 metadata:
   hermes:
     tags: [electron, react, pages, registry, ui]

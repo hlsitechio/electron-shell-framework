@@ -4,7 +4,7 @@ description: Add a new app template to the shell framework catalog.
 version: 1.0.0
 author: hlsitechio, Hermes Agent
 license: MIT
-platforms: [windows, macos, linux]
+platforms: [windows]
 metadata:
   hermes:
     tags: [electron, templates, architecture, lazy-loading]

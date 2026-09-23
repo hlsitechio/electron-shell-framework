@@ -10,11 +10,7 @@ permissions:
 
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
-    runs-on: ${{ matrix.os }}
+    runs-on: windows-latest
 
     steps:
       - name: Checkout
@@ -45,32 +41,15 @@ jobs:
       # via the publish provider in electron-builder.yml (github,
       # owner hlsitechio, repo electron-shell-framework).
       - name: Package & publish (Windows)
-        if: runner.os == 'Windows'
         run: npx electron-builder --win --publish always
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Package & publish (macOS)
-        if: runner.os == 'macOS'
-        run: npx electron-builder --mac --publish always
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
-
-      - name: Package & publish (Linux)
-        if: runner.os == 'Linux'
-        run: npx electron-builder --linux --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.os }}-artifacts
+          name: windows-artifacts
           path: |
             release/**/*.exe
-            release/**/*.dmg
-            release/**/*.AppImage
-            release/**/*.deb
             release/**/*.yml
           if-no-files-found: ignore

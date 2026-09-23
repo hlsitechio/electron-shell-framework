@@ -29,14 +29,6 @@
       'icon': 'build/icon.ico'
     },
 
-  'linux':
-    {
-      'target': ['AppImage', 'deb'],
-      'category': 'Utility',
-      'icon': 'build/icon.png',
-      'maintainer': 'hlsitechio'
-    },
-
   'nsis':
     {
       'oneClick': false,
