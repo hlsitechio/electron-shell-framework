@@ -8,7 +8,14 @@ import type {
   RemoteFile,
   RepoDetail,
   TerminalSession,
-  BuildRun
+  BuildRun,
+  GitUpdateCheckResult,
+  GitUpdateApplyResult,
+  GitUpdateApplyOptions,
+  IdeTarget,
+  IdeDetectionResult,
+  DiffFileSummary,
+  BranchInfo
 } from '../shared/cockpit-types'
 
 /**
@@ -77,6 +84,66 @@ const api = {
     /** Read one file's text straight from GitHub. */
     repoFile: (slug: string, path: string, ref: string | null = null): Promise<RemoteFile> =>
       ipcRenderer.invoke('cockpit:repoFile', slug, path, ref),
+
+    /** Check for remote git updates, commits behind, and changed dependencies. */
+    gitCheckUpdate: (repoIdOrPath?: string): Promise<GitUpdateCheckResult> =>
+      ipcRenderer.invoke('cockpit:gitCheckUpdate', repoIdOrPath),
+
+    /** Pull remote git updates, install dependencies, and rebuild if requested. */
+    gitApplyUpdate: (
+      repoIdOrPath?: string,
+      options?: GitUpdateApplyOptions
+    ): Promise<GitUpdateApplyResult> =>
+      ipcRenderer.invoke('cockpit:gitApplyUpdate', repoIdOrPath, options),
+
+    /** Relaunch the app cleanly after update and dependency install. */
+    relaunchApp: (): Promise<void> => ipcRenderer.invoke('cockpit:relaunchApp'),
+
+    /** Open repo in Cursor, VS Code, Windsurf, Explorer, or Terminal */
+    openInIde: (repoIdOrPath: string, ide?: IdeTarget): Promise<boolean> =>
+      ipcRenderer.invoke('cockpit:openInIde', repoIdOrPath, ide),
+
+    /** Detect installed IDEs on the system */
+    detectIdes: (): Promise<IdeDetectionResult> => ipcRenderer.invoke('cockpit:detectIdes'),
+
+    /** Retrieve changed files with status and diff patches */
+    gitDiffFiles: (repoIdOrPath: string): Promise<DiffFileSummary[]> =>
+      ipcRenderer.invoke('cockpit:gitDiffFiles', repoIdOrPath),
+
+    /** Stage or unstage a file */
+    gitStageFile: (repoIdOrPath: string, filePath: string, stage: boolean): Promise<boolean> =>
+      ipcRenderer.invoke('cockpit:gitStageFile', repoIdOrPath, filePath, stage),
+
+    /** Discard uncommitted changes in a file */
+    gitDiscardFile: (repoIdOrPath: string, filePath: string): Promise<boolean> =>
+      ipcRenderer.invoke('cockpit:gitDiscardFile', repoIdOrPath, filePath),
+
+    /** Commit staged changes */
+    gitCommit: (repoIdOrPath: string, message: string): Promise<boolean> =>
+      ipcRenderer.invoke('cockpit:gitCommit', repoIdOrPath, message),
+
+    /** Git stash operations */
+    gitStash: (
+      repoIdOrPath: string,
+      action: 'save' | 'pop' | 'list',
+      message?: string
+    ): Promise<string[]> => ipcRenderer.invoke('cockpit:gitStash', repoIdOrPath, action, message),
+
+    /** List all local & remote branches with merge status */
+    gitListBranches: (repoIdOrPath: string): Promise<BranchInfo[]> =>
+      ipcRenderer.invoke('cockpit:gitListBranches', repoIdOrPath),
+
+    /** Checkout branch */
+    gitCheckoutBranch: (repoIdOrPath: string, branchName: string): Promise<boolean> =>
+      ipcRenderer.invoke('cockpit:gitCheckoutBranch', repoIdOrPath, branchName),
+
+    /** Create and checkout a new branch */
+    gitCreateBranch: (repoIdOrPath: string, branchName: string): Promise<boolean> =>
+      ipcRenderer.invoke('cockpit:gitCreateBranch', repoIdOrPath, branchName),
+
+    /** Clean up branches already merged into default branch */
+    gitCleanupMergedBranches: (repoIdOrPath: string): Promise<string[]> =>
+      ipcRenderer.invoke('cockpit:gitCleanupMergedBranches', repoIdOrPath),
 
     createWorktree: (repoId: string, branch: string): Promise<CockpitSnapshot> =>
       ipcRenderer.invoke('cockpit:createWorktree', repoId, branch),

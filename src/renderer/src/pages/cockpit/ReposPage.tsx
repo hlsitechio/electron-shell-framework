@@ -3,6 +3,7 @@ import {
   AlertTriangle,
   ArrowDown,
   ArrowUp,
+  Download,
   FolderGit2,
   GitBranch,
   GitCommitHorizontal,
@@ -16,8 +17,10 @@ import {
 import { Button } from '@renderer/components/ui/button'
 import { Input } from '@renderer/components/ui/input'
 import { EmptyState, FilterChips, StatTile } from '@renderer/widgets'
+import { IdeLauncherButton } from '@renderer/components/ide/IdeLauncherButton'
 import { cn } from '@renderer/lib/utils'
 import { useCockpitStore, useCockpitTotals, useRepos } from '@renderer/stores/cockpit-store'
+import { useUiStore } from '@renderer/stores/ui-store'
 import type { Repo } from '../../../../shared/cockpit-types'
 
 /**
@@ -82,6 +85,7 @@ function Metric({
 
 function RepoRow({ repo, selected }: { repo: Repo; selected: boolean }): React.JSX.Element {
   const { selectRepo, openTerminal, removeRepo } = useCockpitStore()
+  const { openDiff, openBranchSwitchboard, openGitUpdate } = useUiStore()
   const [confirming, setConfirming] = useState(false)
 
   const startBuild = async (script: string): Promise<void> => {
@@ -92,55 +96,85 @@ function RepoRow({ repo, selected }: { repo: Repo; selected: boolean }): React.J
     }
   }
 
+  const isDirty = repo.dirtyCount > 0
+
   return (
     <div
       className={cn(
-        'group flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-colors',
-        selected ? 'bg-accent/50' : 'hover:bg-accent/25'
+        'group flex cursor-pointer items-center gap-3 px-3.5 py-3 transition-all border-b select-none',
+        selected ? 'bg-accent/40 shadow-xs' : 'hover:bg-accent/20'
       )}
       style={{
-        borderBottom: '1px solid hsl(var(--border))',
-        boxShadow: selected ? 'inset 2px 0 0 0 hsl(var(--primary))' : undefined
+        borderColor: 'hsl(var(--border) / 0.6)',
+        boxShadow: selected ? 'inset 3px 0 0 0 hsl(var(--primary))' : undefined
       }}
       onClick={() => selectRepo(repo.id)}
     >
       {/* identity */}
-      <div className="flex min-w-0 flex-[2] items-center gap-2.5">
+      <div className="flex min-w-0 flex-[2.2] items-center gap-3">
         <span
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg shadow-2xs"
           style={{
-            background: 'hsl(var(--primary) / 0.14)',
-            color: 'hsl(var(--primary))'
+            background: isDirty ? 'hsl(var(--warning) / 0.14)' : 'hsl(var(--primary) / 0.14)',
+            color: isDirty ? 'hsl(var(--warning))' : 'hsl(var(--primary))'
           }}
         >
-          <FolderGit2 className="h-3.5 w-3.5" />
+          <FolderGit2 className="h-4 w-4" />
         </span>
         <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="truncate text-[13px] font-semibold">{repo.name}</span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="truncate text-[13.5px] font-semibold tracking-tight">{repo.name}</span>
             {repo.githubSlug && (
-              <span className="mono shrink-0 text-[10px] text-muted-foreground">
+              <span className="mono shrink-0 text-[10.5px] text-muted-foreground/80">
                 {repo.githubSlug}
               </span>
             )}
           </div>
-          <div className="mono mt-0.5 flex items-center gap-1.5 text-[10.5px] text-muted-foreground">
-            <GitBranch className="h-2.5 w-2.5" />
-            <span className="truncate">{repo.branch}</span>
-            <span className="opacity-40">·</span>
-            <span>{shortHash(repo.head)}</span>
+          <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                openBranchSwitchboard(repo)
+              }}
+              className="mono inline-flex items-center gap-1 rounded bg-muted/60 px-1.5 py-0.2 text-[10.5px] font-medium border border-border/50 text-foreground hover:bg-primary/10 hover:border-primary/40 transition-colors cursor-pointer"
+              title="Click to open Branch Switchboard (checkout, new branch, prune)"
+            >
+              <GitBranch className="h-3 w-3 text-primary" />
+              <span className="truncate max-w-[120px]">{repo.branch}</span>
+            </button>
+            <span
+              className="mono text-[10px] text-muted-foreground/70"
+              title={`HEAD: ${repo.head}`}
+            >
+              {shortHash(repo.head)}
+            </span>
           </div>
         </div>
       </div>
 
       {/* live metrics */}
-      <div className="hidden min-w-0 flex-[2] items-center gap-3 lg:flex">
-        <Metric
-          icon={GitCommitHorizontal}
-          value={`${repo.dirtyCount} changed`}
-          tone={repo.dirtyCount > 0 ? 'warn' : 'muted'}
-          title={`${repo.stagedCount} staged · ${repo.untrackedCount} untracked`}
-        />
+      <div className="hidden min-w-0 flex-[2] items-center gap-2.5 lg:flex">
+        {isDirty ? (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              openDiff(repo)
+            }}
+            className="mono inline-flex items-center gap-1 rounded px-2 py-0.5 text-[10.5px] font-medium bg-amber-500/10 text-amber-500 border border-amber-500/20 hover:bg-amber-500/20 hover:border-amber-500/40 transition-colors cursor-pointer"
+            title={`${repo.stagedCount} staged · ${repo.untrackedCount} untracked — click to open Visual Diff & Staging`}
+          >
+            <GitCommitHorizontal className="h-3 w-3" />
+            {repo.dirtyCount} changed
+          </button>
+        ) : (
+          <span className="mono inline-flex items-center gap-1 text-[11px] text-emerald-500/90 font-medium">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            clean
+          </span>
+        )}
+
         <Metric
           icon={Workflow}
           value={`${repo.worktrees.length} wt`}
@@ -149,15 +183,25 @@ function RepoRow({ repo, selected }: { repo: Repo; selected: boolean }): React.J
           }
         />
         {repo.ahead > 0 && (
-          <Metric icon={ArrowUp} value={repo.ahead} title="commits ahead of upstream" />
+          <Metric icon={ArrowUp} value={repo.ahead} title="commits ahead of upstream" tone="warn" />
         )}
         {repo.behind > 0 && (
-          <Metric
-            icon={ArrowDown}
-            value={repo.behind}
-            tone="danger"
-            title="commits behind upstream"
-          />
+          <button
+            type="button"
+            className="cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={(e) => {
+              e.stopPropagation()
+              openGitUpdate(repo)
+            }}
+            title={`${repo.behind} commits behind upstream — click to update`}
+          >
+            <Metric
+              icon={ArrowDown}
+              value={`${repo.behind} pull`}
+              tone="danger"
+              title={`${repo.behind} commits behind upstream — click to update`}
+            />
+          </button>
         )}
       </div>
 
@@ -165,26 +209,44 @@ function RepoRow({ repo, selected }: { repo: Repo; selected: boolean }): React.J
       <div className="hidden min-w-0 flex-[2] xl:block">
         {repo.lastCommit ? (
           <>
-            <p className="truncate text-[11.5px] text-muted-foreground">
+            <p className="truncate text-[12px] text-foreground/80 leading-snug">
               {repo.lastCommit.subject}
             </p>
-            <p className="mono mt-0.5 text-[10px] text-muted-foreground/70">
+            <p className="mt-0.5 text-[10.5px] text-muted-foreground/70">
               {relativeTime(repo.lastCommit.date)}
             </p>
           </>
         ) : (
-          <p className="text-[11.5px] text-muted-foreground/60">no commits yet</p>
+          <p className="text-[11.5px] text-muted-foreground/60 italic">no commits yet</p>
         )}
       </div>
 
       {/* actions */}
       <div className="flex shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+        <IdeLauncherButton
+          repoPath={repo.path}
+          size="sm"
+          variant="ghost"
+          className="h-7 w-7 p-0 rounded-md"
+        />
+        <Button
+          size="sm"
+          variant="ghost"
+          className="h-7 w-7 p-0 rounded-md"
+          title="Check & pull Git updates"
+          onClick={(e) => {
+            e.stopPropagation()
+            openGitUpdate(repo)
+          }}
+        >
+          <Download className="h-3.5 w-3.5" />
+        </Button>
         {repo.scripts.slice(0, 2).map((script: string) => (
           <Button
             key={script}
             size="sm"
-            variant="ghost"
-            className="mono h-6 px-2 text-[10.5px]"
+            variant="outline"
+            className="mono h-6.5 px-2 text-[10.5px] rounded-md"
             title={`npm run ${script}`}
             onClick={(e) => {
               e.stopPropagation()
@@ -197,19 +259,19 @@ function RepoRow({ repo, selected }: { repo: Repo; selected: boolean }): React.J
         <Button
           size="sm"
           variant="ghost"
-          className="h-6 w-6 p-0"
+          className="h-7 w-7 p-0 rounded-md"
           title="Open a terminal in this repo"
           onClick={(e) => {
             e.stopPropagation()
             openTerminal(repo.id)
           }}
         >
-          <SquareTerminal className="h-3.5 w-3.5" />
+          <SquareTerminal className="h-4 w-4" />
         </Button>
         <Button
           size="sm"
           variant="ghost"
-          className="h-6 w-6 p-0"
+          className="h-7 w-7 p-0 rounded-md"
           title={confirming ? 'Click again to remove' : 'Remove from workspace'}
           onClick={(e) => {
             e.stopPropagation()
@@ -232,6 +294,7 @@ export function ReposPage(): React.JSX.Element {
   const repos = useRepos()
   const totals = useCockpitTotals()
   const { refresh, addRepo, loading, githubBusy, selectedRepoId, snapshot } = useCockpitStore()
+  const { openDiff, openBranchSwitchboard, openGitUpdate } = useUiStore()
   const [filter, setFilter] = useState<Filter>('all')
   const [query, setQuery] = useState('')
 
@@ -240,6 +303,11 @@ export function ReposPage(): React.JSX.Element {
     if (!snapshot) void refresh(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const selectedRepo = useMemo(
+    () => repos.find((r) => r.id === selectedRepoId) ?? repos[0] ?? null,
+    [repos, selectedRepoId]
+  )
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -253,69 +321,121 @@ export function ReposPage(): React.JSX.Element {
     })
   }, [repos, filter, query])
 
+  const filterOptions = useMemo(
+    () => [
+      { id: 'all', label: 'All', count: repos.length },
+      { id: 'dirty', label: 'Dirty', count: repos.filter((r) => r.dirtyCount > 0).length },
+      { id: 'clean', label: 'Clean', count: repos.filter((r) => r.dirtyCount === 0).length },
+      {
+        id: 'ahead',
+        label: 'Ahead / Behind',
+        count: repos.filter((r) => r.ahead > 0 || r.behind > 0).length
+      }
+    ],
+    [repos]
+  )
+
   const failing = repos.filter((r) => r.error).length
 
   return (
-    <div className="mx-auto flex h-full max-w-[1180px] flex-col gap-4 p-5">
+    <div className="mx-auto flex h-full max-w-[1240px] flex-col gap-4.5 p-6">
       {/* KPI strip — all four values are live */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
         <StatTile
           label="Repositories"
           value={String(totals.repos)}
           delta={totals.repos ? `${totals.worktrees} worktrees` : 'none yet'}
           progress={totals.repos ? 100 : 0}
+          icon={FolderGit2}
         />
         <StatTile
           label="Uncommitted"
           value={String(totals.dirty)}
-          delta={totals.dirty ? 'needs a commit' : 'all clean'}
+          delta={totals.dirty ? `${totals.dirty} changed files` : 'working tree clean'}
           progress={totals.repos ? (totals.dirty / Math.max(totals.repos, 1)) * 100 : 0}
+          icon={GitCommitHorizontal}
         />
         <StatTile
           label="Open PRs"
           value={String(totals.prs)}
-          delta={snapshot?.github.available ? 'live from gh' : 'gh offline'}
+          delta={snapshot?.github.available ? 'live from GitHub' : 'gh offline'}
           progress={snapshot?.github.available ? 100 : 0}
+          icon={Workflow}
         />
         <StatTile
           label="Builds running"
           value={String(totals.running)}
           delta={totals.failing ? `${totals.failing} CI failing` : 'queue idle'}
           progress={totals.running ? 60 : 0}
+          icon={SquareTerminal}
         />
       </div>
 
       {/* toolbar */}
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="relative min-w-[200px] flex-1">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+      <div className="flex flex-wrap items-center gap-2.5">
+        <div className="relative min-w-[220px] flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Filter by name, path, remote or branch…"
-            className="h-8 pl-8 text-[12.5px]"
+            className="h-8.5 pl-9 text-[13px] rounded-lg bg-card/60 border-border/80"
           />
         </div>
         <FilterChips
-          options={['all', 'dirty', 'clean', 'ahead']}
+          options={filterOptions}
           value={filter}
           onChange={(id) => setFilter(id as Filter)}
         />
         <Button
           size="sm"
           variant="outline"
-          className="h-8"
+          className="h-8.5 px-3 rounded-lg"
           disabled={loading}
           onClick={() => void refresh(false)}
-          title="Re-scan every repository with git"
+          title="Re-scan every repository with git (Ctrl+R)"
         >
           <RefreshCw className={cn('h-3.5 w-3.5', loading && 'animate-spin')} />
           Rescan
         </Button>
+        {selectedRepo && (
+          <>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8.5 px-3 rounded-lg gap-1.5"
+              onClick={() => openDiff(selectedRepo)}
+              title="Open Visual Diff & Staging for selected repo"
+            >
+              <GitCommitHorizontal className="h-3.5 w-3.5 text-primary" />
+              Diff & Stage
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8.5 px-3 rounded-lg gap-1.5"
+              onClick={() => openBranchSwitchboard(selectedRepo)}
+              title="Open Branch Switchboard for selected repo"
+            >
+              <GitBranch className="h-3.5 w-3.5 text-primary" />
+              Branches
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8.5 px-3 rounded-lg gap-1.5"
+              onClick={() => openGitUpdate(selectedRepo)}
+              title="Check and pull updates from remote git"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Git Update
+            </Button>
+          </>
+        )}
         <Button
           size="sm"
           variant="outline"
-          className="h-8"
+          className="h-8.5 px-3 rounded-lg"
           disabled={githubBusy}
           onClick={() => void refresh(true)}
           title="Query GitHub for pull requests and CI runs via the gh CLI"
@@ -323,7 +443,11 @@ export function ReposPage(): React.JSX.Element {
           <Workflow className={cn('h-3.5 w-3.5', githubBusy && 'animate-spin')} />
           Sync GitHub
         </Button>
-        <Button size="sm" className="h-8" onClick={() => void addRepo()}>
+        <Button
+          size="sm"
+          className="h-8.5 px-3.5 rounded-lg shadow-sm"
+          onClick={() => void addRepo()}
+        >
           <Plus className="h-3.5 w-3.5" />
           Add repo
         </Button>
@@ -335,19 +459,21 @@ export function ReposPage(): React.JSX.Element {
         style={{ display: 'flex', flexDirection: 'column' }}
       >
         <div
-          className="flex items-center gap-3 px-3 py-2"
-          style={{ borderBottom: '1px solid hsl(var(--border))' }}
+          className="flex items-center gap-3 px-3.5 py-2.5 bg-muted/30 border-b select-none"
+          style={{ borderColor: 'hsl(var(--border) / 0.7)' }}
         >
-          <span className="mono flex-[2] text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+          <span className="flex-[2.2] text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground/80">
             Repository
           </span>
-          <span className="mono hidden flex-[2] text-[10px] uppercase tracking-[0.14em] text-muted-foreground lg:block">
+          <span className="hidden flex-[2] text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground/80 lg:block">
             Working tree
           </span>
-          <span className="mono hidden flex-[2] text-[10px] uppercase tracking-[0.14em] text-muted-foreground xl:block">
+          <span className="hidden flex-[2] text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground/80 xl:block">
             Last commit
           </span>
-          <span className="w-[150px] shrink-0" />
+          <span className="w-[150px] shrink-0 text-right pr-2 text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground/80">
+            Actions
+          </span>
         </div>
 
         <div className="min-h-0 flex-1 overflow-auto">

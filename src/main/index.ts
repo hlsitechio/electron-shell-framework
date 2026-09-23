@@ -36,7 +36,13 @@ if (!gotLock) {
     const win = BrowserWindow.getAllWindows()[0]
     if (win) {
       if (win.isMinimized()) win.restore()
+      win.show()
       win.focus()
+      win.moveTop()
+      win.setAlwaysOnTop(true)
+      setTimeout(() => {
+        if (!win.isDestroyed()) win.setAlwaysOnTop(false)
+      }, 500)
     }
   })
 
@@ -85,7 +91,43 @@ if (!gotLock) {
       win.setOpacity(savedOpacity)
     }
 
-    win.on('ready-to-show', () => win.show())
+    const showWindow = (): void => {
+      if (win.isDestroyed()) return
+      if (win.isMinimized()) win.restore()
+      win.show()
+      win.focus()
+      win.moveTop()
+      log.info(
+        '[main] window shown, visible:',
+        win.isVisible(),
+        'bounds:',
+        JSON.stringify(win.getBounds())
+      )
+    }
+
+    win.once('ready-to-show', () => {
+      log.info('[main] ready-to-show event fired')
+      showWindow()
+      win.setAlwaysOnTop(true)
+      setTimeout(() => {
+        if (!win.isDestroyed()) win.setAlwaysOnTop(false)
+      }, 600)
+    })
+
+    win.webContents.on('did-finish-load', () => {
+      log.info('[main] did-finish-load event fired')
+      if (!win.isVisible()) {
+        log.info('[main] showing window from did-finish-load')
+        showWindow()
+      }
+    })
+
+    setTimeout(() => {
+      if (!win.isDestroyed() && !win.isVisible()) {
+        log.warn('[main] ready-to-show timed out, force showing window')
+        showWindow()
+      }
+    }, 1500)
 
     // A renderer that dies leaves a blank frameless window with no way out.
     // Log it and reload once, so a transient GPU crash is not fatal.

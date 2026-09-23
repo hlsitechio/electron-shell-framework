@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import type { Repo } from '../../../shared/cockpit-types'
 
 export type SidebarMode = 'expanded' | 'collapsed'
 
@@ -9,6 +10,13 @@ interface UiState {
   leftWidth: number
   tabsCollapsed: boolean
   bottomOpen: boolean
+
+  // Pro Suite Modals
+  paletteOpen: boolean
+  diffRepo: Repo | null
+  branchRepo: Repo | null
+  updateRepo: Repo | null
+
   toggleLeft: () => void
   setLeftCollapsed: (v: boolean) => void
   toggleRight: () => void
@@ -18,6 +26,14 @@ interface UiState {
   toggleTabs: () => void
   setTabsCollapsed: (v: boolean) => void
   toggleBottom: () => void
+
+  setPaletteOpen: (v: boolean) => void
+  openDiff: (repo: Repo) => void
+  closeDiff: () => void
+  openBranchSwitchboard: (repo: Repo) => void
+  closeBranchSwitchboard: () => void
+  openGitUpdate: (repo: Repo) => void
+  closeGitUpdate: () => void
 }
 
 export const useUiStore = create<UiState>((set) => ({
@@ -27,6 +43,12 @@ export const useUiStore = create<UiState>((set) => ({
   leftWidth: 220,
   tabsCollapsed: false,
   bottomOpen: true,
+
+  paletteOpen: false,
+  diffRepo: null,
+  branchRepo: null,
+  updateRepo: null,
+
   toggleLeft: () => set((s) => ({ leftCollapsed: !s.leftCollapsed })),
   setLeftCollapsed: (v) => set({ leftCollapsed: v }),
   toggleRight: () => set((s) => ({ rightOpen: !s.rightOpen })),
@@ -35,7 +57,15 @@ export const useUiStore = create<UiState>((set) => ({
   setRightWidth: (w) => set({ rightWidth: Math.min(420, Math.max(240, w)) }),
   toggleTabs: () => set((s) => ({ tabsCollapsed: !s.tabsCollapsed })),
   setTabsCollapsed: (v) => set({ tabsCollapsed: v }),
-  toggleBottom: () => set((s) => ({ bottomOpen: !s.bottomOpen }))
+  toggleBottom: () => set((s) => ({ bottomOpen: !s.bottomOpen })),
+
+  setPaletteOpen: (v) => set({ paletteOpen: v }),
+  openDiff: (repo) => set({ diffRepo: repo }),
+  closeDiff: () => set({ diffRepo: null }),
+  openBranchSwitchboard: (repo) => set({ branchRepo: repo }),
+  closeBranchSwitchboard: () => set({ branchRepo: null }),
+  openGitUpdate: (repo) => set({ updateRepo: repo }),
+  closeGitUpdate: () => set({ updateRepo: null })
 }))
 
 /* --------------------------------------------------------------- persistence */

@@ -57,7 +57,7 @@ export function WorktreesPage(): React.JSX.Element {
   const orphaned = repo.worktrees.filter((w) => w.prunable)
 
   return (
-    <div className="mx-auto flex h-full max-w-[1100px] flex-col gap-4 p-5">
+    <div className="mx-auto flex h-full max-w-[1240px] flex-col gap-4.5 p-6">
       {/* header */}
       <GlassCard
         icon={FolderTree}
@@ -68,7 +68,7 @@ export function WorktreesPage(): React.JSX.Element {
             <Button
               size="sm"
               variant="outline"
-              className="h-7"
+              className="h-8 px-3 rounded-lg"
               disabled={loading}
               onClick={() => void refresh(false)}
             >
@@ -78,7 +78,7 @@ export function WorktreesPage(): React.JSX.Element {
             <Button
               size="sm"
               variant="outline"
-              className="h-7"
+              className="h-8 px-3 rounded-lg"
               onClick={() => void pruneWorktrees(repo.id)}
               title="git worktree prune — drop bookkeeping for deleted folders"
             >
@@ -88,7 +88,7 @@ export function WorktreesPage(): React.JSX.Element {
           </div>
         }
       >
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2.5 pt-1">
           <Input
             value={branch}
             onChange={(e) => setBranch(e.target.value)}
@@ -96,20 +96,23 @@ export function WorktreesPage(): React.JSX.Element {
               if (e.key === 'Enter') void submit()
             }}
             placeholder="feature/new-worktree"
-            className="mono h-8 max-w-[320px] flex-1 text-[12px]"
+            className="mono h-8.5 max-w-[320px] flex-1 text-[12.5px] rounded-lg bg-card/60 border-border/80"
             spellCheck={false}
           />
           <Button
             size="sm"
-            className="h-8"
+            className="h-8.5 px-3.5 rounded-lg shadow-sm"
             disabled={busy || !branch.trim()}
             onClick={() => void submit()}
           >
             <Plus className="h-3.5 w-3.5" />
             Create worktree
           </Button>
-          <span className="mono text-[10.5px] text-muted-foreground">
-            creates a sibling folder named {repo.name}--&lt;branch&gt;
+          <span className="text-[11px] text-muted-foreground">
+            creates sibling folder{' '}
+            <code className="mono text-[10.5px] rounded bg-muted/60 px-1 py-0.5">
+              {repo.name}--&lt;branch&gt;
+            </code>
           </span>
         </div>
       </GlassCard>
@@ -123,19 +126,15 @@ export function WorktreesPage(): React.JSX.Element {
             hint="This repository uses a single checkout. Create one above to work on two branches side by side."
           />
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             {repo.worktrees.map((wt) => (
               <div
                 key={wt.path}
-                className="glass flex items-center gap-3 px-3 py-2.5"
-                style={
-                  wt.isMain
-                    ? { boxShadow: 'inset 2px 0 0 0 hsl(var(--primary)), var(--shadow-md)' }
-                    : undefined
-                }
+                className="glass flex items-center gap-3.5 px-3.5 py-3 rounded-lg transition-all"
+                style={wt.isMain ? { borderLeft: '3px solid hsl(var(--primary))' } : undefined}
               >
                 <span
-                  className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg shadow-2xs"
                   style={{
                     background: wt.isMain
                       ? 'hsl(var(--primary) / 0.16)'
@@ -143,19 +142,15 @@ export function WorktreesPage(): React.JSX.Element {
                     color: wt.isMain ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))'
                   }}
                 >
-                  {wt.isMain ? (
-                    <Star className="h-3.5 w-3.5" />
-                  ) : (
-                    <GitBranch className="h-3.5 w-3.5" />
-                  )}
+                  {wt.isMain ? <Star className="h-4 w-4" /> : <GitBranch className="h-4 w-4" />}
                 </span>
 
                 <div className="min-w-0 flex-[3]">
-                  <div className="flex items-center gap-2">
-                    <span className="mono truncate text-[12.5px] font-medium">{wt.branch}</span>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="mono text-[13px] font-semibold">{wt.branch}</span>
                     {wt.isMain && (
                       <span
-                        className="mono rounded px-1.5 py-0.5 text-[9.5px] uppercase tracking-wide"
+                        className="rounded px-1.5 py-0.5 text-[9.5px] uppercase font-bold tracking-wide"
                         style={{
                           background: 'hsl(var(--primary) / 0.16)',
                           color: 'hsl(var(--primary))'
@@ -165,25 +160,20 @@ export function WorktreesPage(): React.JSX.Element {
                       </span>
                     )}
                     {wt.locked && (
-                      <span className="mono inline-flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <span className="inline-flex items-center gap-1 rounded bg-muted/60 px-1.5 py-0.5 text-[10px] text-muted-foreground border border-border/50">
                         <Lock className="h-2.5 w-2.5" /> locked
                       </span>
                     )}
                     {wt.prunable && (
-                      <span
-                        className="mono inline-flex items-center gap-1 text-[10px]"
-                        style={{ color: 'hsl(var(--destructive))' }}
-                      >
+                      <span className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold bg-rose-500/10 text-rose-500 border border-rose-500/20">
                         <AlertTriangle className="h-2.5 w-2.5" /> prunable
                       </span>
                     )}
                   </div>
-                  <p className="mono mt-0.5 truncate text-[10.5px] text-muted-foreground">
-                    {wt.path}
-                  </p>
+                  <p className="mono mt-1 truncate text-[11px] text-muted-foreground">{wt.path}</p>
                 </div>
 
-                <span className="mono hidden shrink-0 text-[10.5px] text-muted-foreground sm:block">
+                <span className="mono hidden shrink-0 rounded bg-muted/40 px-1.5 py-0.5 border border-border/50 text-[10.5px] text-muted-foreground sm:block">
                   {wt.head ? wt.head.slice(0, 7) : '—'}
                 </span>
 
@@ -191,20 +181,20 @@ export function WorktreesPage(): React.JSX.Element {
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="h-6 w-6 p-0"
+                    className="h-7 w-7 p-0 rounded-md"
                     title="Reveal in Explorer"
                     onClick={() => void window.api.cockpit.openPath(wt.path)}
                   >
-                    <FolderTree className="h-3.5 w-3.5" />
+                    <FolderTree className="h-4 w-4" />
                   </Button>
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="h-6 w-6 p-0"
+                    className="h-7 w-7 p-0 rounded-md"
                     title="Open a terminal here"
                     onClick={() => openTerminal(repo.id)}
                   >
-                    <SquareTerminal className="h-3.5 w-3.5" />
+                    <SquareTerminal className="h-4 w-4" />
                   </Button>
                 </div>
               </div>

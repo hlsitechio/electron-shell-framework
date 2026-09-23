@@ -16,7 +16,8 @@ import {
   Lock,
   RefreshCw,
   Star,
-  Binary
+  Binary,
+  X
 } from 'lucide-react'
 import { Button } from '@renderer/components/ui/button'
 import { MarkdownView } from '@renderer/components/MarkdownView'
@@ -215,37 +216,40 @@ export function RepoOpenView({ slug, onClose, onClone, cloning }: Props): React.
         <Button
           size="sm"
           variant="ghost"
-          className="h-6 w-6 shrink-0 p-0"
-          title="Close"
+          className="h-7 w-7 shrink-0 p-0 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground"
+          title="Close inspector"
           onClick={onClose}
         >
-          <ArrowLeft className="h-3.5 w-3.5 rotate-180" />
+          <X className="h-4 w-4" />
         </Button>
       </div>
 
       {/* tab strip */}
       {!openFile && (
         <div
-          className="flex h-8 shrink-0 items-center gap-1 px-2"
-          style={{ borderBottom: '1px solid hsl(var(--border))' }}
+          className="flex h-9 shrink-0 items-center gap-1.5 px-3 bg-muted/20 border-b select-none"
+          style={{ borderColor: 'hsl(var(--border) / 0.7)' }}
         >
           {(
             [
               ['overview', 'Overview', FileText],
-              ['files', `Files${detail ? ` ${detail.tree.length}` : ''}`, Files],
-              ['history', `History${detail ? ` ${detail.commits.length}` : ''}`, History]
+              ['files', `Files (${detail ? detail.tree.length : 0})`, Files],
+              ['history', `History (${detail ? detail.commits.length : 0})`, History]
             ] as Array<[Tab, string, typeof FileText]>
           ).map(([id, label, Icon]) => (
-            <Button
+            <button
               key={id}
-              size="sm"
-              variant={tab === id ? 'secondary' : 'ghost'}
-              className="h-6 gap-1.5 px-2 text-[11px]"
               onClick={() => setTab(id)}
+              className={cn(
+                'flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[11.5px] font-medium transition-all',
+                tab === id
+                  ? 'bg-card text-foreground shadow-xs font-semibold'
+                  : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+              )}
             >
-              <Icon className="h-3.5 w-3.5" />
-              {label}
-            </Button>
+              <Icon className={cn('h-3.5 w-3.5', tab === id ? 'text-primary' : 'opacity-70')} />
+              <span>{label}</span>
+            </button>
           ))}
         </div>
       )}

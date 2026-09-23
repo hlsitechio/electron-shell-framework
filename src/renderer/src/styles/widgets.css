@@ -4,43 +4,57 @@
    kit re-skins instantly when data-preset changes.
    ============================================================ */
 
-/* --- Layered glass panel (surface + blur + gloss + hairline) --- */
+/* --- Layered frosted panel (subdued acrylic/mica surface + hairline) --- */
 .glass {
   position: relative;
-  background: var(--glass-tint, rgba(46, 43, 77, 0.42));
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  background: var(--glass-tint, rgba(28, 28, 38, 0.65));
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
   border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
   border-radius: calc(var(--radius) + 2px);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
 }
 
-/* top gloss sweep — the difference between "flat fill" and "glass" */
+/* top subtle keylight sweep — smooth gradient without muddy glare */
 .glass::before {
   content: '';
   position: absolute;
   inset: 0 0 auto 0;
-  height: 62%;
-  background: var(--gloss);
+  height: 48%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04) 0%, transparent 100%);
   pointer-events: none;
 }
 
-/* inset highlight + floor so the panel reads as a physical surface */
+/* subtle top highlight so the panel reads as a crisp physical surface */
 .glass::after {
   content: '';
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.25);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   pointer-events: none;
 }
 
 .glass > * {
   position: relative;
   z-index: 1;
+}
+
+/* interactive glass card */
+.glass-interactive {
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+.glass-interactive:hover {
+  border-color: hsl(var(--primary) / 0.4);
+  background: hsl(var(--card) / 0.7);
+  box-shadow: var(--shadow-md);
 }
 
 /* --- Glossy accent surface (buttons/badges on top of the glass) --- */
@@ -65,17 +79,20 @@
 
 /* --- Mono utility: labels, numbers, code (his copy rule) --- */
 .mono {
-  font-family: ui-monospace, 'Cascadia Mono', 'SF Mono', Menlo, Consolas, monospace;
+  font-family:
+    'JetBrains Mono', 'Cascadia Mono', 'SF Mono', Menlo, Consolas, ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
 }
 
-/* --- Stat numbers: gradient text --- */
+/* --- Stat numbers: crisp high-contrast text --- */
 .stat-number {
-  background: var(--accent-grad);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
+  font-family:
+    'JetBrains Mono', 'Cascadia Mono', 'SF Mono', Menlo, Consolas, ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: hsl(var(--foreground));
 }
 
 /* --- Capability track --- */
@@ -91,6 +108,7 @@
   inset: 0 auto 0 0;
   border-radius: 999px;
   background: var(--accent-grad);
+  transition: width 300ms ease;
 }
 
 /* --- Chat bubbles --- */
@@ -114,13 +132,17 @@
 
 /* --- Terminal-style panel --- */
 .term {
-  background: hsl(var(--background) / 0.72);
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
-  border-radius: calc(var(--radius) + 2px);
+  background: hsl(var(--background) / 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid hsl(var(--border));
+  border-radius: calc(var(--radius));
+  box-shadow: inset 0 1px 2px 0 rgb(0 0 0 / 0.2);
   overflow: hidden;
 }
 .term-key {
   color: hsl(var(--primary));
+  font-weight: 600;
 }
 
 /* --- Filter chips --- */
@@ -129,26 +151,32 @@
   align-items: center;
   gap: 0.375rem;
   height: 1.75rem;
-  padding: 0 0.625rem;
+  padding: 0 0.75rem;
   border-radius: 999px;
   font-size: 0.75rem;
+  font-weight: 500;
   white-space: nowrap;
-  background: var(--glass-tint, rgba(255, 255, 255, 0.05));
-  border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
+  background: hsl(var(--muted) / 0.45);
+  border: 1px solid hsl(var(--border));
   color: hsl(var(--muted-foreground));
-  transition:
-    color 150ms ease,
-    border-color 150ms ease;
+  transition: all 150ms cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
+  user-select: none;
 }
 .chip:hover {
   color: hsl(var(--foreground));
-  border-color: hsl(var(--primary) / 0.5);
+  background: hsl(var(--muted) / 0.8);
+  border-color: hsl(var(--border));
 }
 .chip--active {
-  background: var(--accent-grad);
-  border-color: rgba(255, 255, 255, 0.18);
-  color: #fff;
+  background: hsl(var(--primary));
+  border-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.15);
+}
+.chip--active:hover {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
 }
 
 /* --- Pinned / hatched empty state (never a blank box) --- */

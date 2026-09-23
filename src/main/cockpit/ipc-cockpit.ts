@@ -1,9 +1,37 @@
-import { BrowserWindow, clipboard, dialog, ipcMain, shell, type IpcMainInvokeEvent } from 'electron'
+import {
+  app,
+  BrowserWindow,
+  clipboard,
+  dialog,
+  ipcMain,
+  shell,
+  type IpcMainInvokeEvent
+} from 'electron'
 import { existsSync, mkdirSync } from 'node:fs'
 import { store, configFilePath, cloneRoot, setCloneRoot } from './store'
 import { BuildSupervisor, setFavouriteScript } from './builds'
 import { PtySupervisor, getLastTerminalRepo, setLastTerminalRepo } from './pty'
-import { addWorktree, cloneRepo, isRepo, pruneWorktrees, resolveRoot } from './git'
+import {
+  addWorktree,
+  cloneRepo,
+  gitApplyUpdate,
+  gitCheckUpdate,
+  isRepo,
+  pruneWorktrees,
+  resolveRoot,
+  gitDiffFiles,
+  gitStageFile,
+  gitDiscardFile,
+  gitCommit,
+  gitStash,
+  gitListBranches,
+  gitCheckoutBranch,
+  gitCreateBranch,
+  gitCleanupMergedBranches
+} from './git'
+import { detectInstalledIdes, launchInIde } from './ide'
+import { GitWatcher } from './watcher'
+import type { GitUpdateApplyOptions, IdeTarget } from '../../shared/cockpit-types'
 import { getCachedRemoteRepos } from './remote'
 import { fetchRepoDetail, fetchRepoFile } from './repo-detail'
 import { isTrustedSender } from '../ipc-policy'
@@ -85,6 +113,11 @@ export function registerCockpitIpc(): CockpitIpc {
 
   store.buildsProvider = () => builds.list()
   store.startHeartbeat()
+
+  const watcher = new GitWatcher(() => {
+    void store.refresh(false)
+  })
+  watcher.syncPaths(store.getRepoPaths())
 
   // A push channel the renderer subscribes to exactly once.
   ipcMain.on('cockpit:subscribe', (event) => {
@@ -424,7 +457,178 @@ export function registerCockpitIpc(): CockpitIpc {
     return fetchRepoFile(slug, path, typeof ref === 'string' && ref ? ref : null)
   })
 
+  /* ---------------------------------------------------- git updates & deps */
+
+  function resolveTargetRepoPath(repoIdOrPath?: unknown): string {
+    if (typeof repoIdOrPath === 'string' && repoIdOrPath.trim()) {
+      const raw = repoIdOrPath.trim()
+      const byId = store.snapshot().repos.find((r) => r.id === raw)
+      if (byId) return byId.path
+      const known = [process.cwd(), app.getAppPath(), ...store.snapshot().repos.map((r) => r.path)]
+      if (isKnownPath(raw, known)) {
+        return raw
+      }
+    }
+    return process.cwd()
+  }
+
+  handle('cockpit:gitCheckUpdate', async (_e, repoIdOrPath: unknown) => {
+    const targetPath = resolveTargetRepoPath(repoIdOrPath)
+    store.addLog(`Checking for git updates in ${targetPath}…`, 'info')
+    const result = await gitCheckUpdate(targetPath)
+    if (result.ok) {
+      if (result.hasUpdate) {
+        store.addLog(
+          `Found ${result.behind} incoming commits for ${result.repoName} (${result.branch})${result.dependenciesChanged ? ' — dependencies changed!' : ''}`,
+          'success'
+        )
+      } else {
+        store.addLog(`${result.repoName} is up to date with ${result.upstream || 'remote'}`, 'info')
+      }
+    } else {
+      store.addLog(`Git update check failed: ${result.error || 'Unknown error'}`, 'warn')
+    }
+    return result
+  })
+
+  handle('cockpit:gitApplyUpdate', async (_e, repoIdOrPath: unknown, options: unknown) => {
+    const targetPath = resolveTargetRepoPath(repoIdOrPath)
+    const opts =
+      typeof options === 'object' && options !== null ? (options as GitUpdateApplyOptions) : {}
+
+    store.addLog(`Starting git update for ${targetPath}…`, 'info')
+    const result = await gitApplyUpdate(targetPath, opts, (progress) => {
+      store.emit({ type: 'git-update-progress', progress })
+      if (progress.step === 'error') {
+        store.addLog(`[git-update error] ${progress.message}`, 'error')
+      } else if (progress.step === 'done') {
+        store.addLog(`[git-update] ${progress.message}`, 'success')
+      }
+    })
+
+    if (result.ok) {
+      store.addLog(`Git update applied successfully for ${targetPath}`, 'success')
+      await store.refresh(false)
+    } else {
+      store.addLog(`Git update failed: ${result.error || 'Unknown error'}`, 'error')
+    }
+    return result
+  })
+
+  handle('cockpit:relaunchApp', async () => {
+    store.addLog('Relaunching application…', 'info')
+    setTimeout(() => {
+      app.relaunch()
+      app.exit(0)
+    }, 250)
+  })
+
+  /* ---------------------------------------------------- pro developer suite */
+
+  handle('cockpit:detectIdes', async () => {
+    return detectInstalledIdes()
+  })
+
+  handle('cockpit:openInIde', async (_e, repoIdOrPath: unknown, ide: unknown) => {
+    const targetPath = resolveTargetRepoPath(repoIdOrPath)
+    return launchInIde(targetPath, typeof ide === 'string' ? (ide as IdeTarget) : undefined)
+  })
+
+  handle('cockpit:gitDiffFiles', async (_e, repoIdOrPath: unknown) => {
+    const targetPath = resolveTargetRepoPath(repoIdOrPath)
+    return gitDiffFiles(targetPath)
+  })
+
+  handle(
+    'cockpit:gitStageFile',
+    async (_e, repoIdOrPath: unknown, filePath: unknown, stage: unknown) => {
+      const targetPath = resolveTargetRepoPath(repoIdOrPath)
+      if (typeof filePath !== 'string' || !filePath) return false
+      const ok = await gitStageFile(targetPath, filePath, Boolean(stage))
+      if (ok) void store.refresh(false)
+      return ok
+    }
+  )
+
+  handle('cockpit:gitDiscardFile', async (_e, repoIdOrPath: unknown, filePath: unknown) => {
+    const targetPath = resolveTargetRepoPath(repoIdOrPath)
+    if (typeof filePath !== 'string' || !filePath) return false
+    const ok = await gitDiscardFile(targetPath, filePath)
+    if (ok) {
+      store.addLog(`Discarded changes in ${filePath}`, 'warn')
+      void store.refresh(false)
+    }
+    return ok
+  })
+
+  handle('cockpit:gitCommit', async (_e, repoIdOrPath: unknown, message: unknown) => {
+    const targetPath = resolveTargetRepoPath(repoIdOrPath)
+    if (typeof message !== 'string' || !message.trim()) return false
+    const ok = await gitCommit(targetPath, message.trim())
+    if (ok) {
+      store.addLog(`Committed: ${message.trim().split('\n')[0]}`, 'success')
+      void store.refresh(false)
+    }
+    return ok
+  })
+
+  handle(
+    'cockpit:gitStash',
+    async (_e, repoIdOrPath: unknown, action: unknown, message: unknown) => {
+      const targetPath = resolveTargetRepoPath(repoIdOrPath)
+      const act = action === 'pop' || action === 'list' ? action : 'save'
+      const result = await gitStash(
+        targetPath,
+        act,
+        typeof message === 'string' ? message : undefined
+      )
+      void store.refresh(false)
+      return result
+    }
+  )
+
+  handle('cockpit:gitListBranches', async (_e, repoIdOrPath: unknown) => {
+    const targetPath = resolveTargetRepoPath(repoIdOrPath)
+    return gitListBranches(targetPath)
+  })
+
+  handle('cockpit:gitCheckoutBranch', async (_e, repoIdOrPath: unknown, branchName: unknown) => {
+    const targetPath = resolveTargetRepoPath(repoIdOrPath)
+    if (typeof branchName !== 'string' || !branchName.trim()) return false
+    const ok = await gitCheckoutBranch(targetPath, branchName.trim())
+    if (ok) {
+      store.addLog(`Switched branch to ${branchName.trim()}`, 'success')
+      void store.refresh(false)
+    }
+    return ok
+  })
+
+  handle('cockpit:gitCreateBranch', async (_e, repoIdOrPath: unknown, branchName: unknown) => {
+    const targetPath = resolveTargetRepoPath(repoIdOrPath)
+    if (typeof branchName !== 'string' || !branchName.trim()) return false
+    const ok = await gitCreateBranch(targetPath, branchName.trim())
+    if (ok) {
+      store.addLog(`Created and checked out branch ${branchName.trim()}`, 'success')
+      void store.refresh(false)
+    }
+    return ok
+  })
+
+  handle('cockpit:gitCleanupMergedBranches', async (_e, repoIdOrPath: unknown) => {
+    const targetPath = resolveTargetRepoPath(repoIdOrPath)
+    const deleted = await gitCleanupMergedBranches(targetPath)
+    if (deleted.length > 0) {
+      store.addLog(
+        `Cleaned up ${deleted.length} merged branch(es): ${deleted.join(', ')}`,
+        'success'
+      )
+      void store.refresh(false)
+    }
+    return deleted
+  })
+
   const dispose = (): void => {
+    watcher.dispose()
     builds.killAll()
     pty.killAll()
     store.stopHeartbeat()

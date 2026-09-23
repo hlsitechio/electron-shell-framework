@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Minus, Square, X } from 'lucide-react'
+import { ChevronDown, ChevronUp, Minus, Search, Square, X } from 'lucide-react'
 import { cn } from '@renderer/lib/utils'
 import { useTabsStore } from '@renderer/stores/tabs-store'
 import { useUiStore } from '@renderer/stores/ui-store'
@@ -24,7 +24,7 @@ interface TabBarProps {
 export function TabBar({ pages, platform }: TabBarProps) {
   const isMac = platform === 'darwin'
   const { activeId, setActive } = useTabsStore()
-  const { tabsCollapsed, toggleTabs } = useUiStore()
+  const { tabsCollapsed, toggleTabs, setPaletteOpen } = useUiStore()
 
   const handleMaximize = () => window.api?.window?.maximize?.()
   const handleMinimize = () => window.api?.window?.minimize?.()
@@ -88,70 +88,63 @@ export function TabBar({ pages, platform }: TabBarProps) {
       {tabsCollapsed ? (
         /* Collapsed: slim strip — active page label flexes so the
            window controls stay pinned to the right edge */
-        <span className="min-w-0 flex-1 truncate px-1 text-xs text-muted-foreground">
+        <span className="min-w-0 flex-1 truncate px-2 text-xs font-medium text-muted-foreground">
           {activeLabel}
         </span>
       ) : (
         <>
-          <div className="h-4 w-px shrink-0" style={{ background: 'hsl(var(--border))' }} />
-          <div className="app-no-drag flex h-full min-w-0 flex-1 items-stretch overflow-x-auto">
-            {all.map((group, gi) => (
+          <div
+            className="h-4 w-px shrink-0 opacity-40"
+            style={{ background: 'hsl(var(--border))' }}
+          />
+          <div className="app-no-drag flex h-full min-w-0 flex-1 items-center gap-2 overflow-x-auto px-2">
+            {all.map((group) => (
               <div
                 key={group.category ?? group.pages[0].id}
-                className="flex"
+                className="flex items-center gap-0.5 rounded-lg border p-0.5"
                 style={{
-                  /*
-                   * Share the strip by CONTENT, and never shrink below it.
-                   *
-                   * Two different failures came from equal-per-group flex:
-                   *  - a lone uncategorized page sprawled across a quarter of the
-                   *    bar (Settings at 316px for a 48px label), while
-                   *  - the three-page SHIP group truncated "PR Queue" to "PRQ…".
-                   *
-                   * `flexGrow` proportional to the page count distributes free
-                   * space fairly on a wide window; `minWidth: max-content` +
-                   * `flexShrink: 0` guarantee a label is NEVER cut — when the
-                   * window is too narrow the strip scrolls (it is already
-                   * `overflow-x-auto`) instead of lying about its own items.
-                   */
-                  flexGrow: Math.max(1, group.pages.length),
-                  flexShrink: 0,
-                  flexBasis: 'auto',
-                  minWidth: 'max-content',
-                  borderRight: gi < all.length - 1 ? '1px solid hsl(var(--border))' : undefined
+                  background: 'hsl(var(--muted) / 0.35)',
+                  borderColor: 'hsl(var(--border) / 0.7)'
                 }}
               >
                 {group.category && (
-                  <div
-                    className="flex shrink-0 items-center px-2.5 text-[10px] font-bold uppercase tracking-widest"
-                    style={{ color: 'hsl(var(--muted-foreground) / 0.75)' }}
+                  <span
+                    className="select-none px-2 text-[9.5px] font-bold uppercase tracking-wider"
+                    style={{ color: 'hsl(var(--muted-foreground) / 0.8)' }}
                   >
                     {group.category}
-                  </div>
+                  </span>
                 )}
-                {group.pages.map((page, pgi) => {
+                {group.pages.map((page) => {
                   const active = page.id === activeId
                   const Icon = page.icon
-                  const width = group.category ? undefined : '100%'
                   return (
                     <button
                       key={page.id}
                       onClick={() => setActive(page.id)}
                       className={cn(
-                        'flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap px-2.5 text-[13px] font-medium transition-colors',
-                        active ? '' : 'hover:bg-tab-hover-bg text-muted-foreground'
+                        'tab-segment flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[12px] font-medium transition-all',
+                        active
+                          ? 'bg-card text-foreground shadow-xs font-semibold'
+                          : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
                       )}
-                      style={{
-                        flex: width ?? '1 1 auto',
-                        borderRadius: 0,
-                        background: active ? 'hsl(var(--tab-active-bg))' : 'transparent',
-                        color: active ? 'hsl(var(--tab-active-fg))' : undefined,
-                        borderRight:
-                          pgi < group.pages.length - 1 ? '1px solid hsl(var(--border))' : undefined
-                      }}
+                      style={
+                        active
+                          ? {
+                              background: 'hsl(var(--card))',
+                              color: 'hsl(var(--card-foreground))',
+                              boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.12)'
+                            }
+                          : undefined
+                      }
                       aria-current={active ? 'page' : undefined}
                     >
-                      <Icon className={cn('h-3.5 w-3.5 shrink-0', active && 'stroke-[2.4]')} />
+                      <Icon
+                        className={cn(
+                          'h-3.5 w-3.5 shrink-0 transition-transform',
+                          active ? 'text-primary scale-105 stroke-[2.2]' : 'opacity-70'
+                        )}
+                      />
                       <span>{page.label}</span>
                     </button>
                   )
@@ -162,29 +155,44 @@ export function TabBar({ pages, platform }: TabBarProps) {
         </>
       )}
 
-      {/* Window controls — integrated right, 60% native opacity */}
+      {/* Command Palette Trigger */}
+      <div className="app-no-drag flex h-full shrink-0 items-center px-1.5">
+        <button
+          onClick={() => setPaletteOpen(true)}
+          className="flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[11px] font-medium border border-border/70 bg-card/60 hover:bg-accent text-muted-foreground hover:text-foreground transition-all shadow-2xs"
+          title="Open Command Palette (Ctrl+K)"
+        >
+          <Search className="h-3 w-3 text-muted-foreground" />
+          <span className="hidden md:inline">Palette</span>
+          <kbd className="mono text-[9.5px] px-1 py-0.2 rounded bg-muted/80 border border-border/50 text-muted-foreground ml-0.5">
+            Ctrl+K
+          </kbd>
+        </button>
+      </div>
+
+      {/* Window controls — integrated right */}
       {!isMac && (
-        <div className="app-no-drag flex h-full shrink-0 items-center" style={{ opacity: 0.6 }}>
+        <div className="app-no-drag flex h-full shrink-0 items-center">
           <button
             onClick={handleMinimize}
-            className="flex h-full w-11 items-center justify-center text-muted-foreground transition-colors hover:bg-tab-hover-bg hover:text-foreground"
+            className="flex h-full w-10 items-center justify-center text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             aria-label="Minimize"
           >
-            <Minus className="h-4 w-4" />
+            <Minus className="h-3.5 w-3.5" />
           </button>
           <button
             onClick={handleMaximize}
-            className="flex h-full w-11 items-center justify-center text-muted-foreground transition-colors hover:bg-tab-hover-bg hover:text-foreground"
+            className="flex h-full w-10 items-center justify-center text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             aria-label="Maximize"
           >
-            <Square className="h-3.5 w-3.5" />
+            <Square className="h-3 w-3" />
           </button>
           <button
             onClick={handleClose}
-            className="flex h-full w-11 items-center justify-center text-muted-foreground transition-colors hover:bg-destructive hover:text-destructive-foreground"
+            className="flex h-full w-10 items-center justify-center text-muted-foreground transition-colors hover:bg-destructive hover:text-destructive-foreground"
             aria-label="Close"
           >
-            <X className="h-4 w-4" />
+            <X className="h-3.5 w-3.5" />
           </button>
         </div>
       )}

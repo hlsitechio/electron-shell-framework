@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { cn } from '@renderer/lib/utils'
 import { Avatar, AvatarFallback } from '@renderer/components/ui/avatar'
 import { useUiStore } from '@renderer/stores/ui-store'
+import { useCockpitTotals } from '@renderer/stores/cockpit-store'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
 import type { PageDefinition } from '@renderer/types/pages'
 import { useBranding } from '@renderer/lib/useBranding'
@@ -17,12 +18,51 @@ export function Sidebar({ pages, activeId, onSelect }: SidebarProps) {
   const { leftCollapsed, leftWidth, toggleLeft } = useUiStore()
   const { branding } = useBranding()
   const [hovered, setHovered] = useState<string | null>(null)
+  const totals = useCockpitTotals()
 
   const navPages = pages.filter((p) => p.showInSidebar !== false)
 
+  const getPageBadge = (id: string) => {
+    if (id === 'repos' && totals.dirty > 0) {
+      return (
+        <span
+          className="h-1.5 w-1.5 rounded-full"
+          style={{ background: 'hsl(var(--warning))' }}
+          title={`${totals.dirty} uncommitted changes`}
+        />
+      )
+    }
+    if (id === 'builds' && totals.running > 0) {
+      return (
+        <span
+          className="h-1.5 w-1.5 rounded-full animate-pulse"
+          style={{ background: 'hsl(var(--success))', boxShadow: '0 0 6px hsl(var(--success))' }}
+          title={`${totals.running} builds running`}
+        />
+      )
+    }
+    if (id === 'pull-requests' && totals.prs > 0) {
+      return (
+        <span className="mono rounded px-1 py-0.2 text-[9.5px] font-semibold text-muted-foreground">
+          {totals.prs}
+        </span>
+      )
+    }
+    if (id === 'ci' && totals.failing > 0) {
+      return (
+        <span
+          className="h-1.5 w-1.5 rounded-full"
+          style={{ background: 'hsl(var(--destructive))' }}
+          title={`${totals.failing} CI failures`}
+        />
+      )
+    }
+    return null
+  }
+
   return (
     <aside
-      className="flex h-full flex-col"
+      className="flex h-full flex-col select-none"
       style={{
         width: leftCollapsed ? 64 : leftWidth,
         background: 'hsl(var(--sidebar-bg))',
@@ -44,8 +84,8 @@ export function Sidebar({ pages, activeId, onSelect }: SidebarProps) {
             />
           ) : (
             <div
-              className="mx-auto flex h-6 w-6 items-center justify-center font-bold text-primary-foreground"
-              style={{ background: 'hsl(var(--primary))', borderRadius: 2 }}
+              className="mx-auto flex h-6 w-6 items-center justify-center font-bold text-primary-foreground text-xs shadow-xs"
+              style={{ background: 'hsl(var(--primary))', borderRadius: 4 }}
             >
               {branding.appName.charAt(0).toUpperCase()}
             </div>
@@ -60,13 +100,16 @@ export function Sidebar({ pages, activeId, onSelect }: SidebarProps) {
               />
             ) : (
               <div
-                className="flex h-6 w-6 items-center justify-center font-bold text-primary-foreground"
-                style={{ background: 'hsl(var(--primary))', borderRadius: 2 }}
+                className="flex h-6 w-6 items-center justify-center font-bold text-primary-foreground text-xs shadow-xs"
+                style={{ background: 'hsl(var(--primary))', borderRadius: 4 }}
               >
                 {branding.appName.charAt(0).toUpperCase()}
               </div>
             )}
-            <span className="text-sm font-semibold" style={{ color: 'hsl(var(--sidebar-fg))' }}>
+            <span
+              className="text-sm font-semibold tracking-tight"
+              style={{ color: 'hsl(var(--sidebar-fg))' }}
+            >
               {branding.appName}
             </span>
           </div>
@@ -79,6 +122,7 @@ export function Sidebar({ pages, activeId, onSelect }: SidebarProps) {
           const Icon = page.icon
           const active = page.id === activeId
           const showLabel = !leftCollapsed || hovered === page.id
+          const badge = getPageBadge(page.id)
 
           return (
             <Tooltip key={page.id} open={leftCollapsed && hovered === page.id}>
@@ -88,31 +132,36 @@ export function Sidebar({ pages, activeId, onSelect }: SidebarProps) {
                   onMouseEnter={() => setHovered(page.id)}
                   onMouseLeave={() => setHovered(null)}
                   className={cn(
-                    'flex h-8 items-center gap-2 px-2 text-[13px] font-medium transition-colors',
-                    leftCollapsed && 'justify-center px-0'
+                    'relative flex h-8 items-center gap-2.5 rounded-md px-2.5 text-[13px] font-medium transition-all',
+                    leftCollapsed && 'justify-center px-0',
+                    active
+                      ? 'bg-accent/40 font-semibold'
+                      : 'text-muted-foreground hover:bg-accent/20 hover:text-foreground'
                   )}
                   style={{
-                    borderRadius: 3,
-                    background: active ? 'hsl(var(--sidebar-accent) / 0.16)' : 'transparent',
-                    color: active ? 'hsl(var(--sidebar-accent))' : 'hsl(var(--sidebar-muted))'
-                  }}
-                  onMouseOver={(e) => {
-                    if (!active)
-                      e.currentTarget.style.background = 'hsl(var(--sidebar-accent) / 0.09)'
-                  }}
-                  onMouseOut={(e) => {
-                    if (!active) e.currentTarget.style.background = 'transparent'
+                    color: active ? 'hsl(var(--sidebar-accent))' : undefined
                   }}
                 >
+                  {/* Left accent indicator bar when active */}
+                  {active && (
+                    <span
+                      className="absolute left-0 top-1.5 bottom-1.5 w-1 rounded-r"
+                      style={{ background: 'hsl(var(--sidebar-accent))' }}
+                    />
+                  )}
                   <Icon
-                    className={cn('h-4 w-4 shrink-0', active && 'stroke-[2.4]')}
-                    style={
-                      active
-                        ? { filter: 'drop-shadow(0 0 6px hsl(var(--sidebar-accent) / 0.6))' }
-                        : undefined
-                    }
+                    className={cn(
+                      'h-4 w-4 shrink-0 transition-transform',
+                      active && 'stroke-[2.2] scale-105'
+                    )}
                   />
-                  {showLabel && <span className="truncate">{page.label}</span>}
+                  {showLabel && (
+                    <div className="flex min-w-0 flex-1 items-center justify-between">
+                      <span className="truncate">{page.label}</span>
+                      {badge}
+                    </div>
+                  )}
+                  {!showLabel && badge && <span className="absolute top-1.5 right-2">{badge}</span>}
                 </button>
               </TooltipTrigger>
               {leftCollapsed && <TooltipContent side="right">{page.label}</TooltipContent>}

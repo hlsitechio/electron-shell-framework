@@ -96,11 +96,11 @@ export function FooterBar({ appName = 'App Shell' }: FooterBarProps) {
         <button
           type="button"
           onClick={() => openTerminal(terminalRepo.id)}
-          className="mono hidden shrink-0 items-center gap-1.5 text-[10px] text-muted-foreground transition-colors hover:text-foreground sm:flex"
+          className="mono hidden shrink-0 items-center gap-1.5 rounded-md bg-muted/40 px-2 py-0.5 text-[10.5px] text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:flex border border-border/60 shadow-2xs"
           title="Open the terminal panel in this repository"
         >
-          <SquareTerminal className="h-3 w-3" />
-          {terminalRepo.name}
+          <SquareTerminal className="h-3 w-3 text-primary" />
+          <span>{terminalRepo.name}</span>
         </button>
       )}
 

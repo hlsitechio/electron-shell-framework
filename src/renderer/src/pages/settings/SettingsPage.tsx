@@ -1,5 +1,15 @@
 import { useCallback, useEffect, useState } from 'react'
-import { RefreshCw, User } from 'lucide-react'
+import {
+  ArrowDown,
+  CheckCircle2,
+  Download,
+  GitBranch,
+  Package,
+  RefreshCw,
+  User
+} from 'lucide-react'
+import { GitUpdateDialog } from '@renderer/components/git/GitUpdateDialog'
+import type { GitUpdateCheckResult } from '@shared/cockpit-types'
 import { Avatar, AvatarFallback } from '@renderer/components/ui/avatar'
 import { Badge } from '@renderer/components/ui/badge'
 import { Button } from '@renderer/components/ui/button'
@@ -26,6 +36,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@renderer/components/u
 import { useBranding } from '@renderer/lib/useBranding'
 import { useTheme } from '@renderer/components/theme/ThemeProvider'
 import { PresetSwitcher } from '@renderer/components/theme/PresetSwitcher'
+import { cn } from '@renderer/lib/utils'
 import type { UpdateStatus } from '@shared/updater-types'
 
 type ThemePref = 'dark' | 'light'
@@ -86,6 +97,27 @@ export function SettingsPage() {
 
   // updates
   const [updateStatus, setUpdateStatus] = useState<UpdateStatus>({ state: 'idle' })
+
+  // Git updates
+  const [gitDialogOpen, setGitDialogOpen] = useState(false)
+  const [gitCheckResult, setGitCheckResult] = useState<GitUpdateCheckResult | null>(null)
+  const [gitChecking, setGitChecking] = useState(false)
+
+  const checkGitUpdate = async () => {
+    setGitChecking(true)
+    try {
+      const res = await window.api.cockpit.gitCheckUpdate()
+      setGitCheckResult(res)
+    } catch {
+      /* ignore */
+    } finally {
+      setGitChecking(false)
+    }
+  }
+
+  useEffect(() => {
+    void checkGitUpdate()
+  }, [])
 
   useEffect(() => {
     void window.api?.update
@@ -285,13 +317,101 @@ export function SettingsPage() {
           {/* Updates */}
           <Card>
             <CardHeader>
-              <CardTitle>Updates</CardTitle>
-              <CardDescription>Auto-update via GitHub releases (packaged builds)</CardDescription>
+              <div className="flex items-center justify-between">
+                <CardTitle>Updates</CardTitle>
+                <span className="mono text-xs text-muted-foreground">v{appVersion}</span>
+              </div>
+              <CardDescription>Git source synchronization and release auto-updates</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-5">
+              {/* Git Update Section */}
+              <div className="rounded-lg border bg-accent/20 p-4 space-y-3">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="mono inline-flex items-center gap-1.5 rounded bg-muted/80 px-2 py-0.5 text-xs font-medium border text-foreground">
+                      <GitBranch className="h-3.5 w-3.5 text-muted-foreground" />
+                      {gitCheckResult?.branch || 'main'}
+                    </span>
+                    {gitCheckResult?.upstream && (
+                      <span className="text-xs text-muted-foreground">
+                        →{' '}
+                        <span className="mono font-semibold text-foreground/80">
+                          {gitCheckResult.upstream}
+                        </span>
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {gitCheckResult && (
+                      <>
+                        {gitCheckResult.behind > 0 ? (
+                          <Badge className="bg-primary text-primary-foreground gap-1 text-[11px]">
+                            <ArrowDown className="h-3 w-3" />
+                            {gitCheckResult.behind} behind
+                          </Badge>
+                        ) : (
+                          <Badge
+                            variant="outline"
+                            className="text-emerald-500 border-emerald-500/30 gap-1 text-[11px]"
+                          >
+                            <CheckCircle2 className="h-3 w-3" />
+                            Up to date
+                          </Badge>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* If dependencies changed */}
+                {gitCheckResult?.dependenciesChanged && (
+                  <div className="flex items-center gap-2 text-xs text-sky-500 bg-sky-500/10 border border-sky-500/20 px-2.5 py-1.5 rounded-md">
+                    <Package className="h-3.5 w-3.5 shrink-0" />
+                    <span>
+                      Incoming commits modify dependencies ({gitCheckResult.changedFiles.join(', ')}
+                      ).
+                    </span>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between pt-1 flex-wrap gap-2">
+                  <p className="text-xs text-muted-foreground">
+                    {gitCheckResult?.hasUpdate
+                      ? `${gitCheckResult.behind} new commits ready to pull and install.`
+                      : 'Sync codebase with git remote and install updated dependencies.'}
+                  </p>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={gitChecking}
+                      onClick={() => void checkGitUpdate()}
+                      className="gap-1.5 text-xs h-8"
+                    >
+                      <RefreshCw className={cn('h-3.5 w-3.5', gitChecking && 'animate-spin')} />
+                      Check git
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      onClick={() => setGitDialogOpen(true)}
+                      className="gap-1.5 text-xs h-8"
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                      {gitCheckResult?.hasUpdate ? 'Update now' : 'Git update…'}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Packaged Releases Section */}
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <Label>Version {appVersion}</Label>
+                  <Label className="text-xs font-semibold">GitHub Release Installer</Label>
                   <div className="mt-1">
                     <UpdateState status={updateStatus} />
                   </div>
@@ -304,7 +424,8 @@ export function SettingsPage() {
                   ) : (
                     <Button
                       size="sm"
-                      variant="outline"
+                      variant="ghost"
+                      className="text-xs text-muted-foreground hover:text-foreground"
                       disabled={
                         updateStatus.state === 'checking' || updateStatus.state === 'downloading'
                       }
@@ -313,7 +434,7 @@ export function SettingsPage() {
                       <RefreshCw
                         className={`mr-1.5 h-3.5 w-3.5 ${updateStatus.state === 'checking' || updateStatus.state === 'downloading' ? 'animate-spin' : ''}`}
                       />
-                      Check for updates
+                      Check binary release
                     </Button>
                   )}
                 </div>
@@ -443,6 +564,13 @@ export function SettingsPage() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <GitUpdateDialog
+        isAppSelfUpdate
+        open={gitDialogOpen}
+        onOpenChange={setGitDialogOpen}
+        onUpdated={() => void checkGitUpdate()}
+      />
     </div>
   )
 }

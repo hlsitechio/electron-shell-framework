@@ -28,10 +28,10 @@
   --destructive: 5 45% 50%;
   --destructive-foreground: 0 0% 100%;
 
-  --border: 0 0% 93.6%;
+  --border: 0 0% 91%;
   --input: 0 0% 90%;
   --ring: 0 0% 42%;
-  --card-border: 0 0% 96%; /* hairline card separation in light mode */
+  --card-border: 0 0% 93%; /* hairline card separation in light mode */
 
   /* Shell-specific surfaces — LIGHT sidebars (they follow the light theme) */
   --sidebar-bg: 0 0% 96%;
@@ -83,10 +83,10 @@
   --destructive: 5 35% 45%;
   --destructive-foreground: 0 0% 100%;
 
-  --border: 0 0% 14.5%;
-  --input: 0 0% 16%;
+  --border: 0 0% 18%;
+  --input: 0 0% 19%;
   --ring: 0 0% 60%;
-  --card-border: 0 0% 17%; /* hairline card separation in dark mode */
+  --card-border: 0 0% 21%; /* hairline card separation in dark mode */
 
   /* Shell-specific */
   --sidebar-bg: 0 0% 9%;

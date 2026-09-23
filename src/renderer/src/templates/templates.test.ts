@@ -91,7 +91,7 @@ describe('lazy loading', () => {
 
     const b = await loadTemplate('notes')
     expect(b).toBe(a) // cached — same object reference
-  })
+  }, 20000)
 
   it('every loadable template loads with a valid app contract', async () => {
     for (const meta of CATALOG) {

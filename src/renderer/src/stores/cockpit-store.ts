@@ -108,6 +108,10 @@ export const useCockpitStore = create<CockpitState>((set, get) => ({
         case 'clone-progress':
           set((s) => ({ cloning: { ...s.cloning, [event.slug]: event.text } }))
           break
+        case 'git-change':
+          // Zero-lag background watcher notified of git ref/index change
+          void get().refresh(false)
+          break
         default:
           break
       }

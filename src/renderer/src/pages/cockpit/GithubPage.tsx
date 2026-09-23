@@ -76,35 +76,35 @@ function RepoCard({
   return (
     <div
       className={cn(
-        'glass flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-colors',
-        active ? 'bg-accent/40' : 'hover:bg-accent/20'
+        'glass flex cursor-pointer items-center gap-3.5 px-3.5 py-3 transition-all rounded-lg select-none',
+        active ? 'bg-accent/40 ring-1 ring-primary/40 shadow-sm' : 'hover:bg-accent/20'
       )}
-      style={repo.cloned ? { boxShadow: 'inset 2px 0 0 0 hsl(var(--success))' } : undefined}
+      style={repo.cloned ? { borderLeft: '3px solid hsl(var(--success))' } : undefined}
       onClick={() => onOpen(repo.slug)}
       title="Open this repository for reading — no clone"
     >
       <span
-        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg shadow-2xs"
         style={{
           background: repo.cloned ? 'hsl(var(--success) / 0.14)' : 'hsl(var(--primary) / 0.14)',
           color: repo.cloned ? 'hsl(var(--success))' : 'hsl(var(--primary))'
         }}
       >
-        {repo.cloned ? <HardDrive className="h-3.5 w-3.5" /> : <Cloud className="h-3.5 w-3.5" />}
+        {repo.cloned ? <HardDrive className="h-4 w-4" /> : <Cloud className="h-4 w-4" />}
       </span>
 
       {/* identity */}
       <div className="min-w-0 flex-[3]">
-        <div className="flex items-center gap-2">
-          <span className="truncate text-[12.5px] font-semibold">{repo.name}</span>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="truncate text-[13.5px] font-semibold tracking-tight">{repo.name}</span>
           {repo.isPrivate && (
-            <span className="mono inline-flex shrink-0 items-center gap-1 text-[9.5px] text-muted-foreground">
+            <span className="inline-flex shrink-0 items-center gap-1 rounded bg-muted/60 px-1.5 py-0.5 text-[9.5px] text-muted-foreground border border-border/50">
               <Lock className="h-2.5 w-2.5" /> private
             </span>
           )}
           {repo.isFork && (
             <span
-              className="mono shrink-0 rounded px-1.5 py-0.5 text-[9.5px] text-muted-foreground"
+              className="shrink-0 rounded px-1.5 py-0.5 text-[9.5px] text-muted-foreground border border-border/50"
               style={{ background: 'hsl(var(--muted) / 0.6)' }}
             >
               fork
@@ -112,51 +112,60 @@ function RepoCard({
           )}
           {repo.openPrs > 0 && (
             <span
-              className="mono shrink-0 rounded px-1.5 py-0.5 text-[9.5px]"
+              className="mono shrink-0 rounded px-1.5 py-0.5 text-[9.5px] font-semibold"
               style={{ background: 'hsl(var(--primary) / 0.16)', color: 'hsl(var(--primary))' }}
             >
               {repo.openPrs} PR
             </span>
           )}
         </div>
-        <p className="mono mt-0.5 truncate text-[10.5px] text-muted-foreground">
+        <p className="mt-1 truncate text-[11.5px] text-muted-foreground/80">
           {repo.headMessage || 'no commits'}
         </p>
       </div>
 
       {/* metadata */}
-      <div className="mono hidden shrink-0 items-center gap-3 text-[10.5px] text-muted-foreground lg:flex">
-        <span title={`default branch: ${repo.defaultBranch}`}>{repo.defaultBranch || '—'}</span>
-        <span title="repository size on GitHub">{size(repo.sizeKb)}</span>
-        {repo.language && <span>{repo.language}</span>}
-        <span title={repo.headDate}>{relative(repo.headDate)}</span>
+      <div className="hidden shrink-0 items-center gap-3 text-[11px] text-muted-foreground lg:flex">
+        <span
+          className="mono rounded bg-muted/40 px-1.5 py-0.2 border border-border/40 text-[10px] font-medium"
+          title={`default branch: ${repo.defaultBranch}`}
+        >
+          {repo.defaultBranch || '—'}
+        </span>
+        <span className="mono text-[11px]" title="repository size on GitHub">
+          {size(repo.sizeKb)}
+        </span>
+        {repo.language && (
+          <span className="rounded bg-accent/30 px-1.5 py-0.5 text-[10px] font-medium text-foreground">
+            {repo.language}
+          </span>
+        )}
+        <span title={repo.headDate} className="text-muted-foreground/70">
+          {relative(repo.headDate)}
+        </span>
       </div>
 
       {/* action */}
-      <div className="flex shrink-0 items-center gap-1">
+      <div className="flex shrink-0 items-center gap-1.5">
         {busy ? (
           <span
-            className="mono flex max-w-[240px] items-center gap-1.5 truncate text-[10.5px]"
+            className="mono flex max-w-[240px] items-center gap-1.5 truncate text-[11px]"
             style={{ color: 'hsl(var(--warning))' }}
             title={progress}
           >
-            <Loader2 className="h-3 w-3 animate-spin" />
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
             {progress}
           </span>
         ) : repo.cloned ? (
-          <span
-            className="mono inline-flex items-center gap-1 text-[10.5px]"
-            style={{ color: 'hsl(var(--success))' }}
-          >
+          <span className="mono inline-flex items-center gap-1 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2 py-0.5 text-[10.5px] font-medium">
             <FolderGit2 className="h-3 w-3" /> in workspace
           </span>
         ) : (
           <Button
             size="sm"
-            className="h-6 px-2 text-[10.5px]"
+            className="h-7 px-2.5 text-[11px] rounded-md gap-1 shadow-2xs"
             title="Blobless partial clone at depth 1 — metadata only, blobs fetched on demand"
             onClick={(e) => {
-              // The row opens the repo; the button must not also do that.
               e.stopPropagation()
               void cloneRepo(repo.slug, false)
             }}
@@ -168,7 +177,7 @@ function RepoCard({
         <Button
           size="sm"
           variant="ghost"
-          className="h-6 w-6 p-0"
+          className="h-7 w-7 p-0 rounded-md"
           title="Open on GitHub"
           onClick={(e) => {
             e.stopPropagation()
@@ -250,62 +259,87 @@ export function GithubPage(): React.JSX.Element {
   const busyCount = Object.keys(cloning).length
 
   return (
-    <div className="flex h-full min-h-0 w-full gap-3 p-4">
-      <div className="mx-auto flex min-w-0 flex-1 flex-col gap-4">
+    <div className="flex h-full min-h-0 w-full gap-3.5 p-5">
+      <div className="mx-auto flex min-w-0 flex-1 flex-col gap-4.5">
         {/* KPI strip */}
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
           <StatTile
             label="Your repos"
             value={listed ? String(stats.mine) : '—'}
             delta={listed ? `${stats.forks} forks hidden` : 'not listed yet'}
             progress={listed ? 100 : 0}
+            icon={Globe}
           />
           <StatTile
             label="Cloned here"
             value={String(stats.clonedHere)}
             delta={
               stats.clonedHere
-                ? 'cloned on this machine'
+                ? `${stats.clonedHere} on this machine`
                 : listed
                   ? 'nothing cloned yet'
                   : 'not listed yet'
             }
             progress={stats.mine ? (stats.clonedHere / Math.max(stats.mine, 1)) * 100 : 0}
+            icon={HardDrive}
           />
           <StatTile
             label="Cloning"
             value={String(busyCount)}
-            delta={busyCount ? 'in progress' : 'idle'}
+            delta={busyCount ? `${busyCount} in progress` : 'idle'}
             progress={busyCount ? 55 : 0}
+            icon={Download}
           />
           <StatTile
             label="Would download"
             value={listed ? `${stats.pendingGb.toFixed(1)} GB` : '—'}
-            delta="your repos, full clones"
+            delta="uncloned repos total"
             progress={0}
+            icon={Cloud}
           />
         </div>
 
         {/* toolbar */}
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="relative min-w-[190px] flex-1">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+        <div className="flex flex-wrap items-center gap-2.5">
+          <div className="relative min-w-[210px] flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Filter by name, language or last commit…"
-              className="h-8 pl-8 text-[12.5px]"
+              className="h-8.5 pl-9 text-[13px] rounded-lg bg-card/60 border-border/80"
             />
           </div>
           <FilterChips
-            options={['mine', 'all', 'uncloned', 'active', 'cloned', 'private', 'forks']}
+            options={[
+              { id: 'mine', label: 'Mine', count: stats.mine },
+              { id: 'all', label: 'All', count: repos.length },
+              {
+                id: 'uncloned',
+                label: 'Uncloned',
+                count: repos.filter((r) => !r.cloned && !r.isFork).length
+              },
+              {
+                id: 'active',
+                label: 'Active',
+                count: repos.filter((r) => now - new Date(r.pushedAt || 0).getTime() < 30 * 864e5)
+                  .length
+              },
+              { id: 'cloned', label: 'Cloned', count: stats.clonedHere },
+              {
+                id: 'private',
+                label: 'Private',
+                count: repos.filter((r) => r.isPrivate).length
+              },
+              { id: 'forks', label: 'Forks', count: stats.forks }
+            ]}
             value={filter}
             onChange={(v) => setFilter(v as Filter)}
           />
           <Button
             size="sm"
             variant="outline"
-            className="h-8"
+            className="h-8.5 px-3 rounded-lg"
             disabled={githubBusy}
             onClick={() => void listRemoteRepos(listed)}
             title={
@@ -326,7 +360,7 @@ export function GithubPage(): React.JSX.Element {
           <Button
             size="sm"
             variant="outline"
-            className="h-8"
+            className="h-8.5 px-3 rounded-lg"
             onClick={() => void refresh(false)}
             title="Re-scan the repositories already on this machine"
           >
@@ -335,27 +369,32 @@ export function GithubPage(): React.JSX.Element {
           </Button>
         </div>
 
-        {/* clone destination — one row, always visible, so the cost is never a surprise */}
+        {/* clone destination — sleek header bar */}
         <div
-          className="mono flex flex-wrap items-center gap-2 rounded-md px-3 py-1.5 text-[10.5px] text-muted-foreground"
-          style={{ background: 'hsl(var(--muted) / 0.4)' }}
+          className="flex flex-wrap items-center gap-2.5 rounded-lg border px-3.5 py-2 text-[11px] text-muted-foreground select-none"
+          style={{
+            background: 'hsl(var(--muted) / 0.35)',
+            borderColor: 'hsl(var(--border) / 0.7)'
+          }}
         >
-          <FolderOpen className="h-3 w-3 shrink-0" />
-          <span className="shrink-0">
-            {stats.clonedHere > 0 ? `${stats.clonedHere} cloned` : 'clones'} into
+          <FolderOpen className="h-3.5 w-3.5 text-primary shrink-0" />
+          <span className="shrink-0 font-medium">
+            {stats.clonedHere > 0 ? `${stats.clonedHere} cloned` : 'Target directory'}:
           </span>
-          <span className="min-w-0 truncate text-foreground">{cloneRoot || '—'}</span>
+          <span className="mono min-w-0 truncate font-semibold text-foreground bg-card/70 px-2 py-0.5 rounded border border-border/50">
+            {cloneRoot || '—'}
+          </span>
           <Button
             size="sm"
-            variant="ghost"
-            className="h-5 px-1.5 text-[10.5px]"
+            variant="outline"
+            className="h-6 px-2 text-[10.5px] rounded"
             onClick={() => void pickCloneParent()}
             title="Choose where future clones land (saved)"
           >
-            change
+            Change
           </Button>
           <div className="flex-1" />
-          <span className="shrink-0">
+          <span className="text-[10.5px] text-muted-foreground/75 hidden sm:inline">
             Blobless partial fetch — file contents download on demand.
           </span>
         </div>

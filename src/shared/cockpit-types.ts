@@ -251,6 +251,91 @@ export type CockpitEvent =
   | { type: 'terminal-exit'; repoId: string; exitCode: number }
   | { type: 'heartbeat'; heartbeat: Heartbeat }
   | { type: 'clone-progress'; slug: string; text: string }
+  | { type: 'git-update-progress'; progress: GitUpdateProgressEvent }
+  | { type: 'git-change'; repoPath: string; reason: 'head' | 'index' | 'refs' }
+
+export interface GitCommitSummary {
+  hash: string
+  shortHash: string
+  subject: string
+  author: string
+  date: string
+}
+
+export interface GitUpdateCheckResult {
+  ok: boolean
+  repoPath: string
+  repoName: string
+  branch: string
+  upstream: string | null
+  remoteUrl: string | null
+  ahead: number
+  behind: number
+  hasUpdate: boolean
+  incomingCommits: GitCommitSummary[]
+  dependenciesChanged: boolean
+  changedFiles: string[]
+  isDirty: boolean
+  error?: string
+}
+
+export type GitUpdateStep =
+  'idle' | 'checking' | 'fetching' | 'pulling' | 'installing_deps' | 'building' | 'done' | 'error'
+
+export interface GitUpdateProgressEvent {
+  repoPath: string
+  step: GitUpdateStep
+  message: string
+  percent?: number
+  outputChunk?: string
+  error?: string
+}
+
+export interface GitUpdateApplyOptions {
+  installDeps?: boolean
+  runBuild?: boolean
+}
+
+export interface GitUpdateApplyResult {
+  ok: boolean
+  repoPath: string
+  pulledCommits: number
+  dependenciesInstalled: boolean
+  buildRun: boolean
+  logs: string[]
+  error?: string
+}
+
+export type IdeTarget = 'cursor' | 'code' | 'windsurf' | 'antigravity' | 'explorer' | 'terminal'
+
+export interface IdeDetectionResult {
+  installed: Record<IdeTarget, boolean>
+  defaultIde: IdeTarget
+}
+
+export type FileDiffStatus = 'modified' | 'staged' | 'untracked' | 'deleted' | 'renamed' | 'added'
+
+export interface DiffFileSummary {
+  path: string
+  oldPath?: string
+  status: FileDiffStatus
+  staged: boolean
+  additions: number
+  deletions: number
+  diff: string
+  diffLines?: string[]
+}
+
+export interface BranchInfo {
+  name: string
+  current: boolean
+  remote: boolean
+  upstream: string | null
+  ahead: number
+  behind: number
+  merged: boolean
+  subject?: string
+}
 
 export interface TerminalSession {
   repoId: string
@@ -291,6 +376,41 @@ export interface CockpitApi {
   repoDetail(slug: string): Promise<RepoDetail>
   /** Read one file's text straight from GitHub, no clone. */
   repoFile(slug: string, path: string, ref: string | null): Promise<RemoteFile>
+  /** Check for remote git updates and inspect incoming commits & dependency changes. */
+  gitCheckUpdate(repoIdOrPath?: string): Promise<GitUpdateCheckResult>
+  /** Pull remote git updates and optionally install dependencies / build. */
+  gitApplyUpdate(
+    repoIdOrPath?: string,
+    options?: GitUpdateApplyOptions
+  ): Promise<GitUpdateApplyResult>
+  /** Relaunch the application after an update. */
+  relaunchApp(): Promise<void>
+  /** Open repo in Cursor, VS Code, Explorer, or Terminal */
+  openInIde(repoIdOrPath: string, ide?: IdeTarget): Promise<boolean>
+  /** Detect installed IDEs on the system */
+  detectIdes(): Promise<IdeDetectionResult>
+  /** Retrieve changed files with status and diff patches */
+  gitDiffFiles(repoIdOrPath: string): Promise<DiffFileSummary[]>
+  /** Stage or unstage a file */
+  gitStageFile(repoIdOrPath: string, filePath: string, stage: boolean): Promise<boolean>
+  /** Discard uncommitted changes in a file */
+  gitDiscardFile(repoIdOrPath: string, filePath: string): Promise<boolean>
+  /** Commit staged changes */
+  gitCommit(repoIdOrPath: string, message: string): Promise<boolean>
+  /** Git stash operations */
+  gitStash(
+    repoIdOrPath: string,
+    action: 'save' | 'pop' | 'list',
+    message?: string
+  ): Promise<string[]>
+  /** List all local & remote branches with merge status */
+  gitListBranches(repoIdOrPath: string): Promise<BranchInfo[]>
+  /** Checkout branch */
+  gitCheckoutBranch(repoIdOrPath: string, branchName: string): Promise<boolean>
+  /** Create and checkout a new branch */
+  gitCreateBranch(repoIdOrPath: string, branchName: string): Promise<boolean>
+  /** Clean up branches already merged into default branch */
+  gitCleanupMergedBranches(repoIdOrPath: string): Promise<string[]>
   terminalAttach(repoId: string, cols: number, rows: number): Promise<TerminalSession>
   terminalWrite(repoId: string, data: string): Promise<boolean>
   terminalResize(repoId: string, cols: number, rows: number): Promise<boolean>

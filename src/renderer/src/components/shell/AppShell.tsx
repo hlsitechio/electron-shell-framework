@@ -7,6 +7,13 @@ import { TabBar } from '@renderer/components/shell/TabBar'
 import { StudioLayout } from '@renderer/components/shell/StudioLayout'
 import { CompactLayout } from '@renderer/components/shell/CompactLayout'
 import { useTabsStore } from '@renderer/stores/tabs-store'
+import { useUiStore } from '@renderer/stores/ui-store'
+import { useCockpitStore } from '@renderer/stores/cockpit-store'
+import { useGlobalShortcuts } from '@renderer/lib/useGlobalShortcuts'
+import { CommandPalette } from '@renderer/components/palette/CommandPalette'
+import { GitDiffModal } from '@renderer/components/git/GitDiffModal'
+import { BranchSwitchboardDialog } from '@renderer/components/git/BranchSwitchboardDialog'
+import { GitUpdateDialog } from '@renderer/components/git/GitUpdateDialog'
 import { useEffect, useState } from 'react'
 import type { PageDefinition } from '@renderer/types/pages'
 import type { ShellMode, ShellSlots } from '@renderer/types/shell'
@@ -58,7 +65,25 @@ interface AppShellProps {
  */
 export function AppShell({ pages, title = 'App Shell', mode = 'dashboard', slots }: AppShellProps) {
   const { activeId, setActive } = useTabsStore()
+  const {
+    paletteOpen,
+    setPaletteOpen,
+    diffRepo,
+    closeDiff,
+    branchRepo,
+    closeBranchSwitchboard,
+    updateRepo,
+    closeGitUpdate,
+    openDiff,
+    openBranchSwitchboard,
+    openGitUpdate
+  } = useUiStore()
+  const { refresh } = useCockpitStore()
   const [platform, setPlatform] = useState<string | undefined>(undefined)
+
+  useGlobalShortcuts({
+    onTogglePalette: () => setPaletteOpen(!paletteOpen)
+  })
 
   useEffect(() => {
     window.api?.app
@@ -69,85 +94,125 @@ export function AppShell({ pages, title = 'App Shell', mode = 'dashboard', slots
 
   const activePage = pages.find((p) => p.id === activeId) ?? pages[0]
 
+  const modals = (
+    <>
+      <CommandPalette
+        open={paletteOpen}
+        onOpenChange={setPaletteOpen}
+        onOpenDiff={openDiff}
+        onOpenBranches={openBranchSwitchboard}
+        onOpenUpdate={openGitUpdate}
+      />
+      <GitDiffModal
+        repo={diffRepo}
+        open={Boolean(diffRepo)}
+        onOpenChange={(open) => !open && closeDiff()}
+        onChanged={() => void refresh(false)}
+      />
+      <BranchSwitchboardDialog
+        repo={branchRepo}
+        open={Boolean(branchRepo)}
+        onOpenChange={(open) => !open && closeBranchSwitchboard()}
+        onChanged={() => void refresh(false)}
+      />
+      <GitUpdateDialog
+        repoIdOrPath={updateRepo?.id}
+        repoName={updateRepo?.name}
+        open={Boolean(updateRepo)}
+        onOpenChange={(open) => !open && closeGitUpdate()}
+        onUpdated={() => void refresh(false)}
+      />
+    </>
+  )
+
   if (mode === 'studio') {
     return (
-      <StudioLayout
-        pages={pages}
-        activeId={activePage.id}
-        onSelect={setActive}
-        title={title}
-        platform={platform}
-        slots={slots}
-      />
+      <>
+        <StudioLayout
+          pages={pages}
+          activeId={activePage.id}
+          onSelect={setActive}
+          title={title}
+          platform={platform}
+          slots={slots}
+        />
+        {modals}
+      </>
     )
   }
 
   if (mode === 'compact') {
     return (
-      <CompactLayout
-        pages={pages}
-        activeId={activePage.id}
-        onSelect={setActive}
-        title={title}
-        platform={platform}
-        slots={slots}
-      />
+      <>
+        <CompactLayout
+          pages={pages}
+          activeId={activePage.id}
+          onSelect={setActive}
+          title={title}
+          platform={platform}
+          slots={slots}
+        />
+        {modals}
+      </>
     )
   }
 
   // ── dashboard (original composition, unchanged) ─────────────────────────
   return (
-    <div
-      className="flex h-full w-full flex-col overflow-hidden"
-      style={{ background: 'hsl(var(--background))' }}
-    >
-      <div className="flex min-h-0 flex-1">
-        {/* Left sidebar rail */}
-        <Sidebar pages={pages} activeId={activePage.id} onSelect={setActive} />
-        <ResizeHandle side="left" />
+    <>
+      <div
+        className="flex h-full w-full flex-col overflow-hidden"
+        style={{ background: 'hsl(var(--background))' }}
+      >
+        <div className="flex min-h-0 flex-1">
+          {/* Left sidebar rail */}
+          <Sidebar pages={pages} activeId={activePage.id} onSelect={setActive} />
+          <ResizeHandle side="left" />
 
-        {/* Main column */}
-        <div className="flex min-w-0 flex-1 flex-col">
-          <TabBar pages={pages} platform={platform} />
-          <div className="flex min-h-0 flex-1">
-            <main
-              className="min-w-0 flex-1 overflow-auto"
-              style={{
-                background:
-                  'radial-gradient(1100px 700px at 28% -5%, hsl(var(--accent) / 0.10), transparent 55%), hsl(var(--content-bg))'
-              }}
-            >
-              {slots?.content ?? <activePage.component />}
-            </main>
-            {activePage.rightPanel ? (
-              <>
-                <ResizeHandle side="right" />
-                <RightPanel>
-                  <activePage.rightPanel />
-                </RightPanel>
-              </>
-            ) : slots?.rightDock ? (
-              <>
-                <ResizeHandle side="right" />
-                <RightPanel>{slots.rightDock}</RightPanel>
-              </>
-            ) : (
-              <>
-                <ResizeHandle side="right" />
-                <RightPanel>
-                  <DefaultRightPanel />
-                </RightPanel>
-              </>
-            )}
+          {/* Main column */}
+          <div className="flex min-w-0 flex-1 flex-col">
+            <TabBar pages={pages} platform={platform} />
+            <div className="flex min-h-0 flex-1">
+              <main
+                className="min-w-0 flex-1 overflow-auto"
+                style={{
+                  background:
+                    'radial-gradient(1100px 700px at 28% -5%, hsl(var(--accent) / 0.10), transparent 55%), hsl(var(--content-bg))'
+                }}
+              >
+                {slots?.content ?? <activePage.component />}
+              </main>
+              {activePage.rightPanel ? (
+                <>
+                  <ResizeHandle side="right" />
+                  <RightPanel>
+                    <activePage.rightPanel />
+                  </RightPanel>
+                </>
+              ) : slots?.rightDock ? (
+                <>
+                  <ResizeHandle side="right" />
+                  <RightPanel>{slots.rightDock}</RightPanel>
+                </>
+              ) : (
+                <>
+                  <ResizeHandle side="right" />
+                  <RightPanel>
+                    <DefaultRightPanel />
+                  </RightPanel>
+                </>
+              )}
+            </div>
           </div>
         </div>
+
+        {/* Collapsible bottom panel (PTY docks into it via slots.bottomDock) */}
+        <BottomPanel>{slots?.bottomDock}</BottomPanel>
+
+        {/* Full-width footer frame */}
+        <FooterBar appName={title} />
       </div>
-
-      {/* Collapsible bottom panel (PTY docks into it via slots.bottomDock) */}
-      <BottomPanel>{slots?.bottomDock}</BottomPanel>
-
-      {/* Full-width footer frame */}
-      <FooterBar appName={title} />
-    </div>
+      {modals}
+    </>
   )
 }
