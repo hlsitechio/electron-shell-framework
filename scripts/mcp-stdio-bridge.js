@@ -44,7 +44,7 @@ function sendHttpRequest(bodyStr) {
         res.on('end', () => {
           try {
             resolve(JSON.parse(data))
-          } catch (e) {
+          } catch {
             reject(new Error(`Invalid JSON response: ${data}`))
           }
         })
@@ -75,7 +75,7 @@ rl.on('line', async (line) => {
   const trimmed = line.trim()
   if (!trimmed) return
 
-  let parsed = null
+  let parsed
   try {
     parsed = JSON.parse(trimmed)
   } catch (err) {

@@ -26,7 +26,9 @@ export class GitWatcher {
         for (const w of list) {
           try {
             w.close()
-          } catch {}
+          } catch {
+            /* ignore cleanup error */
+          }
         }
         this.watchers.delete(p)
       }
@@ -81,7 +83,9 @@ export class GitWatcher {
       for (const w of list) {
         try {
           w.close()
-        } catch {}
+        } catch {
+          /* ignore cleanup error */
+        }
       }
     }
     this.watchers.clear()

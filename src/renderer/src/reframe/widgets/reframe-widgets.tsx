@@ -235,18 +235,17 @@ export const TablePanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
     { key: 'category', header: 'Category' },
     { key: 'status', header: 'Status' }
   ]
-  const rows: Array<Record<string, any>> = params?.rows || [
-    { item: 'Data Point 1', category: 'Core', status: 'Active' },
-    { item: 'Data Point 2', category: 'Secondary', status: 'In Review' }
-  ]
-
   const filteredRows = useMemo(() => {
+    const rows: Array<Record<string, any>> = params?.rows || [
+      { item: 'Data Point 1', category: 'Core', status: 'Active' },
+      { item: 'Data Point 2', category: 'Secondary', status: 'In Review' }
+    ]
     if (!searchTerm.trim()) return rows
     const term = searchTerm.toLowerCase()
     return rows.filter((r) =>
       Object.values(r).some((val) => String(val).toLowerCase().includes(term))
     )
-  }, [rows, searchTerm])
+  }, [params?.rows, searchTerm])
 
   return (
     <div className="reframe-panel-body p-3 bg-zinc-900/60 text-zinc-100 flex flex-col h-full">

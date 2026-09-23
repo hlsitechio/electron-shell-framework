@@ -10,16 +10,18 @@ import { useUiStore } from '@renderer/stores/ui-store'
 export function BottomPanel({ children }: { children?: ReactNode }) {
   const { bottomOpen, toggleBottom } = useUiStore()
   const [panelHeight, setPanelHeight] = useState(280)
-  const isDragging = useRef(false)
+  const [isDragging, setIsDragging] = useState(false)
+  const isDraggingRef = useRef(false)
 
   const handleMouseDown = (e: React.MouseEvent) => {
     e.preventDefault()
-    isDragging.current = true
+    isDraggingRef.current = true
+    setIsDragging(true)
     const startY = e.clientY
     const startH = panelHeight
 
     const onMouseMove = (moveEvent: MouseEvent) => {
-      if (!isDragging.current) return
+      if (!isDraggingRef.current) return
       const delta = startY - moveEvent.clientY
       const newHeight = Math.min(
         Math.max(140, startH + delta),
@@ -29,7 +31,8 @@ export function BottomPanel({ children }: { children?: ReactNode }) {
     }
 
     const onMouseUp = () => {
-      isDragging.current = false
+      isDraggingRef.current = false
+      setIsDragging(false)
       window.removeEventListener('mousemove', onMouseMove)
       window.removeEventListener('mouseup', onMouseUp)
     }
@@ -45,7 +48,7 @@ export function BottomPanel({ children }: { children?: ReactNode }) {
         background: 'hsl(var(--topbar-bg))',
         borderColor: 'hsl(var(--border))',
         height: bottomOpen ? panelHeight : 28,
-        transition: isDragging.current ? 'none' : 'height 160ms ease',
+        transition: isDragging ? 'none' : 'height 160ms ease',
         overflow: 'hidden'
       }}
     >

@@ -164,7 +164,7 @@ export async function launchInIde(repoPath: string, requestedIde?: IdeTarget): P
     }).unref()
 
     return true
-  } catch (err) {
+  } catch {
     return false
   }
 }

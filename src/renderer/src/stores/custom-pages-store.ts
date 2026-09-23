@@ -138,7 +138,7 @@ export const useCustomPagesStore = create<CustomPagesState>((set, get) => ({
 
     // Initialize pageOrder if empty or missing items
     const allIds = Array.from(allPagesMap.keys())
-    let effectiveOrder = pageOrder.filter((id) => allPagesMap.has(id))
+    const effectiveOrder = pageOrder.filter((id) => allPagesMap.has(id))
     for (const id of allIds) {
       if (!effectiveOrder.includes(id)) {
         effectiveOrder.push(id)
