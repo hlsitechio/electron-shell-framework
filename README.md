@@ -54,29 +54,29 @@ npm run dist:win     # electron-builder → NSIS installer + portable exe in rel
 
 The CLI is zero-dependency (Node stdlib only) — it works even before `npm install`.
 
-## Layout
+## Shell Layout Architecture
 
-```
-┌──────────┬───────────────────────────────────────────┬──────────┐
-│          │ TabBar — ONE top bar:                      │          │
-│   Left   │ [⇅] [ Dashboard | Settings | Communication│   Right  │
-│ Sidebar  │      Chat | Documents ]   [–][□][×]        │   Panel  │
-│ (nav,    ├───────────────────────────────────────────┤ (bell/   │
-│  collaps.)│ Content — active page                     │   log)   │
-│          │                                            │          │
-└──────────┴───────────────────────────────────────────┴──────────┘
-┌───────────────────────────────────────────────────────────────────┐
-│ FooterBar — full-width status frame (version · platform · app name)│
-└───────────────────────────────────────────────────────────────────┘
-```
+![Framework Shell Architecture](docs/themes/theme-stack-3d-trio-clean.png)
 
-- **Single top bar** — the tab strip and the window controls (min/max/close at 60% opacity) share one 40px bar. The `⇅` toggle collapses the tabs; the bar stays as a slim strip with the active page name.
-- **Dynamic responsive tabs** — on narrow viewports or small window sizes, the tab strip automatically collapses to icon-only mode with rich floating tooltips to prevent label truncation.
-- **Left sidebar** — collapsible (64px icon rail), drag-resizable; centered vertical icon stack in collapsed mode, clean toolbar in expanded mode without text button crowding.
-- **Native SVGL brand kit** — first-class integration with [svgl.app](https://svgl.app) for brand & tech stack SVG logos with offline caching and light/dark theme variants.
-- **Right panel** — Notifications + Activity log views (toast composer demo included), collapsible to an arrow-only rail.
-- **Bottom panel** — collapsible terminal-style strip.
-- **Theme** — 10 curated color presets, dark/light modes, both sidebars included, persisted.
+The framework ships **three native layout engines** (`src/renderer/src/types/shell.ts`), allowing you to build dashboards, writing studios, or compact utilities without forking the shell:
+
+| Mode                      | Best For                               | Navigation                              | Top Bar                                  | Right Dock             |
+| :------------------------ | :------------------------------------- | :-------------------------------------- | :--------------------------------------- | :--------------------- |
+| **`dashboard`** (Default) | Operations, analytics, multi-page apps | Collapsible sidebar + dynamic tabs      | Merged top bar (tabs + controls)         | Per-page inspector     |
+| **`studio`**              | Writing, documents, IDEs, canvas tools | Hierarchical tree (workspace $\to$ doc) | Document action bar (breadcrumb + tools) | Contextual review dock |
+| **`compact`**             | Single-purpose utilities, focus tools  | Folded segmented top bar                | Unified slim bar with menu               | Optional utility dock  |
+
+### Core Shell Invariants
+
+- **Single Top Bar** — Tab strip and native window controls share one unified 40px bar. The `⇅` toggle collapses tabs into a slim active-title strip.
+- **Dynamic Responsive Tabs** — On narrow viewports or container resize, tabs automatically collapse to centered icon-only mode with floating tooltips.
+- **Collapsible Sidebar** — Smoothly switches between 250px expanded and 64px icon rail with centered vertical tool stack and zero border collision.
+- **Native SVGL Brand Kit** — Built-in integration with [svgl.app](https://svgl.app) for tech & brand logos (`icon: 'electron'`) with offline caching and light/dark theme switching.
+- **Right Inspector Panel** — Contextual activity and inspector drawer with per-page customization.
+- **Bottom Panel** — Collapsible terminal or logs drawer.
+- **Full-Width Status Footer** — Persistent status frame with health indicators, engine telemetry, and versioning.
+
+_Read [docs/SHELL-MODES.md](docs/SHELL-MODES.md) for full layout slot documentation._
 
 ## Create a new app in 5 steps
 
@@ -126,6 +126,8 @@ Extend in `src/main/ipc.ts` + `src/preload/index.ts` — both are the only contr
 - `scripts/generate-icon.js` creates the app icon (PNG + ICO) — run `npm run icon` after restyling.
 
 ## Theming
+
+![10 Theme Presets Stack Showcase](docs/themes/theme-stack-showcase.png)
 
 All colors are CSS variables in `src/renderer/src/styles/theme.css`
 (`--background`, `--foreground`, `--primary`, `--sidebar-*`, `--chart-*`, …) with a `[data-theme='dark']` block, mapped into Tailwind v4 via `@theme inline` so utilities like `bg-card`, `border-input`, `text-muted-foreground` work. To brand an app: restyle the variables — every component picks them up automatically.

@@ -7,16 +7,6 @@ import type { ShellModeProps } from '@renderer/types/shell'
 /**
  * Studio layout — content-first composition.
  *
- *   ┌──────────┬────────────────────────────────────────────┐
- *   │ header   │ breadcrumb            actions   [-][□][×]   │
- *   ├──────────┼────────────────────────────────────────────┤
- *   │ SECTION  │                                            │
- *   │  tree    │            document canvas                 │
- *   │          │                                            │
- *   ├──────────┤                                            │
- *   │ profile  │                                            │
- *   └──────────┴────────────────────────────────────────────┘
- *
  * No tab strip: the tree navigates. No footer bar: a studio wants the full
  * height for the document. The right dock appears only when the app supplies
  * content for it, so a document with no remarks is a wider canvas.

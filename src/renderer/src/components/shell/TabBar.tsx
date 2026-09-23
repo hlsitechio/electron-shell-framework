@@ -13,15 +13,13 @@ interface TabBarProps {
 }
 
 /**
- * THE single top bar — tabs + window controls merged (no double bar).
+ * Single top bar — tabs + window controls merged into one unified 40px bar.
  *
- *   [⇅]|[ Dashboard | Settings | Chat | Documents ]  [-][□][×]
- *
- * - Collapse toggle fixed at the LEFT, before the tab segments.
- * - Window controls (min/max/close at 60% native opacity) at the RIGHT.
+ * - Dynamic responsive tabs: auto-collapses to icon-only with floating tooltips when narrow.
+ * - Collapse toggle fixed at the left, before the tab segments.
+ * - Window controls (min/max/close at 60% native opacity) at the right.
  * - Collapsed → slim strip: toggle + active page label + controls.
- * - `app-drag` on the bar so the window stays draggable; interactive
- *   regions are `app-no-drag`.
+ * - `app-drag` on the bar so the window stays draggable; interactive regions are `app-no-drag`.
  */
 export function TabBar({ pages, platform }: TabBarProps) {
   const isMac = platform === 'darwin'

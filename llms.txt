@@ -1,6 +1,6 @@
 # Electron Shell Framework
 
-> A reusable Electron desktop app-shell — a platform, not an app. It ships the window chrome, a two-layer theming system, an 11-component widget kit, and ten app templates. An app is built by adding pages or applying a template; the shell is never rewritten. Pure desktop: the production renderer loads from `file://`, there is no server and no web build.
+> A reusable Electron desktop app-shell — a platform, not an app. It ships the window chrome, a two-layer theming system, an 11-component widget kit, and eleven app templates. An app is built by adding pages or applying a template; the shell is never rewritten. Pure desktop: the production renderer loads from `file://`, there is no server and no web build.
 
 Stack: Electron 44, React 19, TypeScript, Tailwind v4, electron-vite, zustand, Vitest + Playwright.
 License: MIT. Windows and Linux are supported targets; macOS is intentionally unsupported.
@@ -22,7 +22,8 @@ Five self-contained `SKILL.md` files, written to the SKILL.md convention so they
 
 ## Reference documentation
 
-- [docs/APP-TEMPLATES.md](https://raw.githubusercontent.com/hlsitechio/electron-shell-framework/main/docs/APP-TEMPLATES.md): The ten templates, the shipped-app evidence behind each one, and the lazy-loading architecture.
+- [docs/APP-TEMPLATES.md](https://raw.githubusercontent.com/hlsitechio/electron-shell-framework/main/docs/APP-TEMPLATES.md): The eleven templates, the shipped-app evidence behind each one, and the lazy-loading architecture.
+- [docs/SHELL-MODES.md](https://raw.githubusercontent.com/hlsitechio/electron-shell-framework/main/docs/SHELL-MODES.md): The three layout engines (Dashboard, Studio, Compact) and layout slot architecture.
 - [docs/THEMES.md](https://raw.githubusercontent.com/hlsitechio/electron-shell-framework/main/docs/THEMES.md): The theming system in depth — base tokens, presets, contrast guarantees.
 - [docs/CODE-SIGNING.md](https://raw.githubusercontent.com/hlsitechio/electron-shell-framework/main/docs/CODE-SIGNING.md): Windows code signing in 2026 — what SmartScreen actually requires, the June 2023 hardware-token change, and what each option costs.
 - [docs/framework-security-report.md](https://raw.githubusercontent.com/hlsitechio/electron-shell-framework/main/docs/framework-security-report.md): The security posture — CSP, permission handlers, IPC sender authorization, fuses.
@@ -31,7 +32,7 @@ Five self-contained `SKILL.md` files, written to the SKILL.md convention so they
 
 - [src/main](https://github.com/hlsitechio/electron-shell-framework/tree/main/src/main): Electron main process — window lifecycle, IPC handlers, encrypted config, updater, window-state, logging, security policy.
 - [src/preload](https://github.com/hlsitechio/electron-shell-framework/tree/main/src/preload): The typed `contextBridge` contract exposed as `window.api`. With `src/main/ipc.ts`, the only files a future backend touches.
-- [src/renderer/src/templates](https://github.com/hlsitechio/electron-shell-framework/tree/main/src/renderer/src/templates): The ten app templates. `manifest.ts` is display metadata only by design — adding a page import there destroys lazy loading.
+- [src/renderer/src/templates](https://github.com/hlsitechio/electron-shell-framework/tree/main/src/renderer/src/templates): The eleven app templates. `manifest.ts` is display metadata only by design — adding a page import there destroys lazy loading.
 - [src/renderer/src/widgets](https://github.com/hlsitechio/electron-shell-framework/tree/main/src/renderer/src/widgets): The 11-component widget kit. Every widget renders a demo with zero props.
 - [src/renderer/src/components/shell](https://github.com/hlsitechio/electron-shell-framework/tree/main/src/renderer/src/components/shell): The shell chrome. `AppShell` composes it; do not edit these to make one page work.
 - [src/renderer/src/pages/registry.tsx](https://raw.githubusercontent.com/hlsitechio/electron-shell-framework/main/src/renderer/src/pages/registry.tsx): The framework extension point — where pages are registered.

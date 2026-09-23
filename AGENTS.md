@@ -21,7 +21,7 @@ belongs — not to invent a second design system next to the one already present
 
 A **reusable Electron app-shell framework** — a platform, not an app. It ships the
 chrome (merged top bar, collapsible sidebars, tab bar), a two-layer theming
-system, an 11-component widget kit, and **ten app templates**.
+system, an 11-component widget kit, and **eleven app templates**.
 
 An app is built by **adding pages** or **applying a template**. You do not
 scaffold an Electron project, wire a build, or design a layout system. All of
@@ -45,7 +45,7 @@ self-contained.
 | `electron-shell-framework`          | Starting any work in this repo — the entry point   |
 | `electron-shell-page-authoring`     | Adding or changing a page                          |
 | `electron-shell-theming`            | Presets, tokens, light/dark, "make it look like X" |
-| `electron-shell-template-authoring` | Adding an 11th template                            |
+| `electron-shell-template-authoring` | Adding a new template (12th+)                      |
 | `electron-shell-packaging`          | Building, signing, or releasing                    |
 
 `agent-skills/` is the same kit under its conventional name; `skills/` is the
@@ -101,7 +101,7 @@ They are independent. A finance app can run on any of the ten presets; the
 template just ships a sensible default (finance → `dark-indigo`).
 
 Templates are **lazily imported** — each is its own bundle chunk. `manifest.ts`
-carries display metadata only, so the gallery renders all ten previews without
+carries display metadata only, so the gallery renders all eleven previews without
 loading any template code. **Do not add eager template imports to `manifest.ts`.**
 
 ---
@@ -291,7 +291,7 @@ src/renderer/src/
   lib/apps.ts           applyTemplate / buildRecipe / exitToFramework
   lib/theme.ts          mode helpers
   components/theme/     ThemeProvider, ThemeToggle, PresetSwitcher
-  components/shell/     AppShell, Sidebar, TabBar, RightPanel, BottomPanel, FooterBar
+  components/shell/     AppShell, Sidebar, TabBar, CompactLayout, StudioLayout, RightPanel, FooterBar
   components/ui/        shadcn-style primitives (button, card, dialog, select…)
   widgets/              the widget kit (11 components)
   blocks/               framework UI blocks (recharts, zod + react-hook-form)
@@ -300,7 +300,7 @@ src/renderer/src/
     manifest.ts         CATALOG — display metadata only, no page imports
     catalog.ts          lazy loaders (id → () => import('./x'))
     store.ts            the live template (holds the loaded object)
-    notes.tsx … finance.tsx   one file per template
+    notes.tsx … writer.tsx    one file per template (11 total)
   pages/
     registry.tsx        THE framework extension point
     templates/          the Apps catalog page
@@ -309,7 +309,8 @@ src/renderer/src/
 skills/                 Hermes-native skill kit
 agent-skills/           the same kit, drop-in SKILL.md convention
 docs/
-  APP-TEMPLATES.md      the ten templates + the evidence for each
+  APP-TEMPLATES.md      the eleven templates + the evidence for each
+  SHELL-MODES.md        the three layout engines (dashboard, studio, compact)
   CODE-SIGNING.md       Windows signing: what works, what it costs
   THEMES.md             the theming system in depth
 ```

@@ -59,7 +59,7 @@ workspace-BIhL80QM.js    5.5 kB
 ...
 ```
 
-The gallery renders all ten template previews from `manifest.ts` alone. A
+The gallery renders all eleven template previews from `manifest.ts` alone. A
 template's code downloads the first time someone applies it.
 
 ## The agent contract
@@ -100,7 +100,7 @@ steps, and the ranked list of what to extend next.
 5. Agent wires real data into the page props
 6. `npm run dist:win` → NSIS installer + portable exe
 
-## Adding an 11th template
+## Adding a 12th template
 
 1. `templates/<id>.tsx` — export an `AppTemplate` (copy the nearest existing one)
 2. `templates/manifest.ts` — add the catalog entry (name, tagline, `ask`, icon,

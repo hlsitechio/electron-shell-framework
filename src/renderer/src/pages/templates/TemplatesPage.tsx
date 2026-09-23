@@ -11,7 +11,7 @@ import { getPageLabel } from '@renderer/types/pages'
  * Apps page — the template CATALOG.
  *
  * Reads display metadata only (templates/manifest.ts), so this page renders
- * all ten template UIs without loading a single template's code. Clicking
+ * all eleven template UIs without loading a single template's code. Clicking
  * one lazily imports it and applies it.
  *
  * Every preview is a real miniature rendered with the target preset's own
@@ -39,7 +39,7 @@ export function TemplatesPage() {
       <div>
         <h1 className="text-xl font-semibold">Apps</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Ten app templates, ordered by how common the shape is among shipped Electron apps. Pick
+          Eleven app templates, ordered by how common the shape is among shipped Electron apps. Pick
           one to reshape the shell — pages, layout and colors together.
         </p>
       </div>

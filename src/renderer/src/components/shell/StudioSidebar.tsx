@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
 import { PanelLeftClose, PanelLeftOpen } from 'lucide-react'
-import { cn } from '@renderer/lib/utils'
 import { useUiStore } from '@renderer/stores/ui-store'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
 
@@ -21,20 +20,10 @@ interface StudioSidebarProps {
  * Studio sidebar — the hierarchical counterpart to `Sidebar`.
  *
  * The dashboard sidebar renders a flat `pages[]` registry. Studio apps need a
- * *tree* (workspace → project → document) plus a profile footer, and that is the
+ * tree (workspace → project → document) plus a profile footer, and that is the
  * single biggest reason a studio app used to fork the shell: there was no slot
  * for it. This component owns the chrome — width, collapse, resize, theming,
  * scroll — and the app supplies only the contents.
- *
- *   ┌──────────────────┐
- *   │ header (brand)   │
- *   ├──────────────────┤
- *   │ SECTION   [+]    │
- *   │  ▸ tree …        │   ← children
- *   ├──────────────────┤
- *   │ footer (profile) │
- *   │ [collapse]       │
- *   └──────────────────┘
  */
 export function StudioSidebar({
   header,
@@ -84,35 +73,29 @@ export function StudioSidebar({
       {/* Footer — profile + actions, then the collapse toggle */}
       <div className="shrink-0 border-t p-2" style={{ borderColor: 'hsl(var(--sidebar-border))' }}>
         {!leftCollapsed && footer && <div className="mb-1">{footer}</div>}
-        <button
-          onClick={toggleLeft}
-          className={cn(
-            'flex h-8 w-full items-center rounded-lg text-xs transition-colors',
-            leftCollapsed ? 'justify-center' : 'justify-center gap-2'
-          )}
-          style={{ color: 'hsl(var(--sidebar-muted))' }}
-          onMouseOver={(e) =>
-            (e.currentTarget.style.background = 'hsl(var(--sidebar-accent) / 0.09)')
-          }
-          onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
-          aria-label={leftCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span className="flex items-center gap-2">
-                {leftCollapsed ? (
-                  <PanelLeftOpen className="h-4 w-4" />
-                ) : (
-                  <>
-                    <PanelLeftClose className="h-4 w-4" />
-                    <span>Collapse</span>
-                  </>
-                )}
-              </span>
-            </TooltipTrigger>
-            {leftCollapsed && <TooltipContent side="right">Expand sidebar</TooltipContent>}
-          </Tooltip>
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              onClick={toggleLeft}
+              className="flex h-8 w-full items-center justify-center rounded-lg text-xs transition-colors"
+              style={{ color: 'hsl(var(--sidebar-muted))' }}
+              onMouseOver={(e) =>
+                (e.currentTarget.style.background = 'hsl(var(--sidebar-accent) / 0.09)')
+              }
+              onMouseOut={(e) => (e.currentTarget.style.background = 'transparent')}
+              aria-label={leftCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {leftCollapsed ? (
+                <PanelLeftOpen className="h-4 w-4" />
+              ) : (
+                <PanelLeftClose className="h-4 w-4" />
+              )}
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="right">
+            {leftCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          </TooltipContent>
+        </Tooltip>
       </div>
     </aside>
   )

@@ -2,19 +2,22 @@ import { useUiStore } from '@renderer/stores/ui-store'
 import { WindowControls } from './WindowControls'
 import { RightPanel } from './RightPanel'
 import { ResizeHandle } from './ResizeHandle'
+import { LayoutGrid } from 'lucide-react'
 import { cn } from '@renderer/lib/utils'
+import { getPageLabel, type PageIcon } from '@renderer/types/pages'
+import { SvglIcon } from '@renderer/components/ui/SvglIcon'
 import type { ShellModeProps } from '@renderer/types/shell'
+
+function CompactNavIcon({ icon: Icon, className }: { icon?: PageIcon; className?: string }) {
+  if (!Icon) return <LayoutGrid className={className} />
+  if (typeof Icon === 'string') {
+    return <SvglIcon name={Icon} className={className} />
+  }
+  return <Icon className={className} />
+}
 
 /**
  * Compact layout — navigation folded into the top bar, full-bleed content.
- *
- *   ┌──────────────────────────────────────────────────────┐
- *   │ ⌂  [Nav ▾]                     status      [-][□][×] │
- *   ├──────────────────────────────────────────────────────┤
- *   │                                                      │
- *   │                  full-bleed content                  │
- *   │                                                      │
- *   └──────────────────────────────────────────────────────┘
  *
  * For single-purpose utilities, focus modes and anything that should feel like
  * a tool rather than a workspace. Pages become a horizontal segmented control
@@ -48,7 +51,6 @@ export function CompactLayout({ pages, activeId, onSelect, platform, slots }: Sh
         {!tabsCollapsed && (
           <nav className="app-no-drag flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
             {navPages.map((p) => {
-              const Icon = p.icon
               const active = p.id === activeId
               return (
                 <button
@@ -62,8 +64,11 @@ export function CompactLayout({ pages, activeId, onSelect, platform, slots }: Sh
                       : 'text-muted-foreground hover:bg-tab-hover-bg'
                   )}
                 >
-                  <Icon className={cn('h-3.5 w-3.5', active && 'stroke-[2.4]')} />
-                  <span className="truncate">{p.label}</span>
+                  <CompactNavIcon
+                    icon={p.icon}
+                    className={cn('h-3.5 w-3.5', active && 'stroke-[2.4]')}
+                  />
+                  <span className="truncate">{getPageLabel(p)}</span>
                 </button>
               )
             })}
@@ -72,7 +77,7 @@ export function CompactLayout({ pages, activeId, onSelect, platform, slots }: Sh
 
         {tabsCollapsed && (
           <div className="app-no-drag flex min-w-0 flex-1 items-center truncate px-2 text-sm font-medium">
-            {activePage?.label}
+            {activePage ? getPageLabel(activePage) : ''}
           </div>
         )}
 

@@ -20,7 +20,7 @@ import type { PageDefinition } from '@renderer/types/pages'
  * The framework's demo page set — what you see on a fresh clone.
  *
  * A consumer app replaces this array with its own pages (or applies one of
- * the 10 app templates). The shell renders sidebar items and tabs from it
+ * the 11 app templates). The shell renders sidebar items and tabs from it
  * automatically.
  */
 export const PAGES: PageDefinition[] = [
@@ -34,7 +34,7 @@ export const PAGES: PageDefinition[] = [
   {
     id: 'templates',
     label: 'Apps',
-    description: '10 app templates',
+    description: '11 app templates',
     category: 'Start',
     icon: Sparkles,
     component: TemplatesPage
