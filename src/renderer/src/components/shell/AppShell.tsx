@@ -114,7 +114,12 @@ export function AppShell({ pages, title = 'App Shell', mode = 'dashboard', slots
             >
               {slots?.content ?? <activePage.component />}
             </main>
-            {activePage.rightPanel ? (
+            {slots?.rightDock ? (
+              <>
+                <ResizeHandle side="right" />
+                <RightPanel>{slots.rightDock}</RightPanel>
+              </>
+            ) : activePage.rightPanel ? (
               <>
                 <ResizeHandle side="right" />
                 <RightPanel>
@@ -133,8 +138,8 @@ export function AppShell({ pages, title = 'App Shell', mode = 'dashboard', slots
         </div>
       </div>
 
-      {/* Collapsible bottom panel (terminal-style) */}
-      <BottomPanel />
+      {/* Collapsible bottom panel (PTY docks into it via slots.bottomDock) */}
+      <BottomPanel>{slots?.bottomDock}</BottomPanel>
 
       {/* Full-width footer frame */}
       <FooterBar appName={title} />

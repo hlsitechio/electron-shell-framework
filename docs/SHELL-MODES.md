@@ -27,6 +27,8 @@ The default house composition. The tab bar is the primary navigation; pages regi
 - **Merged Top Bar**: Tabs, search/actions, and native window controls share one unified 40px bar.
 - **Responsive Tab Bar**: Automatically collapses into centered icon-only mode with floating tooltips when container width is constrained.
 - **Collapsible Sidebar**: Switches between a 250px expanded rail and a 64px icon rail.
+- **Right Inspector Panel**: Supports per-page inspectors or full custom dock via `slots.rightDock` (takes precedence over demo notices).
+- **Collapsible Bottom Panel**: Collapsible terminal/drawer; custom terminals or logs dock cleanly via `slots.bottomDock` without placeholder text.
 - **Footer Bar**: Persistent status frame showing system health, app version, and engine status.
 
 ### Studio Mode (`mode="studio"`)

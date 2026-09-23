@@ -1,4 +1,5 @@
 import { ChevronDown, ChevronUp, SquareTerminal } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { useUiStore } from '@renderer/stores/ui-store'
 
 /**
@@ -6,7 +7,7 @@ import { useUiStore } from '@renderer/stores/ui-store'
  * Closed: a slim toggle bar with a chevron-up.
  * Open: a panel with a placeholder "panel content goes here".
  */
-export function BottomPanel() {
+export function BottomPanel({ children }: { children?: ReactNode }) {
   const { bottomOpen, toggleBottom } = useUiStore()
 
   return (
@@ -15,7 +16,7 @@ export function BottomPanel() {
       style={{
         background: 'hsl(var(--topbar-bg))',
         borderColor: 'hsl(var(--border))',
-        height: bottomOpen ? 180 : 28,
+        height: bottomOpen ? (children ? 280 : 180) : 28,
         transition: 'height 160ms ease',
         overflow: 'hidden'
       }}
@@ -40,10 +41,14 @@ export function BottomPanel() {
               <ChevronDown className="h-4 w-4" />
             </button>
           </div>
-          <div className="flex flex-1 items-center justify-center p-3">
-            <p className="text-sm text-muted-foreground">
-              Panel content goes here — hook your own tool, log stream, or output view.
-            </p>
+          <div className="min-h-0 flex-1 overflow-hidden">
+            {children ?? (
+              <div className="flex h-full items-center justify-center p-3">
+                <p className="text-sm text-muted-foreground">
+                  Panel content goes here — hook your own tool, log stream, or output view.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       ) : (
