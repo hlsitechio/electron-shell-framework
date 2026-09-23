@@ -13,6 +13,8 @@ import {
   TerminalWidget
 } from '@renderer/widgets'
 import { useTheme } from '@renderer/components/theme/ThemeProvider'
+import { SvglIcon } from '@renderer/components/ui/SvglIcon'
+import { BUNDLED_SVGL_NAMES } from '@renderer/lib/svgl'
 
 /**
  * Widgets page — every component in the kit, rendered with its demo props
@@ -113,6 +115,32 @@ export function WidgetsPage() {
         </GlassCard>
         <GlassCard title="Empty state" subtitle="Designed, never a blank box">
           <EmptyState />
+        </GlassCard>
+      </section>
+
+      {/* Native SVGL icons */}
+      <section className="space-y-2">
+        <h2 className="mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+          Native SVGL (svgl.app) Icons
+        </h2>
+        <GlassCard
+          title="SVGL Tech & Brand Kit"
+          subtitle="Direct native integration from svgl.app with offline pre-bundled assets and light/dark theme variants"
+        >
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+            {BUNDLED_SVGL_NAMES.map((name) => (
+              <div
+                key={name}
+                className="flex items-center gap-2.5 rounded-md border border-border/40 bg-card/40 p-2.5 transition-colors hover:border-sidebar-accent/50 hover:bg-card/70"
+              >
+                <SvglIcon name={name} size={20} className="h-5 w-5 shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-semibold capitalize">{name}</p>
+                  <p className="mono text-[10px] text-muted-foreground">svgl('{name}')</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </GlassCard>
       </section>
     </div>

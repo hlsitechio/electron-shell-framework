@@ -20,7 +20,7 @@ interface FooterBarProps {
  * "alive" is a measured fact rather than a decorative string.
  */
 export function FooterBar({ appName = 'App Shell' }: FooterBarProps) {
-  const [version, setVersion] = useState('0.1.0')
+  const [version, setVersion] = useState('0.2.0')
   const { branding } = useBranding()
   const displayName = branding.appName || appName
 

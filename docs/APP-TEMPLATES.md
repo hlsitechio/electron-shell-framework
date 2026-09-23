@@ -14,7 +14,7 @@ That sentence is the product. Everything here serves it.
 A bare Electron shell still leaves a day of work: lay out pages, wire a sidebar,
 build a table, style a chart, add an empty state. Those are solved problems.
 
-Ten templates solve the _shape_, and they are not invented — each one matches a
+Eleven templates solve the _shape_, and they are not invented — each one matches a
 shape that hundreds of shipped apps already use (source: `electron/electron-apps`,
 613 apps, plus public GitHub topic counts):
 
@@ -30,6 +30,7 @@ shape that hundreds of shipped apps already use (source: `electron/electron-apps
 | `workspace` | All-in-one web wrapper               | 11 shipped pure wrappers (Franz, Rambox, Station)  |
 | `reader`    | RSS / ebook reader                   | 24 shipped apps                                    |
 | `finance`   | Finance / budget / portfolio         | 21 shipped apps                                    |
+| `writer`    | AI Writing Studio / document review  | 41 shipped apps (Lex, Notion AI, Hemingway)        |
 
 ## The architecture: lean core, lazy templates
 
@@ -58,7 +59,7 @@ workspace-BIhL80QM.js    5.5 kB
 ...
 ```
 
-The gallery renders all ten template previews from `manifest.ts` alone. A
+The gallery renders all eleven template previews from `manifest.ts` alone. A
 template's code downloads the first time someone applies it.
 
 ## The agent contract
@@ -99,7 +100,7 @@ steps, and the ranked list of what to extend next.
 5. Agent wires real data into the page props
 6. `npm run dist:win` → NSIS installer + portable exe
 
-## Adding an 11th template
+## Adding a 12th template
 
 1. `templates/<id>.tsx` — export an `AppTemplate` (copy the nearest existing one)
 2. `templates/manifest.ts` — add the catalog entry (name, tagline, `ask`, icon,

@@ -7,7 +7,8 @@ import {
   Hammer,
   LayoutGrid,
   Palette,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  Sparkles
 } from 'lucide-react'
 import { ReposPage } from '@renderer/pages/cockpit/ReposPage'
 import { GithubPage } from '@renderer/pages/cockpit/GithubPage'
@@ -18,6 +19,7 @@ import { CiRunsPage } from '@renderer/pages/cockpit/CiRunsPage'
 import { SettingsPage } from '@renderer/pages/settings/SettingsPage'
 import { ThemesPage } from '@renderer/pages/themes/ThemesPage'
 import { WidgetsPage } from '@renderer/pages/widgets/WidgetsPage'
+import { TemplatesPage } from '@renderer/pages/templates/TemplatesPage'
 import type { PageDefinition } from '@renderer/types/pages'
 
 /**
@@ -30,7 +32,7 @@ import type { PageDefinition } from '@renderer/types/pages'
  * `category` groups the entries into sub-tab clusters in the top bar —
  * Workspace for reading state, Ship for work that leaves the machine.
  *
- * Themes and Widgets are the framework's own galleries, kept reachable by tab
+ * Themes, Widgets, and Templates are the framework's own galleries, kept reachable by tab
  * (showInSidebar: false) so the boilerplate's preset system stays one click
  * away without crowding the workspace navigation.
  */
@@ -50,6 +52,15 @@ export const PAGES: PageDefinition[] = [
     category: 'Workspace',
     icon: Globe,
     component: GithubPage
+  },
+  {
+    id: 'templates',
+    label: 'Templates',
+    description: '11 app templates',
+    category: 'Design',
+    icon: Sparkles,
+    component: TemplatesPage,
+    showInSidebar: false
   },
   {
     id: 'worktrees',

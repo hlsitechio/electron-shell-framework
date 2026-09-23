@@ -108,6 +108,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const resetPreset = useCallback(() => setPreset(DEFAULT_PRESET), [setPreset])
 
+  useEffect(() => {
+    ;(window as unknown as { __shellSetPreset?: (p: string) => void }).__shellSetPreset = setPreset
+    ;(window as unknown as { __shellSetTheme?: (t: Theme) => void }).__shellSetTheme = setTheme
+  }, [setPreset, setTheme])
+
   if (!ready) {
     // Brief blank frame to avoid a light/dark/preset flash on startup.
     return (

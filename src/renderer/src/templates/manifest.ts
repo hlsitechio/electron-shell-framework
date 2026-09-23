@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   MessageSquare,
   Newspaper,
+  PenTool,
   Wallet,
   type LucideIcon
 } from 'lucide-react'
@@ -138,11 +139,30 @@ export const CATALOG: TemplateMeta[] = [
     preset: 'dark-indigo',
     pageCount: 3,
     evidence: '21 shipped apps'
+  },
+  {
+    id: 'writer',
+    name: 'AI Writing Studio',
+    tagline: 'Document studio with inline critique, review brackets, and style instructions.',
+    ask: 'an AI writer / writing studio / document review editor',
+    icon: PenTool,
+    preset: 'dark-indigo',
+    pageCount: 3,
+    evidence: '41 shipped apps'
   }
 ]
 
 /** Free text → template id. A client says "financial dashboard", gets finance. */
 const ALIASES: Record<string, string> = {
+  writer: 'writer',
+  writing: 'writer',
+  studio: 'writer',
+  author: 'writer',
+  manuscript: 'writer',
+  copywriting: 'writer',
+  draft: 'writer',
+  lex: 'writer',
+  remark: 'writer',
   financial: 'finance',
   finance: 'finance',
   accounting: 'finance',

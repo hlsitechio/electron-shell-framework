@@ -83,7 +83,7 @@ export function SettingsPage() {
   const { theme, setTheme, preset } = useTheme()
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [animations, setAnimations] = useState(true)
-  const [appVersion, setAppVersion] = useState('0.1.0')
+  const [appVersion, setAppVersion] = useState('0.2.0')
 
   // profile
   const [displayName, setDisplayName] = useState('')

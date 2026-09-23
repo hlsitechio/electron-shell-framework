@@ -22,7 +22,8 @@ const LOADERS: Record<string, () => Promise<AppTemplate>> = {
   tasks: () => import('./tasks').then((m) => m.tasksTemplate),
   workspace: () => import('./workspace').then((m) => m.workspaceTemplate),
   reader: () => import('./reader').then((m) => m.readerTemplate),
-  finance: () => import('./finance').then((m) => m.financeTemplate)
+  finance: () => import('./finance').then((m) => m.financeTemplate),
+  writer: () => import('./writer').then((m) => m.writerTemplate)
 }
 
 const cache = new Map<string, AppTemplate>()

@@ -91,6 +91,13 @@ if (!gotLock) {
       win.setOpacity(savedOpacity)
     }
 
+    log.info('[main] createWindow bounds:', {
+      x: stateKeeper.x,
+      y: stateKeeper.y,
+      width: stateKeeper.width,
+      height: stateKeeper.height
+    })
+
     const showWindow = (): void => {
       if (win.isDestroyed()) return
       if (win.isMinimized()) win.restore()
@@ -129,6 +136,13 @@ if (!gotLock) {
       }
     }, 1500)
 
+    win.on('close', () => {
+      log.info('[main] window close event fired')
+    })
+    win.on('closed', () => {
+      log.info('[main] window closed event fired')
+    })
+
     // A renderer that dies leaves a blank frameless window with no way out.
     // Log it and reload once, so a transient GPU crash is not fatal.
     win.webContents.on('render-process-gone', (_e, details) => {
@@ -141,11 +155,24 @@ if (!gotLock) {
     })
 
     // Dev: HMR via electron-vite dev server. Prod: pure file:// — no server, no network.
+    const targetFile = join(__dirname, '../renderer/index.html')
+    log.info('[main] targetFile to load:', targetFile)
     if (!app.isPackaged && process.env['ELECTRON_RENDERER_URL']) {
+      log.info('[main] loading URL:', process.env['ELECTRON_RENDERER_URL'])
       win.loadURL(process.env['ELECTRON_RENDERER_URL'])
     } else {
-      win.loadFile(join(__dirname, '../renderer/index.html'))
+      log.info('[main] loading file:', targetFile)
+      win.loadFile(targetFile)
     }
+
+    // Force show right away in case ready-to-show is delayed
+    setTimeout(() => {
+      if (!win.isDestroyed()) {
+        log.info('[main] fallback show timeout')
+        win.show()
+        win.focus()
+      }
+    }, 500)
   }
 
   app.whenReady().then(() => {
@@ -169,6 +196,7 @@ if (!gotLock) {
   })
 
   app.on('window-all-closed', () => {
+    log.info('[main] window-all-closed fired')
     // Windows + Linux: closing the last window quits the app.
     app.quit()
   })

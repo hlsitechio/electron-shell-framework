@@ -1,9 +1,11 @@
+import { useEffect, useRef, useState } from 'react'
 import { ChevronDown, ChevronUp, Minus, Search, Square, X } from 'lucide-react'
 import { cn } from '@renderer/lib/utils'
 import { useTabsStore } from '@renderer/stores/tabs-store'
 import { useUiStore } from '@renderer/stores/ui-store'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
-import type { PageDefinition } from '@renderer/types/pages'
+import { getPageLabel, type PageDefinition } from '@renderer/types/pages'
+import { SvglIcon } from '@renderer/components/ui/SvglIcon'
 
 interface TabBarProps {
   pages: PageDefinition[]
@@ -11,20 +13,38 @@ interface TabBarProps {
 }
 
 /**
- * THE single top bar — tabs + window controls merged (no double bar).
+ * Single top bar — tabs + window controls merged into one unified 40px bar.
  *
- *   [⇅]|[ Dashboard | Settings | Chat | Documents ]  [-][□][×]
- *
- * - Collapse toggle fixed at the LEFT, before the tab segments.
- * - Window controls (min/max/close at 60% native opacity) at the RIGHT.
+ * - Dynamic responsive tabs: auto-collapses to icon-only with floating tooltips when narrow.
+ * - Collapse toggle fixed at the left, before the tab segments.
+ * - Window controls (min/max/close at 60% native opacity) at the right.
  * - Collapsed → slim strip: toggle + active page label + controls.
- * - `app-drag` on the bar so the window stays draggable; interactive
- *   regions are `app-no-drag`.
+ * - `app-drag` on the bar so the window stays draggable; interactive regions are `app-no-drag`.
  */
 export function TabBar({ pages, platform }: TabBarProps) {
   const isMac = platform === 'darwin'
   const { activeId, setActive } = useTabsStore()
   const { tabsCollapsed, toggleTabs, setPaletteOpen } = useUiStore()
+
+  const [isCompact, setIsCompact] = useState(false)
+  const tabStripRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const el = tabStripRef.current
+    if (!el) return
+
+    const check = () => {
+      const width = el.clientWidth
+      // If available width is tight, dynamically collapse tabs to icon-only mode
+      const neededWidth = Math.max(pages.length * 105, 620)
+      setIsCompact(width < neededWidth)
+    }
+
+    check()
+    const ro = new ResizeObserver(check)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [pages.length])
 
   const handleMaximize = () => window.api?.window?.maximize?.()
   const handleMinimize = () => window.api?.window?.minimize?.()
@@ -46,7 +66,8 @@ export function TabBar({ pages, platform }: TabBarProps) {
   for (const p of flat) all.push({ pages: [p] })
   for (const [category, arr] of cats) all.push({ category, pages: arr })
 
-  const activeLabel = pages.find((p) => p.id === activeId)?.label ?? ''
+  const activePage = pages.find((p) => p.id === activeId)
+  const activeLabel = activePage ? getPageLabel(activePage) : ''
 
   return (
     <div
@@ -93,61 +114,100 @@ export function TabBar({ pages, platform }: TabBarProps) {
         </span>
       ) : (
         <>
+          <div className="h-4 w-px shrink-0" style={{ background: 'hsl(var(--border))' }} />
           <div
-            className="h-4 w-px shrink-0 opacity-40"
-            style={{ background: 'hsl(var(--border))' }}
-          />
-          <div className="app-no-drag flex h-full min-w-0 flex-1 items-center gap-2 overflow-x-auto px-2">
-            {all.map((group) => (
+            ref={tabStripRef}
+            className="app-no-drag flex h-full min-w-0 flex-1 items-stretch overflow-x-auto"
+          >
+            {all.map((group, gi) => (
               <div
                 key={group.category ?? group.pages[0].id}
-                className="flex items-center gap-0.5 rounded-lg border p-0.5"
+                className="flex min-w-0 flex-1 items-stretch"
                 style={{
                   background: 'hsl(var(--muted) / 0.35)',
                   borderColor: 'hsl(var(--border) / 0.7)'
                 }}
               >
-                {group.category && (
-                  <span
-                    className="select-none px-2 text-[9.5px] font-bold uppercase tracking-wider"
-                    style={{ color: 'hsl(var(--muted-foreground) / 0.8)' }}
+                {group.category && !isCompact && (
+                  <div
+                    className="flex shrink-0 items-center px-2.5 text-[10px] font-bold uppercase tracking-widest"
+                    style={{ color: 'hsl(var(--muted-foreground) / 0.75)' }}
                   >
                     {group.category}
-                  </span>
+                  </div>
                 )}
-                {group.pages.map((page) => {
+                {group.pages.map((page, pgi) => {
                   const active = page.id === activeId
-                  const Icon = page.icon
-                  return (
+                  const label = getPageLabel(page)
+                  const isSvglSlug = typeof page.icon === 'string'
+                  const IconComponent =
+                    typeof page.icon === 'function' || typeof page.icon === 'object'
+                      ? page.icon
+                      : null
+                  const width = group.category && !isCompact ? undefined : '100%'
+
+                  const tabButton = (
                     <button
                       key={page.id}
                       onClick={() => setActive(page.id)}
-                      className={cn(
-                        'tab-segment flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[12px] font-medium transition-all',
-                        active
-                          ? 'bg-card text-foreground shadow-xs font-semibold'
-                          : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
-                      )}
-                      style={
-                        active
-                          ? {
-                              background: 'hsl(var(--card))',
-                              color: 'hsl(var(--card-foreground))',
-                              boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.12)'
-                            }
-                          : undefined
-                      }
+                      aria-label={label}
                       aria-current={active ? 'page' : undefined}
+                      className={cn(
+                        'flex min-w-0 items-center justify-center gap-1.5 transition-colors whitespace-nowrap',
+                        isCompact ? 'px-2.5 text-xs' : 'px-2 text-[13px] font-medium',
+                        active ? '' : 'hover:bg-tab-hover-bg text-muted-foreground'
+                      )}
+                      style={{
+                        flex: width ?? 1,
+                        borderRadius: 0,
+                        background: active ? 'hsl(var(--tab-active-bg))' : 'transparent',
+                        color: active ? 'hsl(var(--tab-active-fg))' : undefined,
+                        borderRight:
+                          pgi < group.pages.length - 1 ? '1px solid hsl(var(--border))' : undefined
+                      }}
                     >
-                      <Icon
-                        className={cn(
-                          'h-3.5 w-3.5 shrink-0 transition-transform',
-                          active ? 'text-primary scale-105 stroke-[2.2]' : 'opacity-70'
-                        )}
-                      />
-                      <span>{page.label}</span>
+                      {isSvglSlug ? (
+                        <SvglIcon
+                          name={page.icon as string}
+                          size={14}
+                          className={cn(
+                            'h-3.5 w-3.5 shrink-0',
+                            active && 'drop-shadow-[0_0_6px_hsl(var(--sidebar-accent)/0.6)]'
+                          )}
+                        />
+                      ) : IconComponent ? (
+                        <IconComponent
+                          aria-hidden="true"
+                          className={cn('h-3.5 w-3.5 shrink-0', active && 'stroke-[2.4]')}
+                        />
+                      ) : null}
+                      {isCompact ? (
+                        <span className="sr-only">{label}</span>
+                      ) : (
+                        <span className="truncate">{label}</span>
+                      )}
                     </button>
                   )
+
+                  if (isCompact) {
+                    return (
+                      <Tooltip key={page.id}>
+                        <TooltipTrigger asChild>{tabButton}</TooltipTrigger>
+                        <TooltipContent side="bottom">
+                          <div className="flex flex-col text-xs">
+                            <span className="font-semibold">{label}</span>
+                            {page.category && (
+                              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                                {page.category}
+                              </span>
+                            )}
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    )
+                  }
+
+                  return tabButton
                 })}
               </div>
             ))}

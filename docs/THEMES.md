@@ -1,5 +1,7 @@
 # Themes — 10 ready-made app shells
 
+![10 Theme Presets Stack Showcase](themes/theme-stack-showcase.png)
+
 Every preset defines a **dark and a light** token set. A preset is a layer on top
 of the mode, not a replacement for it:
 

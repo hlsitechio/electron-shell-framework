@@ -3,6 +3,7 @@ import { useUiStore } from '@renderer/stores/ui-store'
 import { useTabsStore } from '@renderer/stores/tabs-store'
 import { getPreset } from '@renderer/lib/presets'
 import type { AppTemplate } from '@renderer/templates/types'
+import { getPageLabel } from '@renderer/types/pages'
 
 /**
  * Applying an app template — the ONE function that turns the shell into an app.
@@ -49,7 +50,7 @@ export function exitToFramework(): void {
 export function buildRecipe(t: AppTemplate): string {
   const preset = getPreset(t.preset)
   const files = t.pages.map(
-    (p) => `  - ${p.label} (id: ${p.id}${p.id === t.home ? ' — HOME' : ''})`
+    (p) => `  - ${getPageLabel(p)} (id: ${p.id}${p.id === t.home ? ' — HOME' : ''})`
   )
 
   return [

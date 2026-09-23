@@ -51,17 +51,12 @@ interface AppShellProps {
 /**
  * The reusable layout engine.
  *
- * ┌────────────────────────── DASHBOARD (default) ──────────────────────────┐
- * │          │ TabBar — single top bar: tabs + collapse + controls │         │
- * │  Left    ├─────────────────────────────────────────────────────┤  Right  │
- * │ Sidebar  │ Content — active page (from the registry)           │  Panel  │
- * └──────────┴─────────────────────────────────────────────────────┴─────────┘
- * │ FooterBar — full-width status frame                                      │
- * └──────────────────────────────────────────────────────────────────────────┘
- *
- * `studio` and `compact` are separate compositions, not re-arrangements. An app
- * that needs a navigation *tree* instead of a tab strip should pass
- * `mode="studio"` rather than fork the shell — see docs/SHELL-MODES.md.
+ * Supports three native compositions (`dashboard`, `studio`, `compact`):
+ * - `dashboard`: Primary house layout with collapsible sidebar, dynamic tab strip,
+ *   content workspace, per-page right inspector, bottom panel, and status footer.
+ * - `studio`: Content-first composition with hierarchical workspace tree sidebar,
+ *   document action bar, and contextual review dock (see docs/SHELL-MODES.md).
+ * - `compact`: Streamlined utility layout with folded top bar navigation and full-bleed content.
  */
 export function AppShell({ pages, title = 'App Shell', mode = 'dashboard', slots }: AppShellProps) {
   const { activeId, setActive } = useTabsStore()
@@ -182,17 +177,17 @@ export function AppShell({ pages, title = 'App Shell', mode = 'dashboard', slots
               >
                 {slots?.content ?? <activePage.component />}
               </main>
-              {activePage.rightPanel ? (
+              {slots?.rightDock ? (
+                <>
+                  <ResizeHandle side="right" />
+                  <RightPanel>{slots.rightDock}</RightPanel>
+                </>
+              ) : activePage.rightPanel ? (
                 <>
                   <ResizeHandle side="right" />
                   <RightPanel>
                     <activePage.rightPanel />
                   </RightPanel>
-                </>
-              ) : slots?.rightDock ? (
-                <>
-                  <ResizeHandle side="right" />
-                  <RightPanel>{slots.rightDock}</RightPanel>
                 </>
               ) : (
                 <>

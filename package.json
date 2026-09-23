@@ -1,6 +1,6 @@
 {
   "name": "electron-shell-framework",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "license": "MIT",
   "description": "Reusable Electron app-shell framework — theming, collapsible sidebars, tab navigation, page registry. Pure desktop, no server.",
   "main": "./out/main/index.js",
@@ -20,7 +20,7 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:e2e": "npm run build && playwright test",
-    "dist": "npm run build && electron-builder",
+    "dist": "npm run build && electron-builder --win",
     "dist:win": "npm run build && electron-builder --win",
     "dist:dir": "npm run build && electron-builder --dir",
     "icon": "node scripts/generate-icon.js",
@@ -88,7 +88,7 @@
   "allowScripts": {
     "esbuild@0.25.12": true,
     "esbuild@0.28.2": true,
-    "electron-winstaller@5.4.0": true,
-    "node-pty@1.1.0": true
+    "node-pty@1.1.0": true,
+    "electron@44.1.1": true
   }
 }
