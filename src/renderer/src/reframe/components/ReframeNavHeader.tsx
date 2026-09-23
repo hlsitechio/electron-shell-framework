@@ -15,7 +15,7 @@ import {
   ChevronDown,
   Minus,
   Square,
-  Rocket
+  Share2
 } from 'lucide-react'
 import { useReframeStore, TEMPLATES, TemplateId } from '../stores/reframe-store'
 import type { HeaderTabItem } from '../types/reframe-types'
@@ -188,12 +188,12 @@ export const ReframeNavHeader: React.FC = () => {
         className={`flex items-center gap-2.5 shrink-0 ${isMaximized ? 'app-no-drag' : 'app-drag'}`}
         style={{ WebkitAppRegion: isMaximized ? 'no-drag' : 'drag' } as React.CSSProperties}
       >
-        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
-          <Layers className="w-4 h-4" />
+        <div className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-100 shadow-sm">
+          <Layers className="w-4 h-4 text-indigo-400" />
         </div>
         <div className="flex items-baseline gap-1.5">
           <span className="font-bold text-sm text-white tracking-tight">Reframe</span>
-          <span className="text-[10px] uppercase font-mono tracking-wider px-1.5 py-0.2 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+          <span className="text-[10px] uppercase font-mono tracking-wider px-1.5 py-0.5 rounded bg-zinc-850 text-zinc-300 border border-zinc-750">
             Studio
           </span>
         </div>
@@ -205,7 +205,7 @@ export const ReframeNavHeader: React.FC = () => {
         style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
       >
         {(headerTabs.length > 0 || mode === 'builder') && (
-          <div className="flex items-center gap-1 bg-zinc-900/60 p-0.5 rounded-lg border border-zinc-800/80 max-w-xl overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-1 bg-zinc-900/80 p-0.5 rounded-lg border border-zinc-800 max-w-xl overflow-x-auto no-scrollbar">
             {headerTabs.map((tab, idx) => {
               const isActive = tab.id === activeHeaderTabId
               const Icon = (tab.icon && ICON_MAP[tab.icon]) || Layers
@@ -223,32 +223,32 @@ export const ReframeNavHeader: React.FC = () => {
                   onClick={() => setActiveHeaderTab(tab.id)}
                   className={`group relative flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium cursor-pointer transition-all ${
                     isActive
-                      ? 'bg-zinc-800 text-white shadow-sm border border-zinc-700/60'
-                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+                      ? 'bg-zinc-800 text-white shadow-sm border border-zinc-700/80'
+                      : 'text-zinc-300 hover:text-white hover:bg-zinc-800/60'
                   } ${isDragging ? 'opacity-40' : ''} ${
                     isDropTarget ? 'ring-2 ring-indigo-500 ring-offset-1 ring-offset-zinc-900' : ''
                   }`}
                   title={`${mode === 'builder' ? 'Drag to reorder • ' : ''}Click to view ${tab.label}`}
                 >
                   {mode === 'builder' && (
-                    <GripVertical className="w-3 h-3 text-zinc-600 opacity-0 group-hover:opacity-100 -ml-1 transition-opacity cursor-grab active:cursor-grabbing" />
+                    <GripVertical className="w-3 h-3 text-zinc-500 opacity-0 group-hover:opacity-100 -ml-1 transition-opacity cursor-grab active:cursor-grabbing" />
                   )}
                   <Icon
-                    className={`w-3.5 h-3.5 ${isActive ? 'text-indigo-400' : 'text-zinc-500'}`}
+                    className={`w-3.5 h-3.5 ${isActive ? 'text-indigo-400' : 'text-zinc-400 group-hover:text-zinc-200'}`}
                   />
                   <span className="truncate max-w-[120px]">{tab.label}</span>
 
-                  {/* Little red X button to remove tab */}
+                  {/* Little X button to remove tab */}
                   {mode === 'builder' && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
                         removeHeaderTab(tab.id)
                       }}
-                      className="p-0.5 rounded text-red-500 hover:text-red-400 hover:bg-red-500/10 transition-colors ml-0.5"
+                      className="p-0.5 rounded text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors ml-0.5"
                       title={`Remove ${tab.label}`}
                     >
-                      <X className="w-3 h-3 text-red-500" strokeWidth={2.5} />
+                      <X className="w-3 h-3" strokeWidth={2} />
                     </button>
                   )}
                 </div>
@@ -256,7 +256,7 @@ export const ReframeNavHeader: React.FC = () => {
             })}
 
             {headerTabs.length === 0 && mode === 'builder' && (
-              <span className="text-[11px] text-zinc-500 italic px-2">No tabs</span>
+              <span className="text-[11px] text-zinc-400 font-mono px-2">No tabs</span>
             )}
 
             {/* + Add Header Tab */}
@@ -284,7 +284,7 @@ export const ReframeNavHeader: React.FC = () => {
               ) : (
                 <button
                   onClick={() => setIsAddingTab(true)}
-                  className="p-1.5 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-800/60 transition-colors flex items-center gap-1 text-xs"
+                  className="p-1.5 rounded-md text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors flex items-center gap-1 text-xs"
                   title="Add new workspace tab"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -312,7 +312,7 @@ export const ReframeNavHeader: React.FC = () => {
             <select
               value={currentTemplateId}
               onChange={(e) => loadTemplate(e.target.value as TemplateId)}
-              className="appearance-none bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-300 text-xs rounded-lg px-2.5 py-1.5 pr-7 focus:outline-none cursor-pointer font-medium"
+              className="appearance-none bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-200 text-xs rounded-lg px-2.5 py-1.5 pr-7 focus:outline-none cursor-pointer font-medium"
             >
               {Object.entries(TEMPLATES).map(([key, t]) => (
                 <option key={key} value={key}>
@@ -329,9 +329,9 @@ export const ReframeNavHeader: React.FC = () => {
           <button
             onClick={() => setIsBakeModalOpen(true)}
             title="Publish standalone application code (.tsx) and preset (.json)"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg shadow-indigo-900/30 transition-all border border-indigo-400/30"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-850 hover:bg-zinc-800 text-zinc-100 hover:text-white shadow-sm transition-all border border-zinc-700 hover:border-zinc-600"
           >
-            <Rocket className="w-3.5 h-3.5" />
+            <Share2 className="w-3.5 h-3.5 text-zinc-300" />
             <span className="hidden sm:inline">Publish App</span>
           </button>
         )}
@@ -340,19 +340,19 @@ export const ReframeNavHeader: React.FC = () => {
         {mode === 'builder' ? (
           <button
             onClick={() => setMode('client')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/30 transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-800 hover:bg-zinc-750 text-zinc-200 hover:text-white shadow-sm transition-all border border-zinc-700"
             title="Preview clean client deliverable without builder controls"
           >
-            <Eye className="w-3.5 h-3.5" />
+            <Eye className="w-3.5 h-3.5 text-zinc-300" />
             <span>Client View</span>
           </button>
         ) : (
           <button
             onClick={() => setMode('builder')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-900/30 transition-all animate-pulse"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-800 hover:bg-zinc-750 text-zinc-100 hover:text-white shadow-sm transition-all border border-zinc-700"
             title="Return to builder platform"
           >
-            <Wrench className="w-3.5 h-3.5" />
+            <Wrench className="w-3.5 h-3.5 text-zinc-300" />
             <span>Builder Mode</span>
           </button>
         )}
@@ -364,7 +364,7 @@ export const ReframeNavHeader: React.FC = () => {
             className={`p-1.5 rounded-lg border transition-colors ${
               isRightSidebarOpen
                 ? 'bg-zinc-800 text-white border-zinc-700'
-                : 'bg-zinc-900 text-zinc-400 hover:text-white border-zinc-800 hover:border-zinc-700'
+                : 'bg-zinc-900 text-zinc-300 hover:text-white border-zinc-800 hover:border-zinc-700'
             }`}
             title={isRightSidebarOpen ? 'Collapse Right Inspector' : 'Open Right Inspector'}
           >

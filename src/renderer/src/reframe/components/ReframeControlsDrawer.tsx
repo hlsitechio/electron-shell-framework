@@ -17,7 +17,7 @@ import {
   FileText,
   Activity,
   Zap,
-  Rocket
+  PackageCheck
 } from 'lucide-react'
 import { useReframeStore, DOCKVIEW_THEMES } from '../stores/reframe-store'
 import type { FontFamilyKey } from '../types/reframe-types'
@@ -597,20 +597,20 @@ export const ReframeControlsDrawer: React.FC = () => {
             </div>
 
             {/* PUBLISH APP PRODUCT (ZERO DOCKVIEW) */}
-            <div className="mt-4 p-3.5 rounded-xl bg-gradient-to-br from-indigo-950/60 to-purple-950/40 border border-indigo-800/50 flex flex-col gap-2.5">
-              <div className="flex items-center gap-2 text-indigo-300 font-semibold text-xs">
-                <Rocket className="w-4 h-4 text-indigo-400" />
+            <div className="mt-4 p-3.5 rounded-xl bg-zinc-900 border border-zinc-800 flex flex-col gap-2.5">
+              <div className="flex items-center gap-2 text-zinc-200 font-semibold text-xs">
+                <PackageCheck className="w-4 h-4 text-indigo-400" />
                 <span>Publish Standalone App</span>
               </div>
-              <p className="text-[11px] text-zinc-400 leading-normal">
+              <p className="text-[11px] text-zinc-300 leading-normal">
                 Export locked, standalone React code (.tsx) and client preset (.json) with{' '}
-                <strong>zero Dockview runtime</strong>.
+                <strong className="text-white font-medium">zero Dockview runtime</strong>.
               </p>
               <button
                 onClick={() => setIsBakeModalOpen(true)}
-                className="w-full py-2 rounded-lg bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-950/50 transition-all border border-indigo-400/30"
+                className="w-full py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-sm transition-all border border-zinc-700"
               >
-                <Rocket className="w-3.5 h-3.5" />
+                <PackageCheck className="w-3.5 h-3.5" />
                 <span>Publish App Now</span>
               </button>
             </div>

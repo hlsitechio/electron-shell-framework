@@ -819,7 +819,7 @@ export const TEMPLATES: Record<
   },
 
   blank: {
-    name: '✨ Blank Slate (Empty Playground)',
+    name: 'Blank Slate (Empty Playground)',
     description:
       'Clean empty canvas with zero default tabs or widgets. Ready to build freely from scratch.',
     themeKey: 'dockview-theme-abyss',
@@ -887,8 +887,23 @@ export const useReframeStore = create<ReframeStoreState>((set, get) => ({
   tabWorkspaces: {},
   isRestoringLayout: false,
 
-  leftTabs: [],
-  activeLeftTabId: '',
+  leftTabs: [
+    {
+      id: 'left-canvas',
+      label: 'Main Cockpit',
+      viewType: 'canvas',
+      icon: 'LayoutGrid',
+      closable: false
+    },
+    {
+      id: 'left-directives',
+      label: 'Executive Directives',
+      viewType: 'notes',
+      icon: 'FileText',
+      closable: true
+    }
+  ],
+  activeLeftTabId: 'left-canvas',
   isLeftSidebarOpen: true,
   leftSidebarWidth: 240,
 
@@ -1161,13 +1176,13 @@ export const useReframeStore = create<ReframeStoreState>((set, get) => ({
   toggleLeftSidebar: () => set((state) => ({ isLeftSidebarOpen: !state.isLeftSidebarOpen })),
   setIsLeftSidebarOpen: (open) => set({ isLeftSidebarOpen: open }),
   setLeftSidebarWidth: (width) =>
-    set({ leftSidebarWidth: Math.max(160, Math.min(480, Math.round(width))) }),
+    set({ leftSidebarWidth: Math.max(160, Math.min(540, Math.round(width))) }),
 
   toggleRightSidebar: () => set((state) => ({ isRightSidebarOpen: !state.isRightSidebarOpen })),
   setIsRightSidebarOpen: (open) => set({ isRightSidebarOpen: open }),
   setActiveRightTabId: (id) => set({ activeRightTabId: id }),
   setRightSidebarWidth: (width) =>
-    set({ rightSidebarWidth: Math.max(260, Math.min(640, Math.round(width))) }),
+    set({ rightSidebarWidth: Math.max(260, Math.min(720, Math.round(width))) }),
   addRightTab: (tab) =>
     set((state) => ({
       rightTabs: [...state.rightTabs, tab],

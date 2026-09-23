@@ -7,7 +7,7 @@ import {
   Eye,
   Wrench,
   Sparkles,
-  Rocket,
+  Share2,
   Layers,
   Activity,
   BarChart3,
@@ -200,9 +200,9 @@ export const ReframeHeader: React.FC = () => {
         <button
           onClick={() => setIsBakeModalOpen(true)}
           title="Publish standalone application code (.tsx) and preset (.json)"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg shadow-indigo-900/30 transition-all border border-indigo-400/30"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-850 hover:bg-zinc-800 text-zinc-100 hover:text-white shadow-sm transition-all border border-zinc-700 hover:border-zinc-600"
         >
-          <Rocket className="w-3.5 h-3.5" />
+          <Share2 className="w-3.5 h-3.5 text-zinc-300" />
           <span>Publish App</span>
         </button>
 
@@ -210,19 +210,19 @@ export const ReframeHeader: React.FC = () => {
         {mode === 'builder' ? (
           <button
             onClick={() => setMode('client')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-900/30 transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-800 hover:bg-zinc-750 text-zinc-200 hover:text-white shadow-sm transition-all border border-zinc-700"
             title="Preview clean client deliverable without builder controls"
           >
-            <Eye className="w-3.5 h-3.5" />
+            <Eye className="w-3.5 h-3.5 text-zinc-300" />
             <span>Client View</span>
           </button>
         ) : (
           <button
             onClick={() => setMode('builder')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-900/30 transition-all animate-pulse"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-800 hover:bg-zinc-750 text-zinc-100 hover:text-white shadow-sm transition-all border border-zinc-700"
             title="Return to builder platform"
           >
-            <Wrench className="w-3.5 h-3.5" />
+            <Wrench className="w-3.5 h-3.5 text-zinc-300" />
             <span>Builder Mode</span>
           </button>
         )}

@@ -248,42 +248,40 @@ export const DockviewCanvas: React.FC = () => {
         <div className="absolute top-2 right-3 z-30 flex items-center gap-1.5">
           <button
             onClick={() => handleAddWidget('kpi')}
-            className="px-2.5 py-1 rounded-md bg-zinc-900/90 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-700/80 text-xs font-medium flex items-center gap-1.5 shadow-lg backdrop-blur transition-all hover:border-indigo-500/50"
+            className="px-2.5 py-1 rounded-md bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-700 text-xs font-medium flex items-center gap-1.5 shadow-sm transition-all hover:border-zinc-600"
             title="Add another widget into layout"
           >
-            <Plus className="w-3.5 h-3.5 text-indigo-400" />
+            <Plus className="w-3.5 h-3.5 text-zinc-300" />
             <span>Add Widget</span>
           </button>
         </div>
       )}
 
-      {/* ── EMPTY CANVAS STATE: BIG + IN THE CENTER ─────────────── */}
+      {/* ── EMPTY CANVAS STATE: CLEAN ARCHITECTURAL DESIGN ──────── */}
       {isEmpty && (
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 bg-zinc-950/90 backdrop-blur-sm select-none">
-          <div className="w-full max-w-lg p-8 rounded-3xl border border-zinc-800/90 bg-zinc-900/40 backdrop-blur flex flex-col items-center text-center space-y-6 shadow-2xl relative overflow-hidden group">
-            {/* Ambient background glow behind the plus */}
-            <div className="absolute -top-24 -left-24 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
-
-            {/* Big center plus button */}
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 bg-zinc-950 select-none">
+          <div className="w-full max-w-md p-8 rounded-2xl border border-zinc-800 bg-zinc-900/60 backdrop-blur-sm flex flex-col items-center text-center space-y-6 shadow-xl relative overflow-hidden group">
+            {/* Center plus button */}
             <button
               onClick={() => handleAddWidget('kpi')}
-              className="relative group/btn flex items-center justify-center cursor-pointer transition-transform hover:scale-105 active:scale-95 focus:outline-none"
+              className="group/btn flex items-center justify-center cursor-pointer transition-transform hover:scale-105 active:scale-95 focus:outline-none"
               title="Click to add widget and load Dockview"
             >
-              <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-indigo-500/20 via-purple-500/20 to-blue-500/10 border-2 border-dashed border-indigo-500/60 group-hover/btn:border-indigo-400 group-hover/btn:bg-indigo-600/25 group-hover/btn:shadow-[0_0_30px_rgba(99,102,241,0.4)] flex items-center justify-center text-indigo-400 group-hover/btn:text-white transition-all">
+              <div className="w-16 h-16 rounded-2xl bg-zinc-850 border border-zinc-700 group-hover/btn:border-zinc-500 group-hover/btn:bg-zinc-800 flex items-center justify-center text-zinc-300 group-hover/btn:text-white transition-all shadow-sm">
                 <Plus
-                  className="w-12 h-12 transition-transform duration-300 group-hover/btn:rotate-90"
-                  strokeWidth={2.5}
+                  className="w-8 h-8 transition-transform duration-200 group-hover/btn:rotate-90"
+                  strokeWidth={2}
                 />
               </div>
             </button>
 
             {/* Title & subtitle */}
             <div className="space-y-1">
-              <h3 className="text-lg font-bold text-white tracking-tight">Add Widget to Canvas</h3>
-              <p className="text-xs text-zinc-400 max-w-sm leading-relaxed">
-                Click <span className="text-indigo-400 font-semibold">+</span> to load Dockview, or
+              <h3 className="text-base font-bold text-white tracking-tight">
+                Add Widget to Canvas
+              </h3>
+              <p className="text-xs text-zinc-300 max-w-sm leading-relaxed">
+                Click <span className="text-white font-semibold">+</span> to load Dockview, or
                 choose a widget below to start your layout.
               </p>
             </div>
@@ -292,49 +290,49 @@ export const DockviewCanvas: React.FC = () => {
             <div className="grid grid-cols-3 gap-2 w-full pt-1">
               <button
                 onClick={() => handleAddWidget('kpi')}
-                className="p-2.5 rounded-xl bg-zinc-900/90 border border-zinc-800 hover:border-indigo-500 hover:bg-zinc-850 text-xs font-medium text-zinc-300 hover:text-white flex flex-col items-center gap-1 transition-all group/item shadow-sm"
+                className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-850 text-xs font-medium text-zinc-200 hover:text-white flex flex-col items-center gap-1.5 transition-all group/item shadow-sm"
               >
-                <Hash className="w-4 h-4 text-indigo-400 group-hover/item:scale-110 transition-transform" />
+                <Hash className="w-4 h-4 text-zinc-400 group-hover/item:text-indigo-400 transition-colors" />
                 <span>KPI Hub</span>
               </button>
 
               <button
                 onClick={() => handleAddWidget('chart')}
-                className="p-2.5 rounded-xl bg-zinc-900/90 border border-zinc-800 hover:border-blue-500 hover:bg-zinc-850 text-xs font-medium text-zinc-300 hover:text-white flex flex-col items-center gap-1 transition-all group/item shadow-sm"
+                className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-850 text-xs font-medium text-zinc-200 hover:text-white flex flex-col items-center gap-1.5 transition-all group/item shadow-sm"
               >
-                <BarChart2 className="w-4 h-4 text-blue-400 group-hover/item:scale-110 transition-transform" />
+                <BarChart2 className="w-4 h-4 text-zinc-400 group-hover/item:text-indigo-400 transition-colors" />
                 <span>Live Chart</span>
               </button>
 
               <button
                 onClick={() => handleAddWidget('table')}
-                className="p-2.5 rounded-xl bg-zinc-900/90 border border-zinc-800 hover:border-emerald-500 hover:bg-zinc-850 text-xs font-medium text-zinc-300 hover:text-white flex flex-col items-center gap-1 transition-all group/item shadow-sm"
+                className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-850 text-xs font-medium text-zinc-200 hover:text-white flex flex-col items-center gap-1.5 transition-all group/item shadow-sm"
               >
-                <TableIcon className="w-4 h-4 text-emerald-400 group-hover/item:scale-110 transition-transform" />
+                <TableIcon className="w-4 h-4 text-zinc-400 group-hover/item:text-indigo-400 transition-colors" />
                 <span>Data Table</span>
               </button>
 
               <button
                 onClick={() => handleAddWidget('notes')}
-                className="p-2.5 rounded-xl bg-zinc-900/90 border border-zinc-800 hover:border-amber-500 hover:bg-zinc-850 text-xs font-medium text-zinc-300 hover:text-white flex flex-col items-center gap-1 transition-all group/item shadow-sm"
+                className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-850 text-xs font-medium text-zinc-200 hover:text-white flex flex-col items-center gap-1.5 transition-all group/item shadow-sm"
               >
-                <FileText className="w-4 h-4 text-amber-400 group-hover/item:scale-110 transition-transform" />
+                <FileText className="w-4 h-4 text-zinc-400 group-hover/item:text-indigo-400 transition-colors" />
                 <span>Runbook</span>
               </button>
 
               <button
                 onClick={() => handleAddWidget('activity')}
-                className="p-2.5 rounded-xl bg-zinc-900/90 border border-zinc-800 hover:border-rose-500 hover:bg-zinc-850 text-xs font-medium text-zinc-300 hover:text-white flex flex-col items-center gap-1 transition-all group/item shadow-sm"
+                className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-850 text-xs font-medium text-zinc-200 hover:text-white flex flex-col items-center gap-1.5 transition-all group/item shadow-sm"
               >
-                <Activity className="w-4 h-4 text-rose-400 group-hover/item:scale-110 transition-transform" />
+                <Activity className="w-4 h-4 text-zinc-400 group-hover/item:text-indigo-400 transition-colors" />
                 <span>Event Stream</span>
               </button>
 
               <button
                 onClick={() => handleAddWidget('actionpad')}
-                className="p-2.5 rounded-xl bg-zinc-900/90 border border-zinc-800 hover:border-yellow-500 hover:bg-zinc-850 text-xs font-medium text-zinc-300 hover:text-white flex flex-col items-center gap-1 transition-all group/item shadow-sm"
+                className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-850 text-xs font-medium text-zinc-200 hover:text-white flex flex-col items-center gap-1.5 transition-all group/item shadow-sm"
               >
-                <Zap className="w-4 h-4 text-yellow-400 group-hover/item:scale-110 transition-transform" />
+                <Zap className="w-4 h-4 text-zinc-400 group-hover/item:text-indigo-400 transition-colors" />
                 <span>Action Pad</span>
               </button>
             </div>

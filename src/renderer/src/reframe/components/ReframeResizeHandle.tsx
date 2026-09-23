@@ -16,8 +16,19 @@ export const ReframeResizeHandle: React.FC<ReframeResizeHandleProps> = ({ side }
     setLeftSidebarWidth,
     rightSidebarWidth,
     setRightSidebarWidth,
+    isLeftSidebarOpen,
+    setIsLeftSidebarOpen,
     themeInspector
   } = useReframeStore()
+
+  const handleDoubleClick = useCallback(() => {
+    if (side === 'left') {
+      setIsLeftSidebarOpen(true)
+      setLeftSidebarWidth(240)
+    } else {
+      setRightSidebarWidth(360)
+    }
+  }, [side, setIsLeftSidebarOpen, setLeftSidebarWidth, setRightSidebarWidth])
 
   const onPointerDown = useCallback(
     (e: React.PointerEvent) => {
@@ -26,7 +37,16 @@ export const ReframeResizeHandle: React.FC<ReframeResizeHandleProps> = ({ side }
       draggingRef.current = true
       setIsDragging(true)
       startXRef.current = e.clientX
-      startWidthRef.current = side === 'left' ? leftSidebarWidth : rightSidebarWidth
+
+      if (side === 'left') {
+        const currentW = isLeftSidebarOpen ? leftSidebarWidth : 56
+        if (!isLeftSidebarOpen) {
+          setIsLeftSidebarOpen(true)
+        }
+        startWidthRef.current = currentW
+      } else {
+        startWidthRef.current = rightSidebarWidth
+      }
 
       try {
         ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
@@ -37,7 +57,7 @@ export const ReframeResizeHandle: React.FC<ReframeResizeHandleProps> = ({ side }
       document.body.style.cursor = 'col-resize'
       document.body.style.userSelect = 'none'
     },
-    [side, leftSidebarWidth, rightSidebarWidth]
+    [side, isLeftSidebarOpen, leftSidebarWidth, rightSidebarWidth, setIsLeftSidebarOpen]
   )
 
   const onPointerMove = useCallback(
@@ -80,30 +100,49 @@ export const ReframeResizeHandle: React.FC<ReframeResizeHandleProps> = ({ side }
   }, [onPointerMove, onPointerUp])
 
   const borderThickness = Math.max(1, themeInspector?.borderThickness || 1)
-  const handleWidth = Math.max(8, borderThickness + 6)
 
   return (
-    <div
-      onPointerDown={onPointerDown}
-      className={`absolute top-0 bottom-0 z-40 cursor-col-resize select-none group flex items-center justify-center ${
-        side === 'left' ? '-right-1.5' : '-left-1.5'
-      }`}
-      style={{
-        width: `${handleWidth}px`
-      }}
-      role="separator"
-      aria-orientation="vertical"
-      title={`Drag to resize ${side} sidebar`}
-    >
-      {/* Visual highlight line */}
+    <>
+      {/* Full-screen drag shield overlay: guarantees no canvas or iframe swallows pointer events */}
+      {isDragging && (
+        <div
+          className="fixed inset-0 z-[9999] cursor-col-resize select-none pointer-events-auto"
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Resize Handle Hit Target */}
       <div
-        className={`h-full transition-colors duration-150 ${
-          isDragging
-            ? 'bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]'
-            : 'bg-transparent group-hover:bg-indigo-500/60'
+        onPointerDown={onPointerDown}
+        onDoubleClick={handleDoubleClick}
+        className={`absolute top-0 bottom-0 z-40 cursor-col-resize select-none group flex items-center justify-center w-3 ${
+          side === 'left' ? 'right-0 translate-x-1/2' : 'left-0 -translate-x-1/2'
         }`}
-        style={{ width: `${borderThickness}px` }}
-      />
-    </div>
+        role="separator"
+        aria-orientation="vertical"
+        title={`Drag to resize ${side} sidebar • Double-click to reset`}
+      >
+        {/* Visual highlight line */}
+        <div
+          className={`h-full transition-colors duration-150 ${
+            isDragging ? 'bg-indigo-500' : 'bg-transparent group-hover:bg-indigo-500/60'
+          }`}
+          style={{ width: `${borderThickness}px` }}
+        />
+
+        {/* Tactile 3-dot grip affordance pill (visible on hover/active, clean desktop style) */}
+        <div
+          className={`absolute top-1/2 -translate-y-1/2 flex flex-col items-center justify-center gap-1 w-2 py-1.5 rounded-full bg-zinc-800 border border-zinc-700/80 shadow-sm transition-opacity duration-150 pointer-events-none ${
+            isDragging
+              ? 'opacity-100 bg-zinc-700 border-indigo-500/60'
+              : 'opacity-0 group-hover:opacity-100'
+          }`}
+        >
+          <span className="w-0.5 h-0.5 rounded-full bg-zinc-300" />
+          <span className="w-0.5 h-0.5 rounded-full bg-zinc-300" />
+          <span className="w-0.5 h-0.5 rounded-full bg-zinc-300" />
+        </div>
+      </div>
+    </>
   )
 }

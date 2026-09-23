@@ -291,9 +291,9 @@ describe('Reframe Platform & Store', () => {
     setLeftSidebarWidth(50)
     expect(useReframeStore.getState().leftSidebarWidth).toBe(160)
 
-    // Clamp max (480)
+    // Clamp max (540)
     setLeftSidebarWidth(900)
-    expect(useReframeStore.getState().leftSidebarWidth).toBe(480)
+    expect(useReframeStore.getState().leftSidebarWidth).toBe(540)
 
     // Test Right Sidebar width
     expect(useReframeStore.getState().rightSidebarWidth).toBe(360)
@@ -304,9 +304,9 @@ describe('Reframe Platform & Store', () => {
     setRightSidebarWidth(100)
     expect(useReframeStore.getState().rightSidebarWidth).toBe(260)
 
-    // Clamp max (640)
+    // Clamp max (720)
     setRightSidebarWidth(1200)
-    expect(useReframeStore.getState().rightSidebarWidth).toBe(640)
+    expect(useReframeStore.getState().rightSidebarWidth).toBe(720)
   })
 
   it('manages adjustable border thickness in ThemeInspectorState', () => {

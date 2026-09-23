@@ -64,21 +64,21 @@ export const KpiPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
   ]
 
   return (
-    <div className="reframe-panel-body p-4 bg-zinc-900/60 text-zinc-100 flex flex-col justify-center">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+    <div className="reframe-panel-body p-3.5 bg-zinc-900/60 text-zinc-100 flex flex-col justify-center h-full overflow-y-auto">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(130px,1fr))] gap-2.5">
         {items.map((item: any, idx: number) => {
           const isPos = item.deltaType === 'positive'
           const isNeg = item.deltaType === 'negative'
           return (
             <div
               key={idx}
-              className="p-3.5 rounded-lg bg-zinc-800/50 border border-zinc-700/50 hover:border-zinc-600 transition-all flex flex-col justify-between"
+              className="p-3 rounded-lg bg-zinc-800/60 border border-zinc-700/60 hover:border-zinc-600 transition-all flex flex-col justify-between min-w-0"
             >
-              <div className="flex items-center justify-between text-xs text-zinc-400 mb-1">
-                <span>{item.label}</span>
+              <div className="flex items-center justify-between gap-1 text-xs text-zinc-300 font-medium mb-1 min-w-0">
+                <span className="truncate">{item.label}</span>
                 {item.delta && (
                   <span
-                    className={`inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[11px] font-medium ${
+                    className={`shrink-0 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium font-mono ${
                       isPos
                         ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                         : isNeg
@@ -87,19 +87,19 @@ export const KpiPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
                     }`}
                   >
                     {isPos ? (
-                      <TrendingUp className="w-3 h-3" />
+                      <TrendingUp className="w-2.5 h-2.5" />
                     ) : isNeg ? (
-                      <TrendingDown className="w-3 h-3" />
+                      <TrendingDown className="w-2.5 h-2.5" />
                     ) : null}
                     {item.delta}
                   </span>
                 )}
               </div>
-              <div className="text-2xl font-bold tracking-tight text-white my-0.5">
+              <div className="text-xl font-bold tracking-tight text-white my-0.5 truncate">
                 {item.value}
               </div>
               {item.subtext && (
-                <div className="text-[11px] text-zinc-500 truncate">{item.subtext}</div>
+                <div className="text-[10px] text-zinc-400 truncate">{item.subtext}</div>
               )}
             </div>
           )
@@ -134,11 +134,11 @@ export const ChartPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
     <div className="reframe-panel-body p-4 bg-zinc-900/60 text-zinc-100 flex flex-col h-full">
       <div className="flex items-center justify-between mb-3">
         <div>
-          <h4 className="text-sm font-semibold text-zinc-200">{title}</h4>
-          <p className="text-xs text-zinc-500">{timeRange}</p>
+          <h4 className="text-sm font-semibold text-zinc-100">{title}</h4>
+          <p className="text-xs text-zinc-400 font-mono">{timeRange}</p>
         </div>
-        <div className="flex items-center gap-1.5 text-xs bg-zinc-800/80 px-2 py-1 rounded border border-zinc-700/60 text-zinc-400">
-          <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
+        <div className="flex items-center gap-1.5 text-xs bg-zinc-800 px-2 py-1 rounded border border-zinc-700 text-zinc-300">
+          <span className="w-2 h-2 rounded-full bg-indigo-400" />
           Live Metrics
         </div>
       </div>
@@ -150,9 +150,9 @@ export const ChartPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
               data={SAMPLE_CHART_DATA}
               margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-              <XAxis dataKey="name" stroke="#71717a" fontSize={11} tickLine={false} />
-              <YAxis stroke="#71717a" fontSize={11} tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" vertical={false} />
+              <XAxis dataKey="name" stroke="#a1a1aa" fontSize={11} tickLine={false} />
+              <YAxis stroke="#a1a1aa" fontSize={11} tickLine={false} />
               <Tooltip
                 contentStyle={{
                   backgroundColor: '#18181b',
@@ -168,9 +168,9 @@ export const ChartPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
               data={SAMPLE_CHART_DATA}
               margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-              <XAxis dataKey="name" stroke="#71717a" fontSize={11} tickLine={false} />
-              <YAxis stroke="#71717a" fontSize={11} tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" vertical={false} />
+              <XAxis dataKey="name" stroke="#a1a1aa" fontSize={11} tickLine={false} />
+              <YAxis stroke="#a1a1aa" fontSize={11} tickLine={false} />
               <Tooltip
                 contentStyle={{
                   backgroundColor: '#18181b',
@@ -198,9 +198,9 @@ export const ChartPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
                   <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-              <XAxis dataKey="name" stroke="#71717a" fontSize={11} tickLine={false} />
-              <YAxis stroke="#71717a" fontSize={11} tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#3f3f46" vertical={false} />
+              <XAxis dataKey="name" stroke="#a1a1aa" fontSize={11} tickLine={false} />
+              <YAxis stroke="#a1a1aa" fontSize={11} tickLine={false} />
               <Tooltip
                 contentStyle={{
                   backgroundColor: '#18181b',
@@ -250,17 +250,17 @@ export const TablePanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
   return (
     <div className="reframe-panel-body p-3 bg-zinc-900/60 text-zinc-100 flex flex-col h-full">
       <div className="flex items-center justify-between gap-2 mb-2.5">
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-400">
+        <h4 className="text-xs font-semibold uppercase tracking-wider text-zinc-300">
           {params?.title || 'Data Registry'}
         </h4>
         <div className="relative">
-          <Search className="w-3.5 h-3.5 absolute left-2 top-2 text-zinc-500" />
+          <Search className="w-3.5 h-3.5 absolute left-2 top-2 text-zinc-400" />
           <input
             type="text"
             placeholder="Search records..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-7 pr-2.5 py-1 text-xs bg-zinc-800 border border-zinc-700/70 rounded text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-500 w-44"
+            className="pl-7 pr-2.5 py-1 text-xs bg-zinc-800 border border-zinc-700 rounded text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-zinc-500 w-44"
           />
         </div>
       </div>
@@ -268,15 +268,15 @@ export const TablePanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
       <div className="flex-1 overflow-auto border border-zinc-800 rounded">
         <table className="w-full text-left text-xs border-collapse">
           <thead>
-            <tr className="bg-zinc-800/70 text-zinc-400 border-b border-zinc-700/60">
+            <tr className="bg-zinc-800/80 text-zinc-300 border-b border-zinc-700">
               {columns.map((col) => (
-                <th key={col.key} className="py-2 px-3 font-medium">
+                <th key={col.key} className="py-2 px-3 font-semibold">
                   {col.header}
                 </th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-800/60">
+          <tbody className="divide-y divide-zinc-800">
             {filteredRows.map((row, rIdx) => (
               <tr key={rIdx} className="hover:bg-zinc-800/40 transition-colors">
                 {columns.map((col) => {
@@ -285,7 +285,7 @@ export const TablePanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
                     col.key.toLowerCase().includes('status') ||
                     col.key.toLowerCase().includes('health')
                   return (
-                    <td key={col.key} className="py-2 px-3 text-zinc-300">
+                    <td key={col.key} className="py-2 px-3 text-zinc-200">
                       {isStatus ? (
                         <span
                           className={`inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium ${
@@ -295,7 +295,7 @@ export const TablePanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
                                   val === 'Active Pilot' ||
                                   val === 'Review Needed'
                                 ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                                : 'bg-zinc-700/40 text-zinc-300'
+                                : 'bg-zinc-700/50 text-zinc-200'
                           }`}
                         >
                           {val}
@@ -319,11 +319,77 @@ export const TablePanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
    4. NOTES & RUNBOOK WIDGET
    ============================================================ */
 export const NotesPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
-  const content = params?.content || '### Operational Notes\n\nNo content configured.'
+  const content: string = params?.content || '### Operational Notes\n\nNo content configured.'
+  const lines = content.split('\n')
+
   return (
-    <div className="reframe-panel-body p-4 bg-zinc-900/60 text-zinc-200">
-      <div className="max-w-none text-xs leading-relaxed space-y-2 whitespace-pre-line text-zinc-300">
-        {content}
+    <div className="reframe-panel-body p-4 bg-zinc-900/60 text-zinc-100 overflow-y-auto">
+      <div className="max-w-none text-xs leading-relaxed space-y-2 text-zinc-200">
+        {lines.map((line, idx) => {
+          const trimmed = line.trim()
+          if (!trimmed) return <div key={idx} className="h-1.5" />
+          if (trimmed.startsWith('### ')) {
+            return (
+              <h3 key={idx} className="text-sm font-semibold text-zinc-100 tracking-tight pt-1">
+                {trimmed.replace(/^###\s+/, '')}
+              </h3>
+            )
+          }
+          if (trimmed.startsWith('## ')) {
+            return (
+              <h2 key={idx} className="text-base font-bold text-zinc-100 tracking-tight pt-1">
+                {trimmed.replace(/^##\s+/, '')}
+              </h2>
+            )
+          }
+          if (trimmed.startsWith('> ')) {
+            return (
+              <blockquote
+                key={idx}
+                className="border-l-2 border-indigo-500/60 pl-3 py-1 text-zinc-300 italic text-xs bg-zinc-800/30 rounded-r"
+              >
+                {trimmed.replace(/^>\s+/, '')}
+              </blockquote>
+            )
+          }
+          if (trimmed.startsWith('* ') || trimmed.startsWith('- ')) {
+            const raw = trimmed.replace(/^[*-]\s+/, '')
+            const boldMatch = raw.match(/^\*\*(.*?)\*\*(.*)$/)
+            if (boldMatch) {
+              return (
+                <div key={idx} className="flex items-start gap-2 pl-2 text-xs text-zinc-300">
+                  <span className="text-indigo-400 font-bold">•</span>
+                  <span>
+                    <strong className="font-semibold text-zinc-100">{boldMatch[1]}</strong>
+                    {boldMatch[2]}
+                  </span>
+                </div>
+              )
+            }
+            return (
+              <div key={idx} className="flex items-start gap-2 pl-2 text-xs text-zinc-300">
+                <span className="text-indigo-400 font-bold">•</span>
+                <span>{raw}</span>
+              </div>
+            )
+          }
+          const numMatch = trimmed.match(/^(\d+\.)\s+(.*)$/)
+          if (numMatch) {
+            return (
+              <div key={idx} className="flex items-start gap-2 pl-2 text-xs text-zinc-300">
+                <span className="font-mono text-indigo-400 text-[11px] shrink-0">
+                  {numMatch[1]}
+                </span>
+                <span>{numMatch[2]}</span>
+              </div>
+            )
+          }
+          return (
+            <p key={idx} className="text-xs text-zinc-300">
+              {trimmed}
+            </p>
+          )
+        })}
       </div>
     </div>
   )
@@ -403,13 +469,13 @@ export const ActivityPanelWidget: React.FC<IDockviewPanelProps> = () => {
   }, [])
 
   return (
-    <div className="reframe-panel-body p-3 bg-zinc-950 font-mono text-xs text-zinc-300 flex flex-col h-full">
-      <div className="flex items-center justify-between pb-2 border-b border-zinc-800 text-[11px] text-zinc-400">
-        <span className="flex items-center gap-1.5">
-          <Activity className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+    <div className="reframe-panel-body p-3 bg-zinc-950 font-mono text-xs text-zinc-200 flex flex-col h-full">
+      <div className="flex items-center justify-between pb-2 border-b border-zinc-800 text-[11px] text-zinc-300">
+        <span className="flex items-center gap-1.5 font-semibold">
+          <Activity className="w-3.5 h-3.5 text-emerald-400" />
           Live Telemetry Stream
         </span>
-        <span className="text-zinc-500">{logs.length} events logged</span>
+        <span className="text-zinc-400 font-mono">{logs.length} events logged</span>
       </div>
 
       <div className="flex-1 overflow-auto pt-2 space-y-1.5">
@@ -418,7 +484,7 @@ export const ActivityPanelWidget: React.FC<IDockviewPanelProps> = () => {
             key={log.id}
             className="flex items-start gap-2 hover:bg-zinc-900/60 p-1 rounded transition-colors"
           >
-            <span className="text-zinc-500 shrink-0 text-[10px]">{log.time}</span>
+            <span className="text-zinc-400 shrink-0 text-[10px] font-mono">{log.time}</span>
             {log.severity === 'success' && (
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
             )}
@@ -431,7 +497,7 @@ export const ActivityPanelWidget: React.FC<IDockviewPanelProps> = () => {
             {log.severity === 'info' && (
               <Info className="w-3.5 h-3.5 text-sky-400 shrink-0 mt-0.5" />
             )}
-            <span className="text-zinc-300 break-all">{log.message}</span>
+            <span className="text-zinc-200 break-all">{log.message}</span>
           </div>
         ))}
       </div>

@@ -78,31 +78,31 @@ export const ReframeNavFooter: React.FC = () => {
     >
       {/* ── EXPANDABLE BOTTOM DETAIL DRAWER ─────────────────────── */}
       {isBottomDrawerOpen && activeTab && (
-        <div className="h-44 border-b border-zinc-800 bg-zinc-900/90 backdrop-blur p-4 flex flex-col animate-in slide-in-from-bottom-2 duration-200">
-          <div className="flex items-center justify-between pb-2 border-b border-zinc-800/80 mb-2">
+        <div className="h-44 border-b border-zinc-800 bg-zinc-900/95 backdrop-blur p-4 flex flex-col animate-in slide-in-from-bottom-2 duration-200">
+          <div className="flex items-center justify-between pb-2 border-b border-zinc-800 mb-2">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
               <span className="text-xs font-bold text-white tracking-tight">
                 {activeTab.label} Telemetry Console
               </span>
-              <span className="px-2 py-0.5 rounded text-[10px] font-mono text-zinc-400 bg-zinc-800">
+              <span className="px-2 py-0.5 rounded text-[10px] font-mono text-zinc-300 bg-zinc-800 border border-zinc-700">
                 {activeTab.value}
               </span>
             </div>
             <button
               onClick={() => toggleBottomDrawer()}
-              className="p-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-800"
+              className="p-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
             >
               <ChevronDown className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto font-mono text-xs text-zinc-300 leading-relaxed bg-zinc-950/60 rounded-lg p-3 border border-zinc-800/60 scrollbar-thin scrollbar-thumb-zinc-700">
-            <p className="text-zinc-400">
+          <div className="flex-1 overflow-y-auto font-mono text-xs text-zinc-200 leading-relaxed bg-zinc-950/80 rounded-lg p-3 border border-zinc-800 scrollbar-thin scrollbar-thumb-zinc-700">
+            <p className="text-zinc-300">
               [Telemetry Stream] {new Date().toLocaleTimeString()} -{' '}
               {activeTab.content || 'Zero anomalous events reported.'}
             </p>
-            <div className="mt-2 text-zinc-500 text-[11px] space-y-0.5">
+            <div className="mt-2 text-zinc-400 text-[11px] space-y-0.5">
               <div>&gt; Channel ID: {activeTab.id}</div>
               <div>&gt; Ingest Rate: 1,420 msgs/sec</div>
               <div>&gt; Health Status: 100% operational</div>
@@ -112,7 +112,7 @@ export const ReframeNavFooter: React.FC = () => {
       )}
 
       {/* ── FOOTER STATUS STRIP (| TAB 1 | TAB 2 | +) ──────────── */}
-      <div className="h-8 px-3 flex items-center justify-between text-xs text-zinc-400 gap-2">
+      <div className="h-8 px-3 flex items-center justify-between text-xs text-zinc-300 gap-2">
         {/* Left: Dynamic Footer Tabs */}
         <div className="flex items-center gap-1 overflow-x-auto no-scrollbar flex-1">
           {footerTabs.map((tab, idx) => {
@@ -132,30 +132,30 @@ export const ReframeNavFooter: React.FC = () => {
                 className={`group flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-medium cursor-pointer transition-all ${
                   isSelected
                     ? 'bg-zinc-800 text-white shadow-sm border border-zinc-700'
-                    : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+                    : 'text-zinc-300 hover:text-white hover:bg-zinc-900'
                 } ${isDragging ? 'opacity-40' : ''} ${
                   isDropTarget ? 'border-t-2 border-indigo-500' : ''
                 }`}
                 title={`Click to inspect ${tab.label}`}
               >
                 {mode === 'builder' && (
-                  <GripVertical className="w-2.5 h-2.5 text-zinc-600 opacity-0 group-hover:opacity-100 -ml-0.5 transition-opacity cursor-grab active:cursor-grabbing" />
+                  <GripVertical className="w-2.5 h-2.5 text-zinc-500 opacity-0 group-hover:opacity-100 -ml-0.5 transition-opacity cursor-grab active:cursor-grabbing" />
                 )}
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-                <span className="font-semibold text-zinc-300">{tab.label}:</span>
-                <span className="font-mono text-zinc-400">{tab.value}</span>
+                <span className="font-semibold text-zinc-200">{tab.label}:</span>
+                <span className="font-mono text-zinc-300">{tab.value}</span>
 
-                {/* Little red X button to remove tab */}
+                {/* Little remove X button */}
                 {mode === 'builder' && (
                   <button
                     onClick={(e) => {
                       e.stopPropagation()
                       removeFooterTab(tab.id)
                     }}
-                    className="p-0.5 rounded text-red-500 hover:text-red-400 hover:bg-red-500/10 transition-colors ml-1"
+                    className="p-0.5 rounded text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors ml-1"
                     title={`Remove ${tab.label}`}
                   >
-                    <X className="w-2.5 h-2.5 text-red-500" strokeWidth={2.5} />
+                    <X className="w-2.5 h-2.5" strokeWidth={2} />
                   </button>
                 )}
               </div>
@@ -163,7 +163,7 @@ export const ReframeNavFooter: React.FC = () => {
           })}
 
           {footerTabs.length === 0 && mode === 'builder' && (
-            <span className="text-[11px] text-zinc-500 italic px-2">No status monitors</span>
+            <span className="text-[11px] text-zinc-400 font-mono px-2">No status monitors</span>
           )}
 
           {/* + Add Footer Status Tab */}
@@ -195,7 +195,7 @@ export const ReframeNavFooter: React.FC = () => {
             ) : (
               <button
                 onClick={() => setIsAddingTab(true)}
-                className="p-1 rounded text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 transition-colors"
+                className="p-1 rounded text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
                 title="Add Status Tab"
               >
                 <Plus className="w-3 h-3" />
@@ -206,8 +206,8 @@ export const ReframeNavFooter: React.FC = () => {
         {/* Right: Engine Indicator (Builder mode only) */}
         {mode === 'builder' && (
           <div className="flex items-center gap-2 text-[11px] shrink-0">
-            <span className="text-zinc-500 font-mono">Studio Engine: Dockview</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-zinc-400 font-mono">Studio Engine: Dockview</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
           </div>
         )}
       </div>

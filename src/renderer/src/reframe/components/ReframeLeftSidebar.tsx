@@ -110,14 +110,16 @@ export const ReframeLeftSidebar: React.FC = () => {
         borderRightWidth: `${themeInspector?.borderThickness || 1}px`
       }}
     >
-      {isLeftSidebarOpen && mode === 'builder' && <ReframeResizeHandle side="left" />}
+      {/* Resize handle always mounted on the right edge of left sidebar */}
+      <ReframeResizeHandle side="left" />
+
       {/* ── TOP SECTION: TAB LIST ──────────────────────────────── */}
       <div className="flex-1 flex flex-col overflow-y-auto p-2 space-y-1">
         {/* Navigation Section Title (when expanded and builder mode) */}
         {isLeftSidebarOpen && mode === 'builder' && (
-          <div className="px-2 py-1 text-[11px] font-semibold text-zinc-500 uppercase tracking-wider flex items-center justify-between">
+          <div className="px-2 py-1 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider flex items-center justify-between">
             <span>Views & Canvases</span>
-            <span className="text-[10px] text-zinc-600">{leftTabs.length} tabs</span>
+            <span className="text-[10px] text-zinc-400 font-mono">{leftTabs.length} tabs</span>
           </div>
         )}
 
@@ -139,8 +141,8 @@ export const ReframeLeftSidebar: React.FC = () => {
               onClick={() => setActiveLeftTab(tab.id)}
               className={`group relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium cursor-pointer transition-all ${
                 isActive
-                  ? 'bg-zinc-800/90 text-white border border-zinc-700/70 shadow-sm'
-                  : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900/60'
+                  ? 'bg-zinc-800 text-white border border-zinc-700/80 shadow-sm'
+                  : 'text-zinc-300 hover:text-white hover:bg-zinc-850/80'
               } ${isDragging ? 'opacity-40' : ''} ${
                 isDropTarget ? 'border-t-2 border-indigo-500' : ''
               }`}
@@ -148,19 +150,19 @@ export const ReframeLeftSidebar: React.FC = () => {
             >
               {/* Drag Handle */}
               {isLeftSidebarOpen && mode === 'builder' && (
-                <GripVertical className="w-3 h-3 text-zinc-600 opacity-0 group-hover:opacity-100 -ml-1 transition-opacity cursor-grab active:cursor-grabbing shrink-0" />
+                <GripVertical className="w-3 h-3 text-zinc-500 opacity-0 group-hover:opacity-100 -ml-1 transition-opacity cursor-grab active:cursor-grabbing shrink-0" />
               )}
 
               {/* Icon */}
               <Icon
                 className={`w-4 h-4 shrink-0 ${
-                  isActive ? 'text-indigo-400' : 'text-zinc-500 group-hover:text-zinc-400'
+                  isActive ? 'text-indigo-400' : 'text-zinc-400 group-hover:text-zinc-200'
                 }`}
               />
 
               {/* Label */}
               {isLeftSidebarOpen && (
-                <span className="truncate flex-1 tracking-tight">{tab.label}</span>
+                <span className="truncate flex-1 tracking-tight font-medium">{tab.label}</span>
               )}
 
               {/* Little red X button to remove tab */}
@@ -170,10 +172,10 @@ export const ReframeLeftSidebar: React.FC = () => {
                     e.stopPropagation()
                     removeLeftTab(tab.id)
                   }}
-                  className="p-1 rounded text-red-500 hover:text-red-400 hover:bg-red-500/10 transition-colors shrink-0"
+                  className="p-1 rounded text-zinc-400 hover:text-red-400 hover:bg-red-500/10 transition-colors shrink-0"
                   title={`Remove ${tab.label}`}
                 >
-                  <X className="w-3 h-3 text-red-500" strokeWidth={2.5} />
+                  <X className="w-3 h-3" strokeWidth={2} />
                 </button>
               )}
             </div>
@@ -181,7 +183,7 @@ export const ReframeLeftSidebar: React.FC = () => {
         })}
 
         {isLeftSidebarOpen && leftTabs.length === 0 && mode === 'builder' && (
-          <div className="p-3 text-center text-xs text-zinc-500 italic">No tabs open</div>
+          <div className="p-3 text-center text-xs text-zinc-400">No tabs configured</div>
         )}
 
         {/* ── + ADD TAB BUTTON (builder mode only) ────────────────── */}
@@ -266,7 +268,7 @@ export const ReframeLeftSidebar: React.FC = () => {
             ) : (
               <button
                 onClick={() => setIsAddingTab(true)}
-                className="w-full mt-2 py-2 px-3 rounded-lg border border-dashed border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/50 text-zinc-400 hover:text-zinc-200 text-xs flex items-center justify-center gap-1.5 transition-colors"
+                className="w-full mt-2 py-2 px-3 rounded-lg border border-dashed border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900 text-zinc-300 hover:text-white text-xs flex items-center justify-center gap-1.5 transition-colors font-medium"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Tab</span>
@@ -287,10 +289,10 @@ export const ReframeLeftSidebar: React.FC = () => {
       </div>
 
       {/* ── BOTTOM SECTION: COLLAPSE TOGGLE ─────────────────────── */}
-      <div className="p-2 border-t border-zinc-800/80 bg-zinc-950/80">
+      <div className="p-2 border-t border-zinc-800 bg-zinc-950">
         <button
           onClick={toggleLeftSidebar}
-          className="w-full p-1.5 rounded-lg text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900 transition-colors flex items-center justify-center gap-1.5 text-xs"
+          className="w-full p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors flex items-center justify-center gap-1.5 text-xs font-medium"
           title={isLeftSidebarOpen ? 'Collapse Sidebar' : 'Expand Sidebar'}
         >
           {isLeftSidebarOpen ? (
