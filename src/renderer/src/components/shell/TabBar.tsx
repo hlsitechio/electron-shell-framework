@@ -119,7 +119,7 @@ export function TabBar({ pages, platform }: TabBarProps) {
             ref={tabStripRef}
             className="app-no-drag flex h-full min-w-0 flex-1 items-stretch overflow-x-auto"
           >
-            {all.map((group, gi) => (
+            {all.map((group) => (
               <div
                 key={group.category ?? group.pages[0].id}
                 className="flex min-w-0 flex-1 items-stretch"
