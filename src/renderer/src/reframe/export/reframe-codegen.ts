@@ -458,6 +458,139 @@ function WidgetRenderer({ panel }: { panel: WidgetItem }) {
     )
   }
 
+  if (panel.widgetType === 'recorder' || panel.widgetType === 'meeting-record') {
+    return (
+      <div className="flex flex-col items-center justify-center py-4 text-center">
+        <div className="text-3xl font-extrabold font-mono text-white tracking-tight">08:02</div>
+        <div className="text-xs text-rose-400 font-medium mt-1 flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+          <span>Recording Active • 256kbps Opus</span>
+        </div>
+        <div className="flex items-center gap-1 mt-3 h-6">
+          {[20, 50, 80, 40, 90, 60, 30, 75, 45].map((h, i) => (
+            <div key={i} className="w-1.5 bg-indigo-500 rounded-full" style={{ height: \`\${h}%\` }} />
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'transcript' || panel.widgetType === 'meeting-transcript') {
+    return (
+      <div className="space-y-2 text-xs">
+        <div className="p-2 rounded bg-zinc-800/60 border border-zinc-700/60">
+          <div className="flex justify-between text-[11px] font-mono mb-1">
+            <span className="text-indigo-400 font-semibold">Sarah Lin (VP Eng)</span>
+            <span className="text-zinc-500">10:14 AM</span>
+          </div>
+          <p className="text-zinc-300">Redis failover test was successful with zero dropped client packets.</p>
+        </div>
+        <div className="p-2 rounded bg-zinc-800/60 border border-zinc-700/60">
+          <div className="flex justify-between text-[11px] font-mono mb-1">
+            <span className="text-emerald-400 font-semibold">Alex Chen (Staff Dev)</span>
+            <span className="text-zinc-500">10:15 AM</span>
+          </div>
+          <p className="text-zinc-300">Enterprise cockpit export is locked for Friday deployment.</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'summary' || panel.widgetType === 'meeting-summary' || panel.widgetType === 'minutes') {
+    return (
+      <div className="p-3 bg-zinc-900 rounded-lg border border-zinc-800 text-xs text-zinc-300 space-y-2">
+        <div className="font-semibold text-zinc-100 flex items-center justify-between">
+          <span>AI Executive Minutes</span>
+          <span className="text-[10px] font-mono text-indigo-400">Claude 3.7 Sonnet</span>
+        </div>
+        <p className="leading-relaxed">
+          {panel.widgetProps?.tldr || 'Architecture sync confirmed Q3 cluster migration is green. Enterprise deliverable locked.'}
+        </p>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'meeting-actions') {
+    return (
+      <div className="space-y-1.5 text-xs">
+        <div className="p-2 rounded bg-zinc-800/60 border border-zinc-700/60 flex items-center justify-between">
+          <span className="line-through text-zinc-500">✓ Merge Redis timeout patch (@Alex Chen)</span>
+          <span className="text-[9px] font-mono text-emerald-400">Done</span>
+        </div>
+        <div className="p-2 rounded bg-zinc-800/60 border border-zinc-700/60 flex items-center justify-between text-zinc-200">
+          <span>□ Package client dashboard release (@Sarah Lin)</span>
+          <span className="text-[9px] font-mono text-amber-400">Due Thu</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'talk-time') {
+    return (
+      <div className="space-y-2.5 text-xs">
+        <div>
+          <div className="flex justify-between text-[11px] mb-1">
+            <span className="text-zinc-300">Sarah Lin (VP Eng)</span>
+            <span className="font-mono text-zinc-400">42% (138 wpm)</span>
+          </div>
+          <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
+            <div className="h-full bg-indigo-500 w-[42%]" />
+          </div>
+        </div>
+        <div>
+          <div className="flex justify-between text-[11px] mb-1">
+            <span className="text-zinc-300">Alex Chen (Staff Dev)</span>
+            <span className="font-mono text-zinc-400">36% (152 wpm)</span>
+          </div>
+          <div className="h-1.5 w-full bg-zinc-800 rounded-full overflow-hidden">
+            <div className="h-full bg-emerald-500 w-[36%]" />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'agenda-timer') {
+    return (
+      <div className="space-y-2 text-xs">
+        <div className="p-2 rounded bg-zinc-800/60 border border-zinc-700/60 flex justify-between items-center text-zinc-400">
+          <span>1. Redis failover verification</span>
+          <span className="font-mono text-[10px]">14m / 15m (Done)</span>
+        </div>
+        <div className="p-2 rounded bg-indigo-950/30 border border-indigo-500/40 flex justify-between items-center text-white">
+          <span>2. Enterprise dashboard review</span>
+          <span className="font-mono text-[10px] text-indigo-300">12m / 20m (Active)</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'meeting-qa') {
+    return (
+      <div className="p-3 bg-zinc-900 rounded-lg border border-zinc-800 text-xs space-y-1.5">
+        <div className="font-semibold text-zinc-200">Q: What did Sarah say about Friday?</div>
+        <p className="text-zinc-300 pl-2 border-l-2 border-indigo-500">
+          Sarah Lin confirmed delivery is strictly on schedule for Friday release.
+        </p>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'briefing') {
+    return (
+      <div className="space-y-2 text-xs">
+        <div className="p-2 rounded bg-indigo-950/20 border border-indigo-500/30 text-zinc-200">
+          <span className="text-[10px] font-mono text-indigo-400 block font-semibold">Objective</span>
+          Demonstrate the 63+ client widget kit and confirm Friday release.
+        </div>
+        <div className="p-2 rounded bg-zinc-800/60 border border-zinc-700/60 flex justify-between items-center">
+          <span className="text-zinc-200 font-medium">Sarah Lin (VP of Engineering)</span>
+          <span className="text-[10px] text-zinc-500 font-mono">Acme Corp</span>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="py-8 text-center text-xs text-zinc-500 italic">
       [Live widget container: {panel.title}]

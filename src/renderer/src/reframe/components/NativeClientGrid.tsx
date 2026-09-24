@@ -26,7 +26,15 @@ import {
   ListTodo,
   CheckSquare,
   Calculator,
-  Cloud
+  Cloud,
+  Mic,
+  FileAudio,
+  FileCheck2,
+  UserCheck,
+  PieChart,
+  CalendarClock,
+  HelpCircle,
+  Users
 } from 'lucide-react'
 
 const WIDGET_ICONS: Record<string, React.FC<{ className?: string }>> = {
@@ -61,7 +69,19 @@ const WIDGET_ICONS: Record<string, React.FC<{ className?: string }>> = {
   todo: CheckSquare,
   calculator: Calculator,
   calc: Calculator,
-  weather: Cloud
+  weather: Cloud,
+  recorder: Mic,
+  'meeting-record': Mic,
+  transcript: FileAudio,
+  'meeting-transcript': FileAudio,
+  summary: FileCheck2,
+  'meeting-summary': FileCheck2,
+  minutes: FileCheck2,
+  'meeting-actions': UserCheck,
+  'talk-time': PieChart,
+  'agenda-timer': CalendarClock,
+  'meeting-qa': HelpCircle,
+  briefing: Users
 }
 
 interface ClientPanelCardProps {

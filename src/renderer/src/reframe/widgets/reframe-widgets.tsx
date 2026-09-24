@@ -44,7 +44,15 @@ import {
   Cloud,
   Sun,
   CloudRain,
-  CloudSun
+  CloudSun,
+  Mic,
+  FileAudio,
+  FileCheck2,
+  UserCheck,
+  PieChart,
+  CalendarClock,
+  HelpCircle,
+  Users
 } from 'lucide-react'
 import { useReframeStore } from '../stores/reframe-store'
 import { WIDGET_CATALOG } from './catalog/widget-catalog'
@@ -2694,7 +2702,1026 @@ export const WeatherPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) =>
 }
 
 /* ============================================================
-   21. EMPTY / WIREFRAME SLOT WIDGET
+   22. MEETING AUDIO RECORDER WIDGET
+   ============================================================ */
+export const MeetingRecorderPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const [isRecording, setIsRecording] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
+  const [seconds, setSeconds] = useState<number>(params?.initialSeconds ?? 482)
+  const [micDevice, setMicDevice] = useState('Studio USB Condenser (Default)')
+  const [noiseSuppression, setNoiseSuppression] = useState(true)
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null
+    if (isRecording && !isPaused) {
+      interval = setInterval(() => {
+        setSeconds((prev) => prev + 1)
+      }, 1000)
+    }
+    return () => {
+      if (interval) clearInterval(interval)
+    }
+  }, [isRecording, isPaused])
+
+  const formatTime = (secs: number) => {
+    const hrs = Math.floor(secs / 3600)
+    const mins = Math.floor((secs % 3600) / 60)
+    const remSecs = secs % 60
+    if (hrs > 0) {
+      return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(remSecs).padStart(2, '0')}`
+    }
+    return `${String(mins).padStart(2, '0')}:${String(remSecs).padStart(2, '0')}`
+  }
+
+  const waveHeights = [
+    24, 48, 80, 65, 92, 35, 78, 90, 45, 60, 30, 85, 70, 95, 50, 40, 65, 88, 75, 42
+  ]
+
+  return (
+    <div className="reframe-panel-body p-3.5 bg-zinc-950/70 text-zinc-100 flex flex-col justify-between h-full select-none overflow-hidden">
+      {/* Top Header / Mic Selector */}
+      <div className="flex items-center justify-between pb-2 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <div
+            className={`w-2.5 h-2.5 rounded-full ${
+              isRecording && !isPaused
+                ? 'bg-rose-500 animate-pulse'
+                : isPaused
+                  ? 'bg-amber-400'
+                  : 'bg-zinc-600'
+            }`}
+          />
+          <span className="font-semibold text-zinc-200">
+            {isRecording && !isPaused
+              ? 'Recording Active'
+              : isPaused
+                ? 'Recording Paused'
+                : 'Ready to Record'}
+          </span>
+        </div>
+        <select
+          value={micDevice}
+          onChange={(e) => setMicDevice(e.target.value)}
+          className="bg-zinc-900 border border-zinc-800 rounded px-2 py-0.5 text-[11px] text-zinc-300 focus:outline-none focus:border-zinc-700"
+        >
+          <option>Studio USB Condenser (Default)</option>
+          <option>Built-in Array (Realtek Audio)</option>
+          <option>Bluetooth Headset (AirPods Pro)</option>
+        </select>
+      </div>
+
+      {/* Center Waveform & Timer */}
+      <div className="flex flex-col items-center justify-center my-auto py-2">
+        <div className="text-4xl font-extrabold font-mono tracking-tight text-white mb-2">
+          {formatTime(seconds)}
+        </div>
+        <div className="flex items-center gap-1.5 text-xs text-zinc-400 mb-4 font-mono">
+          <span>Bitrate: 256kbps Opus</span>
+          <span>•</span>
+          <span className="text-emerald-400">Peak: -8.4 dBFS</span>
+        </div>
+
+        {/* Audio Waveform Bars */}
+        <div className="flex items-end justify-center gap-1 h-12 w-full max-w-sm px-4">
+          {waveHeights.map((h, idx) => (
+            <div
+              key={idx}
+              className={`w-1.5 rounded-full transition-all duration-150 ${
+                isRecording && !isPaused
+                  ? 'bg-gradient-to-t from-indigo-500 to-rose-400'
+                  : 'bg-zinc-800'
+              }`}
+              style={{
+                height: isRecording && !isPaused ? `${h}%` : '15%'
+              }}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Bottom Controls */}
+      <div className="flex items-center justify-between pt-2 border-t border-zinc-800 shrink-0">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setNoiseSuppression(!noiseSuppression)}
+            className={`px-2 py-1 rounded text-[10px] font-mono border transition-colors ${
+              noiseSuppression
+                ? 'bg-indigo-950/40 border-indigo-500/40 text-indigo-300'
+                : 'bg-zinc-900 border-zinc-800 text-zinc-500'
+            }`}
+          >
+            Noise Suppression: {noiseSuppression ? 'ON' : 'OFF'}
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {!isRecording ? (
+            <button
+              onClick={() => {
+                setIsRecording(true)
+                setIsPaused(false)
+              }}
+              className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all"
+            >
+              <Mic className="w-3.5 h-3.5" />
+              <span>Start Recording</span>
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={() => setIsPaused(!isPaused)}
+                className="px-2.5 py-1.5 rounded-lg bg-zinc-850 hover:bg-zinc-800 border border-zinc-700 text-zinc-200 text-xs font-medium flex items-center gap-1"
+              >
+                {isPaused ? (
+                  <Play className="w-3.5 h-3.5 text-emerald-400" />
+                ) : (
+                  <Pause className="w-3.5 h-3.5 text-amber-400" />
+                )}
+                <span>{isPaused ? 'Resume' : 'Pause'}</span>
+              </button>
+              <button
+                onClick={() => {
+                  setIsRecording(false)
+                  setIsPaused(false)
+                }}
+                className="px-2.5 py-1.5 rounded-lg bg-rose-950/60 hover:bg-rose-900/80 border border-rose-800/60 text-rose-200 text-xs font-medium flex items-center gap-1"
+              >
+                <Square className="w-3 h-3 fill-rose-300" />
+                <span>Stop & Transcribe</span>
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   23. MEETING LIVE TRANSCRIPT WIDGET
+   ============================================================ */
+export const MeetingTranscriptPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const [filterSpeaker, setFilterSpeaker] = useState('all')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [copied, setCopied] = useState(false)
+
+  const transcripts = useMemo(
+    () =>
+      params?.transcript || [
+        {
+          id: 'tr-1',
+          speaker: 'Sarah Lin',
+          role: 'VP Eng',
+          time: '10:14 AM',
+          text: 'Good morning everyone. Let us review the primary Redis cluster replication failover test and client deliverable milestones.',
+          confidence: 99
+        },
+        {
+          id: 'tr-2',
+          speaker: 'Alex Chen',
+          role: 'Staff Dev',
+          time: '10:15 AM',
+          text: 'Yes, we conducted the canary failover at 08:30 UTC. Replica reconnection was seamless with zero dropped packets.',
+          confidence: 98
+        },
+        {
+          id: 'tr-3',
+          speaker: 'David Ross',
+          role: 'Product Lead',
+          time: '10:16 AM',
+          text: 'Excellent. What about the enterprise client dashboard delivery date? We promised the cockpit preview by Friday.',
+          confidence: 97
+        },
+        {
+          id: 'tr-4',
+          speaker: 'Sarah Lin',
+          role: 'VP Eng',
+          time: '10:16 AM',
+          text: 'The new widget suite and zero-dependency export are already verified. We are completely on schedule for Friday release.',
+          confidence: 99
+        },
+        {
+          id: 'tr-5',
+          speaker: 'Alex Chen',
+          role: 'Staff Dev',
+          time: '10:17 AM',
+          text: 'I will finish tagging the package and double check our SOC2 encryption keys right after this call.',
+          confidence: 96
+        }
+      ],
+    [params?.transcript]
+  )
+
+  const speakers = useMemo(() => {
+    const set = new Set<string>()
+    transcripts.forEach((t: any) => set.add(t.speaker))
+    return Array.from(set)
+  }, [transcripts])
+
+  const filtered = transcripts.filter((t: any) => {
+    if (filterSpeaker !== 'all' && t.speaker !== filterSpeaker) return false
+    if (searchQuery && !t.text.toLowerCase().includes(searchQuery.toLowerCase())) return false
+    return true
+  })
+
+  const handleCopy = () => {
+    const fullText = filtered
+      .map((t: any) => `[${t.time}] ${t.speaker} (${t.role}): ${t.text}`)
+      .join('\n')
+    navigator.clipboard?.writeText(fullText)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className="reframe-panel-body p-3 bg-zinc-950/70 text-zinc-100 flex flex-col h-full select-none overflow-hidden">
+      {/* Top Search & Controls */}
+      <div className="flex items-center justify-between gap-2 pb-2 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-1.5 text-zinc-400 pl-0.5">
+          <FileAudio className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+        </div>
+        <div className="relative flex-1">
+          <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search transcript utterances..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-8 pr-3 py-1 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
+          />
+        </div>
+
+        <select
+          value={filterSpeaker}
+          onChange={(e) => setFilterSpeaker(e.target.value)}
+          className="bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1 text-xs text-zinc-300 focus:outline-none focus:border-zinc-700"
+        >
+          <option value="all">All Speakers ({transcripts.length})</option>
+          {speakers.map((spk) => (
+            <option key={spk} value={spk}>
+              {spk}
+            </option>
+          ))}
+        </select>
+
+        <button
+          onClick={handleCopy}
+          className="p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-zinc-200 transition-colors"
+          title="Copy transcript to clipboard"
+        >
+          {copied ? (
+            <Check className="w-3.5 h-3.5 text-emerald-400" />
+          ) : (
+            <Copy className="w-3.5 h-3.5" />
+          )}
+        </button>
+      </div>
+
+      {/* Transcript List */}
+      <div className="flex-1 overflow-y-auto space-y-2.5 py-2.5 pr-1">
+        {filtered.map((item: any) => {
+          const isSarah = item.speaker.includes('Sarah')
+          const isAlex = item.speaker.includes('Alex')
+          const badgeColor = isSarah
+            ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30'
+            : isAlex
+              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+              : 'bg-amber-500/10 text-amber-400 border-amber-500/30'
+
+          return (
+            <div
+              key={item.id}
+              className="p-2.5 rounded-lg bg-zinc-900/50 border border-zinc-800/80 hover:border-zinc-700/80 transition-colors"
+            >
+              <div className="flex items-center justify-between mb-1 text-[11px]">
+                <div className="flex items-center gap-1.5">
+                  <span className={`px-1.5 py-0.5 rounded font-medium border ${badgeColor}`}>
+                    {item.speaker}
+                  </span>
+                  <span className="text-zinc-500 font-mono text-[10px]">{item.role}</span>
+                </div>
+                <div className="flex items-center gap-2 text-[10px] text-zinc-500 font-mono">
+                  <span>{item.time}</span>
+                  <span className="text-emerald-500">{item.confidence}%</span>
+                </div>
+              </div>
+              <p className="text-xs text-zinc-300 leading-relaxed pl-0.5">{item.text}</p>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Bottom Live Streaming Indicator */}
+      <div className="pt-2 border-t border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-500 font-mono shrink-0">
+        <div className="flex items-center gap-1.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span>Whisper-Large v3 • Real-time Diarization</span>
+        </div>
+        <span>{filtered.length} utterances</span>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   24. MEETING SUMMARY & MINUTES WIDGET
+   ============================================================ */
+export const MeetingSummaryPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const [activeTab, setActiveTab] = useState<'tldr' | 'decisions' | 'blockers'>('tldr')
+  const [model, setModel] = useState(params?.model || 'Claude 3.7 Sonnet')
+  const [isGenerating, setIsGenerating] = useState(false)
+
+  const tldr =
+    params?.tldr ||
+    'Architecture sync confirmed Q3 cluster migration is green. Redis failover completed without client disruption. Enterprise cockpit deliverable is locked for Friday release.'
+  const decisions = params?.decisions || [
+    'Approved Redis v7 failover parameter configuration in production',
+    'Confirmed Friday 5 PM release date for Client Dashboard deliverable',
+    'Scheduled SRE on-call shadow rotation for next Tuesday'
+  ]
+  const blockers = params?.blockers || [
+    'Pending SOC2 Type II legal audit sign-off for client data retention policy'
+  ]
+
+  const handleRegenerate = () => {
+    setIsGenerating(true)
+    setTimeout(() => setIsGenerating(false), 800)
+  }
+
+  return (
+    <div className="reframe-panel-body p-3.5 bg-zinc-950/70 text-zinc-100 flex flex-col h-full select-none overflow-hidden">
+      {/* Header with Model Badge & Regenerate */}
+      <div className="flex items-center justify-between pb-2 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <FileCheck2 className="w-3.5 h-3.5 text-indigo-400" />
+          <span className="font-semibold text-zinc-200">AI Minutes & Summary</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <select
+            value={model}
+            onChange={(e) => setModel(e.target.value)}
+            className="bg-zinc-900 border border-zinc-800 rounded px-2 py-0.5 text-[11px] text-zinc-300 focus:outline-none focus:border-zinc-700"
+          >
+            <option>Claude 3.7 Sonnet</option>
+            <option>GPT-4o Omnichannel</option>
+            <option>Gemini 1.5 Pro</option>
+          </select>
+          <button
+            onClick={handleRegenerate}
+            disabled={isGenerating}
+            className="p-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-zinc-200"
+            title="Regenerate summary"
+          >
+            <RotateCcw
+              className={`w-3 h-3 ${isGenerating ? 'animate-spin text-indigo-400' : ''}`}
+            />
+          </button>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex items-center gap-1.5 my-2.5 shrink-0">
+        {(['tldr', 'decisions', 'blockers'] as const).map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`px-2.5 py-1 rounded text-[11px] font-medium uppercase tracking-wider transition-colors ${
+              activeTab === tab
+                ? 'bg-indigo-600 text-white shadow-sm'
+                : 'bg-zinc-900 hover:bg-zinc-850 text-zinc-400 hover:text-zinc-200 border border-zinc-800'
+            }`}
+          >
+            {tab === 'tldr'
+              ? 'Executive TL;DR'
+              : tab === 'decisions'
+                ? `Decisions (${decisions.length})`
+                : `Blockers (${blockers.length})`}
+          </button>
+        ))}
+      </div>
+
+      {/* Content Area */}
+      <div className="flex-1 overflow-y-auto">
+        {activeTab === 'tldr' && (
+          <div className="p-3 rounded-lg bg-zinc-900/50 border border-zinc-800 text-xs text-zinc-300 leading-relaxed space-y-2">
+            <p>{tldr}</p>
+            <div className="pt-2 border-t border-zinc-800/60 flex items-center justify-between text-[10px] font-mono text-zinc-500">
+              <span>Sentiment: Highly Constructive</span>
+              <span>45m Audio Processed</span>
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'decisions' && (
+          <div className="space-y-2 text-xs">
+            {decisions.map((dec: string, idx: number) => (
+              <div
+                key={idx}
+                className="p-2.5 rounded-lg bg-emerald-950/20 border border-emerald-500/30 flex items-start gap-2"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                <span className="text-zinc-200 leading-snug">{dec}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {activeTab === 'blockers' && (
+          <div className="space-y-2 text-xs">
+            {blockers.map((blk: string, idx: number) => (
+              <div
+                key={idx}
+                className="p-2.5 rounded-lg bg-rose-950/20 border border-rose-500/30 flex items-start gap-2"
+              >
+                <AlertTriangle className="w-3.5 h-3.5 text-rose-400 shrink-0 mt-0.5" />
+                <span className="text-zinc-200 leading-snug">{blk}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   25. MEETING ACTION ITEMS WIDGET
+   ============================================================ */
+let actionItemIdCounter = 100
+const getNextActionId = () => `act-${++actionItemIdCounter}`
+
+export const MeetingActionItemsPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const [items, setItems] = useState(
+    params?.items || [
+      {
+        id: 'act-1',
+        task: 'Merge Redis connection pool timeout patch to production branch',
+        assignee: 'Alex Chen',
+        due: 'Today 5:00 PM',
+        priority: 'high',
+        completed: true,
+        timestamp: '10:15 AM'
+      },
+      {
+        id: 'act-2',
+        task: 'Package standalone client dashboard export and verify demo',
+        assignee: 'Sarah Lin',
+        due: 'Thursday 12:00 PM',
+        priority: 'high',
+        completed: false,
+        timestamp: '10:17 AM'
+      },
+      {
+        id: 'act-3',
+        task: 'Forward SOC2 data retention brief to compliance committee',
+        assignee: 'David Ross',
+        due: 'Friday 2:00 PM',
+        priority: 'medium',
+        completed: false,
+        timestamp: '10:22 AM'
+      }
+    ]
+  )
+  const [filter, setFilter] = useState<'all' | 'pending' | 'completed'>('all')
+  const [newTaskText, setNewTaskText] = useState('')
+  const [seekingAudio, setSeekingAudio] = useState<string | null>(null)
+
+  const toggleTask = (id: string) => {
+    setItems((prev: any[]) =>
+      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
+    )
+  }
+
+  const handleSeek = (ts: string) => {
+    setSeekingAudio(`Jumped to audio timestamp [${ts}]`)
+    setTimeout(() => setSeekingAudio(null), 2500)
+  }
+
+  const handleAddTask = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newTaskText.trim()) return
+    const newItem = {
+      id: getNextActionId(),
+      task: newTaskText.trim(),
+      assignee: 'Sarah Lin',
+      due: 'End of Week',
+      priority: 'medium',
+      completed: false,
+      timestamp: '10:24 AM'
+    }
+    setItems((prev: any[]) => [...prev, newItem])
+    setNewTaskText('')
+  }
+
+  const filteredItems = items.filter((it: any) => {
+    if (filter === 'pending') return !it.completed
+    if (filter === 'completed') return it.completed
+    return true
+  })
+
+  return (
+    <div className="reframe-panel-body p-3.5 bg-zinc-950/70 text-zinc-100 flex flex-col h-full select-none overflow-hidden">
+      {/* Top Header */}
+      <div className="flex items-center justify-between pb-2 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="font-semibold text-zinc-200">Extracted Action Items</span>
+        </div>
+        <div className="flex items-center gap-1">
+          {(['all', 'pending', 'completed'] as const).map((mode) => (
+            <button
+              key={mode}
+              onClick={() => setFilter(mode)}
+              className={`px-2 py-0.5 rounded text-[10px] uppercase font-mono ${
+                filter === mode ? 'bg-zinc-800 text-white' : 'text-zinc-500 hover:text-zinc-300'
+              }`}
+            >
+              {mode}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {seekingAudio && (
+        <div className="my-1.5 px-2 py-1 rounded bg-indigo-950/40 border border-indigo-500/40 text-[10px] text-indigo-300 font-mono">
+          {seekingAudio}
+        </div>
+      )}
+
+      {/* Task List */}
+      <div className="flex-1 overflow-y-auto space-y-2 py-2 pr-1">
+        {filteredItems.map((item: any) => (
+          <div
+            key={item.id}
+            className={`p-2 rounded-lg border transition-colors flex items-start gap-2 text-xs ${
+              item.completed
+                ? 'bg-zinc-900/30 border-zinc-850 opacity-70'
+                : 'bg-zinc-900/60 border-zinc-800 hover:border-zinc-700'
+            }`}
+          >
+            <button
+              onClick={() => toggleTask(item.id)}
+              className="mt-0.5 text-zinc-400 hover:text-zinc-100"
+            >
+              {item.completed ? (
+                <CheckSquare className="w-3.5 h-3.5 text-emerald-400" />
+              ) : (
+                <Square className="w-3.5 h-3.5 text-zinc-500" />
+              )}
+            </button>
+            <div className="flex-1 min-w-0">
+              <p
+                className={`leading-snug ${item.completed ? 'line-through text-zinc-500' : 'text-zinc-200'}`}
+              >
+                {item.task}
+              </p>
+              <div className="flex items-center gap-2 mt-1.5 text-[10px] text-zinc-400 font-mono">
+                <span className="px-1.5 py-0.2 rounded bg-zinc-800 border border-zinc-700 text-zinc-300">
+                  @{item.assignee}
+                </span>
+                <span>Due: {item.due}</span>
+                <button
+                  onClick={() => handleSeek(item.timestamp)}
+                  className="text-indigo-400 hover:underline cursor-pointer"
+                  title="Play audio context"
+                >
+                  [{item.timestamp}]
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Inline Add Task Form */}
+      <form onSubmit={handleAddTask} className="pt-2 border-t border-zinc-800 flex gap-2 shrink-0">
+        <input
+          type="text"
+          placeholder="+ Add next action item..."
+          value={newTaskText}
+          onChange={(e) => setNewTaskText(e.target.value)}
+          className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
+        />
+        <button
+          type="submit"
+          className="px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold"
+        >
+          Add
+        </button>
+      </form>
+    </div>
+  )
+}
+
+/* ============================================================
+   26. SPEAKER TALK-TIME & SENTIMENT ANALYTICS
+   ============================================================ */
+export const MeetingTalkTimePanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const speakers = params?.speakers || [
+    { name: 'Sarah Lin', role: 'VP Eng', percentage: 42, pace: '138 wpm', sentiment: 'Positive' },
+    {
+      name: 'Alex Chen',
+      role: 'Staff Dev',
+      percentage: 36,
+      pace: '152 wpm',
+      sentiment: 'Constructive'
+    },
+    {
+      name: 'David Ross',
+      role: 'Product Lead',
+      percentage: 22,
+      pace: '144 wpm',
+      sentiment: 'Neutral'
+    }
+  ]
+
+  const overallSentiment = params?.overallSentiment || '92% Constructive'
+
+  return (
+    <div className="reframe-panel-body p-3.5 bg-zinc-950/70 text-zinc-100 flex flex-col justify-between h-full select-none overflow-hidden">
+      {/* Top Header */}
+      <div className="flex items-center justify-between pb-2 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <PieChart className="w-3.5 h-3.5 text-indigo-400" />
+          <span className="font-semibold text-zinc-200">Speaker Talk-Time & Intelligence</span>
+        </div>
+        <span className="text-[11px] font-mono text-emerald-400 bg-emerald-950/30 px-2 py-0.5 rounded border border-emerald-500/30">
+          {overallSentiment}
+        </span>
+      </div>
+
+      {/* Speaker Bars */}
+      <div className="space-y-3.5 my-auto py-2">
+        {speakers.map((spk: any, idx: number) => {
+          const colors = ['bg-indigo-500', 'bg-emerald-500', 'bg-amber-500']
+          const barColor = colors[idx % colors.length]
+
+          return (
+            <div key={spk.name} className="space-y-1">
+              <div className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-medium text-zinc-200">{spk.name}</span>
+                  <span className="text-[10px] text-zinc-500 font-mono">({spk.role})</span>
+                </div>
+                <div className="flex items-center gap-2 font-mono text-[11px]">
+                  <span className="text-zinc-400">{spk.pace}</span>
+                  <span className="font-bold text-zinc-200">{spk.percentage}%</span>
+                </div>
+              </div>
+              <div className="h-2 w-full bg-zinc-900 rounded-full overflow-hidden border border-zinc-800/80">
+                <div
+                  className={`h-full rounded-full ${barColor} transition-all duration-500`}
+                  style={{ width: `${spk.percentage}%` }}
+                />
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Metrics Footer */}
+      <div className="grid grid-cols-3 gap-2 pt-2 border-t border-zinc-800 shrink-0 text-center font-mono">
+        <div className="p-1.5 rounded bg-zinc-900/60 border border-zinc-800">
+          <span className="text-[9px] text-zinc-500 block">OPTIMAL PACE</span>
+          <span className="text-xs font-bold text-zinc-200">144 wpm</span>
+        </div>
+        <div className="p-1.5 rounded bg-zinc-900/60 border border-zinc-800">
+          <span className="text-[9px] text-zinc-500 block">INTERRUPTIONS</span>
+          <span className="text-xs font-bold text-zinc-200">2 events</span>
+        </div>
+        <div className="p-1.5 rounded bg-zinc-900/60 border border-zinc-800">
+          <span className="text-[9px] text-zinc-500 block">ENGAGEMENT</span>
+          <span className="text-xs font-bold text-emerald-400">96.8%</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   27. MEETING AGENDA & PACING STOPWATCH
+   ============================================================ */
+export const MeetingAgendaTimerPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const [items, setItems] = useState(
+    params?.items || [
+      {
+        id: 'ag-1',
+        topic: 'Redis failover verification & APM review',
+        allotted: 15,
+        elapsed: 14,
+        status: 'completed'
+      },
+      {
+        id: 'ag-2',
+        topic: 'Enterprise dashboard client deliverable review',
+        allotted: 20,
+        elapsed: 12,
+        status: 'current'
+      },
+      {
+        id: 'ag-3',
+        topic: 'SOC2 compliance retention policy audit',
+        allotted: 10,
+        elapsed: 0,
+        status: 'pending'
+      }
+    ]
+  )
+
+  const handleNextTopic = () => {
+    setItems((prev: any[]) => {
+      const currIdx = prev.findIndex((i) => i.status === 'current')
+      if (currIdx === -1 || currIdx === prev.length - 1) return prev
+      return prev.map((item, idx) => {
+        if (idx === currIdx) return { ...item, status: 'completed' }
+        if (idx === currIdx + 1) return { ...item, status: 'current' }
+        return item
+      })
+    })
+  }
+
+  const currentTopic = items.find((i: any) => i.status === 'current')
+
+  return (
+    <div className="reframe-panel-body p-3.5 bg-zinc-950/70 text-zinc-100 flex flex-col justify-between h-full select-none overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-2 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <CalendarClock className="w-3.5 h-3.5 text-amber-400" />
+          <span className="font-semibold text-zinc-200">Meeting Agenda & Pacing</span>
+        </div>
+        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-950/30 text-emerald-300 border border-emerald-500/30">
+          {params?.status || 'On Track (+1m ahead)'}
+        </span>
+      </div>
+
+      {/* Agenda Topics List */}
+      <div className="space-y-2 my-auto py-2">
+        {items.map((item: any, idx: number) => {
+          const isCurrent = item.status === 'current'
+          const isDone = item.status === 'completed'
+
+          return (
+            <div
+              key={item.id}
+              className={`p-2.5 rounded-lg border text-xs transition-colors ${
+                isCurrent
+                  ? 'bg-indigo-950/20 border-indigo-500/40 text-white'
+                  : isDone
+                    ? 'bg-zinc-900/30 border-zinc-850 text-zinc-400'
+                    : 'bg-zinc-900/50 border-zinc-800 text-zinc-300'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-zinc-500 text-[11px]">{idx + 1}.</span>
+                  <span className="font-medium">{item.topic}</span>
+                </div>
+                <span className="text-[10px] font-mono px-1.5 py-0.2 rounded border bg-zinc-900 border-zinc-800 text-zinc-300">
+                  {item.elapsed}m / {item.allotted}m
+                </span>
+              </div>
+              {isCurrent && (
+                <div className="mt-2 h-1.5 w-full bg-zinc-900 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-indigo-500 transition-all duration-300"
+                    style={{ width: `${Math.min(100, (item.elapsed / item.allotted) * 100)}%` }}
+                  />
+                </div>
+              )}
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Action Footer */}
+      <div className="flex items-center justify-between pt-2 border-t border-zinc-800 shrink-0">
+        <div className="text-[11px] font-mono text-zinc-400">
+          {currentTopic ? `Active: ${currentTopic.topic.slice(0, 24)}...` : 'All topics covered'}
+        </div>
+        <button
+          onClick={handleNextTopic}
+          className="px-3 py-1 rounded-lg bg-zinc-850 hover:bg-zinc-800 border border-zinc-700 text-zinc-200 text-xs font-semibold flex items-center gap-1.5 transition-colors"
+        >
+          <span>Next Topic</span>
+          <ChevronRight className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   28. ASK AI ABOUT THIS MEETING (MEETING RAG)
+   ============================================================ */
+let qaMessageIdCounter = 100
+const getNextQaId = () => `qa-${++qaMessageIdCounter}`
+
+export const MeetingQaPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const [query, setQuery] = useState('')
+  const [messages, setMessages] = useState([
+    {
+      id: 'qa-1',
+      question: 'What did Sarah say about the Friday deadline?',
+      answer:
+        'Sarah Lin confirmed at 10:16 AM that the new widget suite and zero-dependency export are verified, and delivery remains strictly on schedule for Friday release.',
+      citation: 'Utterance #4 • 10:16 AM'
+    }
+  ])
+  const [isSearching, setIsSearching] = useState(false)
+
+  const samplePrompts = useMemo(
+    () =>
+      params?.samplePrompts || [
+        'What was decided about Redis failover?',
+        'Who is responsible for the client export package?',
+        'Any blockers identified?'
+      ],
+    [params?.samplePrompts]
+  )
+
+  const handleSend = (text: string) => {
+    if (!text.trim()) return
+    setIsSearching(true)
+    const q = text.trim()
+    setQuery('')
+    setTimeout(() => {
+      let ans =
+        'Based on the call transcript, the team confirmed unanimous consensus on the timeline and zero customer impact.'
+      let cit = 'Utterance #2 • 10:15 AM'
+      if (q.toLowerCase().includes('redis')) {
+        ans =
+          'Alex Chen reported the canary failover completed at 08:30 UTC with zero dropped packets and instant replica re-attachment.'
+        cit = 'Utterance #2 • 10:15 AM'
+      } else if (q.toLowerCase().includes('client') || q.toLowerCase().includes('export')) {
+        ans =
+          'Sarah Lin confirmed the client deliverable is locked for Friday release, and Alex Chen is packaging the standalone release.'
+        cit = 'Utterance #4 • 10:16 AM'
+      } else if (q.toLowerCase().includes('blocker')) {
+        ans =
+          'The only open blocker is the pending SOC2 Type II legal audit sign-off for client data retention policy.'
+        cit = 'Section: Minutes & Blockers'
+      }
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: getNextQaId(),
+          question: q,
+          answer: ans,
+          citation: cit
+        }
+      ])
+      setIsSearching(false)
+    }, 600)
+  }
+
+  return (
+    <div className="reframe-panel-body p-3.5 bg-zinc-950/70 text-zinc-100 flex flex-col h-full select-none overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-2 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <HelpCircle className="w-3.5 h-3.5 text-indigo-400" />
+          <span className="font-semibold text-zinc-200">Ask AI About This Meeting</span>
+        </div>
+        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">
+          Semantic Meeting RAG
+        </span>
+      </div>
+
+      {/* Suggested Prompts */}
+      <div className="flex flex-wrap gap-1.5 my-2 shrink-0">
+        {samplePrompts.map((p: string) => (
+          <button
+            key={p}
+            onClick={() => handleSend(p)}
+            className="px-2 py-0.5 rounded text-[10px] bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 transition-colors"
+          >
+            {p}
+          </button>
+        ))}
+      </div>
+
+      {/* Conversation / Answers List */}
+      <div className="flex-1 overflow-y-auto space-y-2.5 py-1 pr-1">
+        {messages.map((m) => (
+          <div
+            key={m.id}
+            className="p-2.5 rounded-lg bg-zinc-900/50 border border-zinc-800 space-y-1.5 text-xs"
+          >
+            <div className="font-semibold text-zinc-200 flex items-center gap-1.5">
+              <span className="text-indigo-400">Q:</span>
+              <span>{m.question}</span>
+            </div>
+            <p className="text-zinc-300 leading-relaxed pl-3 border-l-2 border-indigo-500/40">
+              {m.answer}
+            </p>
+            <div className="text-[10px] font-mono text-emerald-400 pt-1 flex items-center justify-between">
+              <span>Citation: {m.citation}</span>
+              <span className="text-zinc-500">99.1% Confidence</span>
+            </div>
+          </div>
+        ))}
+        {isSearching && (
+          <div className="p-2.5 rounded-lg bg-zinc-900/30 border border-zinc-800 text-xs text-zinc-400 font-mono animate-pulse flex items-center gap-2">
+            <Sparkles className="w-3 h-3 text-indigo-400" />
+            <span>Searching meeting embeddings & audio alignment...</span>
+          </div>
+        )}
+      </div>
+
+      {/* Query Input */}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          handleSend(query)
+        }}
+        className="pt-2 border-t border-zinc-800 flex gap-2 shrink-0"
+      >
+        <input
+          type="text"
+          placeholder="Ask anything about what was said on this call..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
+        />
+        <button
+          type="submit"
+          className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold"
+        >
+          Ask
+        </button>
+      </form>
+    </div>
+  )
+}
+
+/* ============================================================
+   29. PRE-MEETING ATTENDEE BRIEFING WIDGET
+   ============================================================ */
+export const MeetingBriefingPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const meetingName = params?.meetingName || 'Executive Cockpit Review'
+  const primaryGoal =
+    params?.primaryGoal || 'Demonstrate the 63+ client widget kit and confirm Friday release.'
+  const attendees = params?.attendees || [
+    { name: 'Sarah Lin', role: 'VP of Engineering', company: 'Acme Corp', lastMet: '4 days ago' },
+    { name: 'David Ross', role: 'Head of Product', company: 'Acme Corp', lastMet: '1 week ago' },
+    { name: 'Alex Chen', role: 'Staff Infrastructure', company: 'Internal', lastMet: 'Yesterday' }
+  ]
+
+  return (
+    <div className="reframe-panel-body p-3.5 bg-zinc-950/70 text-zinc-100 flex flex-col justify-between h-full select-none overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-2 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <Users className="w-3.5 h-3.5 text-blue-400" />
+          <span className="font-semibold text-zinc-200">Pre-Meeting Attendee Briefing</span>
+        </div>
+        <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-950/30 text-blue-300 border border-blue-500/30">
+          Executive Dossier
+        </span>
+      </div>
+
+      {/* Goal Callout */}
+      <div className="my-2 p-2.5 rounded-lg bg-indigo-950/20 border border-indigo-500/30 text-xs shrink-0">
+        <span className="text-[10px] font-mono uppercase text-indigo-400 block font-semibold mb-0.5">
+          Primary Call Objective: {meetingName}
+        </span>
+        <p className="text-zinc-200">{primaryGoal}</p>
+      </div>
+
+      {/* Attendee Dossier Cards */}
+      <div className="flex-1 overflow-y-auto space-y-2 py-1">
+        {attendees.map((att: any) => (
+          <div
+            key={att.name}
+            className="p-2 rounded-lg bg-zinc-900/50 border border-zinc-800 flex items-center justify-between text-xs"
+          >
+            <div>
+              <div className="font-semibold text-zinc-200">{att.name}</div>
+              <div className="text-[11px] text-zinc-400 font-mono">
+                {att.role} • {att.company}
+              </div>
+            </div>
+            <div className="text-right text-[10px] text-zinc-500 font-mono">
+              <div>Last touchpoint</div>
+              <div className="text-zinc-400">{att.lastMet}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Footer Runbook Context */}
+      <div className="pt-2 border-t border-zinc-800 text-[10px] font-mono text-zinc-500 flex items-center justify-between shrink-0">
+        <span>Linked artifacts: 3 briefs</span>
+        <span className="text-emerald-400">Context Synced</span>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   30. EMPTY / WIREFRAME SLOT WIDGET
    ============================================================ */
 export const EmptySlotWidget: React.FC<IDockviewPanelProps> = ({ api }) => {
   const panelId = api.id
@@ -2767,11 +3794,35 @@ export const EmptySlotWidget: React.FC<IDockviewPanelProps> = ({ api }) => {
           className="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
         >
           <Plus className="w-3.5 h-3.5" />
-          <span>Choose Widget (55+)</span>
+          <span>Choose Widget (63+)</span>
         </button>
 
         {/* Quick 1-click pills */}
         <div className="flex flex-wrap items-center justify-center gap-1.5 mt-3 pt-3 border-t border-zinc-800/60 max-w-sm">
+          <button
+            onClick={() => handleQuickFill('recorder')}
+            className="px-2 py-0.5 rounded text-[10px] bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 hover:text-rose-200 border border-rose-500/30 transition-colors"
+          >
+            + Record
+          </button>
+          <button
+            onClick={() => handleQuickFill('transcript')}
+            className="px-2 py-0.5 rounded text-[10px] bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 hover:text-indigo-200 border border-indigo-500/30 transition-colors"
+          >
+            + Transcript
+          </button>
+          <button
+            onClick={() => handleQuickFill('summary')}
+            className="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 hover:text-emerald-200 border border-emerald-500/30 transition-colors"
+          >
+            + Minutes
+          </button>
+          <button
+            onClick={() => handleQuickFill('meeting-actions')}
+            className="px-2 py-0.5 rounded text-[10px] bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 hover:text-amber-200 border border-amber-500/30 transition-colors"
+          >
+            + Actions
+          </button>
           <button
             onClick={() => handleQuickFill('clock')}
             className="px-2 py-0.5 rounded text-[10px] bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 hover:text-indigo-200 border border-indigo-500/30 transition-colors"
@@ -2866,5 +3917,17 @@ export const REFRAME_WIDGET_COMPONENTS: Record<string, React.FC<IDockviewPanelPr
   todo: TaskChecklistPanelWidget,
   calculator: CalculatorPanelWidget,
   calc: CalculatorPanelWidget,
-  weather: WeatherPanelWidget
+  weather: WeatherPanelWidget,
+  recorder: MeetingRecorderPanelWidget,
+  'meeting-record': MeetingRecorderPanelWidget,
+  transcript: MeetingTranscriptPanelWidget,
+  'meeting-transcript': MeetingTranscriptPanelWidget,
+  summary: MeetingSummaryPanelWidget,
+  'meeting-summary': MeetingSummaryPanelWidget,
+  minutes: MeetingSummaryPanelWidget,
+  'meeting-actions': MeetingActionItemsPanelWidget,
+  'talk-time': MeetingTalkTimePanelWidget,
+  'agenda-timer': MeetingAgendaTimerPanelWidget,
+  'meeting-qa': MeetingQaPanelWidget,
+  briefing: MeetingBriefingPanelWidget
 }

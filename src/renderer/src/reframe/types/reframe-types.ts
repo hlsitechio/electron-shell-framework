@@ -76,6 +76,18 @@ export type WidgetType =
   | 'calculator'
   | 'calc'
   | 'weather'
+  | 'recorder'
+  | 'meeting-record'
+  | 'transcript'
+  | 'meeting-transcript'
+  | 'summary'
+  | 'meeting-summary'
+  | 'minutes'
+  | 'meeting-actions'
+  | 'talk-time'
+  | 'agenda-timer'
+  | 'meeting-qa'
+  | 'briefing'
 
 export type LayoutScaffoldType =
   '1-slot' | '2-columns' | '3-columns' | '2x2-grid' | 'header-2-col' | '3-rows'

@@ -4,7 +4,16 @@ export interface WidgetCatalogItem {
   id: string
   title: string
   category:
-    'ai' | 'general' | 'kpi' | 'analytics' | 'tables' | 'feeds' | 'devops' | 'actions' | 'docs'
+    | 'ai'
+    | 'meetings'
+    | 'general'
+    | 'kpi'
+    | 'analytics'
+    | 'tables'
+    | 'feeds'
+    | 'devops'
+    | 'actions'
+    | 'docs'
   categoryLabel: string
   description: string
   icon: string
@@ -17,6 +26,7 @@ export interface WidgetCatalogItem {
 
 export const WIDGET_CATEGORIES = [
   { id: 'all', label: 'All Widgets' },
+  { id: 'meetings', label: 'Meetings & Audio' },
   { id: 'ai', label: 'AI & Intelligence' },
   { id: 'general', label: 'General & Productivity' },
   { id: 'kpi', label: 'KPIs & Metrics' },
@@ -29,6 +39,308 @@ export const WIDGET_CATEGORIES = [
 ] as const
 
 export const WIDGET_CATALOG: WidgetCatalogItem[] = [
+  /* ============================================================
+     0. AI & MEETINGS AUDIO SUITE (8 Widgets)
+     ============================================================ */
+  {
+    id: 'meeting-audio-recorder',
+    title: 'Live Meeting Audio Recorder & Visualizer',
+    category: 'meetings',
+    categoryLabel: 'Meetings & Audio',
+    description:
+      'Live soundwave audio visualizer, input device selector, recording timer, and pause/stop controls.',
+    icon: 'Mic',
+    widgetType: 'recorder',
+    domainBadge: 'LIVE AUDIO',
+    tags: ['meeting', 'record', 'audio', 'mic', 'soundwave', 'recorder', 'meetings', 'ai'],
+    defaultProps: {
+      title: 'Meeting Audio Recorder',
+      isRecording: true,
+      duration: '00:24:18',
+      inputDevice: 'MacBook Pro Microphone (CoreAudio)',
+      noiseSuppression: true,
+      sampleRate: '48.0 kHz • 24-bit PCM'
+    },
+    defaultDirection: 'below'
+  },
+  {
+    id: 'meeting-live-transcript',
+    title: 'Real-Time Transcript & Speaker Diarization',
+    category: 'meetings',
+    categoryLabel: 'Meetings & Audio',
+    description:
+      'Word-by-word streaming meeting transcription with speaker labels, search filter, and timestamps.',
+    icon: 'FileAudio',
+    widgetType: 'transcript',
+    domainBadge: 'SPEECH-TO-TEXT',
+    tags: [
+      'transcript',
+      'transcription',
+      'speech',
+      'diarization',
+      'meeting',
+      'whisper',
+      'meetings',
+      'ai'
+    ],
+    defaultProps: {
+      title: 'Live Speaker Transcript',
+      speakers: ['Sarah Lin (VP Eng)', 'Alex Chen (Staff Dev)', 'David Ross (Product)'],
+      entries: [
+        {
+          id: 'tr-1',
+          speaker: 'Sarah Lin',
+          role: 'VP Eng',
+          time: '10:14 AM',
+          text: "Let's review the migration timeline for the production Kubernetes clusters. Can we confirm the Redis failover test?"
+        },
+        {
+          id: 'tr-2',
+          speaker: 'Alex Chen',
+          role: 'Staff Dev',
+          time: '10:15 AM',
+          text: 'Yes, we conducted the canary failover at 08:30 UTC. Replica reconnection was seamless with zero dropped packets.'
+        },
+        {
+          id: 'tr-3',
+          speaker: 'David Ross',
+          role: 'Product Lead',
+          time: '10:16 AM',
+          text: 'Excellent. What about the enterprise client dashboard delivery date? We promised the cockpit preview by Friday.'
+        },
+        {
+          id: 'tr-4',
+          speaker: 'Sarah Lin',
+          role: 'VP Eng',
+          time: '10:16 AM',
+          text: 'The new widget suite and zero-dependency export are already verified. We are completely on schedule for Friday release.'
+        }
+      ]
+    },
+    defaultDirection: 'right'
+  },
+  {
+    id: 'meeting-executive-summary',
+    title: 'AI Meeting Minutes & Executive Summary',
+    category: 'meetings',
+    categoryLabel: 'Meetings & Audio',
+    description:
+      'Structured meeting digest with executive TL;DR, finalized decisions, and model switcher.',
+    icon: 'FileCheck2',
+    widgetType: 'summary',
+    domainBadge: 'AI DIGEST',
+    tags: ['summary', 'minutes', 'tldr', 'digest', 'meeting', 'notes', 'claude', 'meetings', 'ai'],
+    defaultProps: {
+      title: 'Executive Meeting Summary',
+      meetingTitle: 'Engineering & Product Architecture Sync',
+      duration: '45 mins • 4 attendees',
+      model: 'Claude 3.7 Sonnet',
+      tldr: 'Architecture sync confirmed Q3 cluster migration is green. Redis failover completed without client disruption. Enterprise cockpit deliverable is locked for Friday release.',
+      decisions: [
+        'Approved Redis v7 failover parameter configuration in production',
+        'Confirmed Friday 5 PM release date for Client Dashboard deliverable',
+        'Scheduled SRE on-call shadow rotation for next Tuesday'
+      ],
+      blockers: ['Pending SOC2 Type II legal audit sign-off for client data retention policy']
+    },
+    defaultDirection: 'below'
+  },
+  {
+    id: 'meeting-action-items',
+    title: 'Automated Action Item & Decision Extractor',
+    category: 'meetings',
+    categoryLabel: 'Meetings & Audio',
+    description:
+      'AI-detected tasks assigned to attendees with due dates, context audio jump links, and 1-click sync.',
+    icon: 'UserCheck',
+    widgetType: 'meeting-actions',
+    domainBadge: 'COMMITMENTS',
+    tags: [
+      'actions',
+      'action items',
+      'tasks',
+      'decisions',
+      'assignees',
+      'commitments',
+      'meeting',
+      'ai'
+    ],
+    defaultProps: {
+      title: 'Meeting Action Items & Next Steps',
+      items: [
+        {
+          id: 'act-1',
+          task: 'Merge Redis connection pool timeout patch to production branch',
+          assignee: 'Alex Chen',
+          due: 'Today 5:00 PM',
+          priority: 'high',
+          completed: true,
+          timestamp: '10:15 AM'
+        },
+        {
+          id: 'act-2',
+          task: 'Package standalone client dashboard export and verify demo',
+          assignee: 'Sarah Lin',
+          due: 'Thursday 12:00 PM',
+          priority: 'high',
+          completed: false,
+          timestamp: '10:17 AM'
+        },
+        {
+          id: 'act-3',
+          task: 'Forward SOC2 data retention brief to compliance committee',
+          assignee: 'David Ross',
+          due: 'Friday 2:00 PM',
+          priority: 'medium',
+          completed: false,
+          timestamp: '10:22 AM'
+        }
+      ]
+    },
+    defaultDirection: 'right'
+  },
+  {
+    id: 'meeting-talk-time-analytics',
+    title: 'Speaker Talk-Time & Sentiment Analytics',
+    category: 'meetings',
+    categoryLabel: 'Meetings & Audio',
+    description:
+      'Participation breakdown by attendee, speaking speed (wpm), sentiment balance, and interruptions.',
+    icon: 'PieChart',
+    widgetType: 'talk-time',
+    domainBadge: 'ANALYTICS',
+    tags: [
+      'talk time',
+      'sentiment',
+      'analytics',
+      'participation',
+      'speakers',
+      'pace',
+      'meeting',
+      'ai'
+    ],
+    defaultProps: {
+      title: 'Speaker Analytics & Sentiment',
+      totalMeetingTime: '42 mins',
+      overallSentiment: '92% Constructive',
+      speakers: [
+        {
+          name: 'Sarah Lin',
+          role: 'VP Eng',
+          percentage: 42,
+          pace: '138 wpm',
+          sentiment: 'Positive'
+        },
+        {
+          name: 'Alex Chen',
+          role: 'Staff Dev',
+          percentage: 36,
+          pace: '152 wpm',
+          sentiment: 'Constructive'
+        },
+        {
+          name: 'David Ross',
+          role: 'Product Lead',
+          percentage: 22,
+          pace: '144 wpm',
+          sentiment: 'Neutral'
+        }
+      ]
+    },
+    defaultDirection: 'below'
+  },
+  {
+    id: 'meeting-agenda-timer',
+    title: 'Meeting Agenda & Pacing Stopwatch',
+    category: 'meetings',
+    categoryLabel: 'Meetings & Audio',
+    description: 'Topic agenda breakdown with allotted time vs elapsed time and pacing alerts.',
+    icon: 'CalendarClock',
+    widgetType: 'agenda-timer',
+    domainBadge: 'PACING',
+    tags: ['agenda', 'pacing', 'timer', 'topics', 'schedule', 'meeting', 'ai'],
+    defaultProps: {
+      title: 'Meeting Agenda & Live Pacing',
+      status: 'On Track (+1m ahead)',
+      items: [
+        {
+          id: 'ag-1',
+          topic: 'Redis failover verification & APM review',
+          allotted: 15,
+          elapsed: 14,
+          status: 'completed'
+        },
+        {
+          id: 'ag-2',
+          topic: 'Enterprise dashboard client deliverable review',
+          allotted: 20,
+          elapsed: 12,
+          status: 'current'
+        },
+        {
+          id: 'ag-3',
+          topic: 'SOC2 compliance retention policy audit',
+          allotted: 10,
+          elapsed: 0,
+          status: 'pending'
+        }
+      ]
+    },
+    defaultDirection: 'right'
+  },
+  {
+    id: 'meeting-qa-retriever',
+    title: 'Ask AI About This Meeting (Meeting Q&A)',
+    category: 'meetings',
+    categoryLabel: 'Meetings & Audio',
+    description:
+      'Semantic natural language query bar to ask questions directly about what was discussed on the call.',
+    icon: 'HelpCircle',
+    widgetType: 'meeting-qa',
+    domainBadge: 'MEETING RAG',
+    tags: ['ask ai', 'qa', 'search', 'query', 'retrieval', 'call', 'meeting', 'ai'],
+    defaultProps: {
+      title: 'Ask AI About This Meeting',
+      samplePrompts: [
+        'What did Sarah say about the Friday deadline?',
+        'Were there any objections to the Redis upgrade?',
+        'Summarize all financial commitments made.'
+      ]
+    },
+    defaultDirection: 'below'
+  },
+  {
+    id: 'meeting-attendee-briefing',
+    title: 'Pre-Meeting Intelligence & Attendee Briefing',
+    category: 'meetings',
+    categoryLabel: 'Meetings & Audio',
+    description:
+      'Attendee profiles, prior meeting context, open blockers, and meeting goals briefing.',
+    icon: 'Users',
+    widgetType: 'briefing',
+    domainBadge: 'PREP BRIEF',
+    tags: ['briefing', 'attendees', 'prep', 'context', 'crm', 'meeting', 'ai'],
+    defaultProps: {
+      title: 'Pre-Meeting Attendee Intelligence',
+      meetingName: 'Executive Cockpit Review',
+      attendees: [
+        {
+          name: 'Sarah Lin',
+          role: 'VP of Engineering',
+          company: 'Acme Corp',
+          lastMet: '4 days ago'
+        },
+        {
+          name: 'David Ross',
+          role: 'Head of Product',
+          company: 'Acme Corp',
+          lastMet: '1 week ago'
+        }
+      ],
+      primaryGoal: 'Demonstrate the 55+ client widget kit and confirm Friday release.'
+    },
+    defaultDirection: 'right'
+  },
   /* ============================================================
      0. GENERAL UTILITIES & PRODUCTIVITY (7 Widgets)
      ============================================================ */
