@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { useReframeStore } from './stores/reframe-store'
 import { REFRAME_WIDGET_COMPONENTS } from './widgets/reframe-widgets'
+import { WIDGET_CATALOG, WIDGET_CATEGORIES } from './widgets/catalog/widget-catalog'
 
 describe('Reframe Platform & Store', () => {
   beforeEach(() => {
@@ -497,5 +498,66 @@ describe('Reframe Platform & Store', () => {
     expect(state.activeHeaderTabId).toBe('user-tab-2')
     expect(Object.keys(state.panels).length).toBe(1)
     expect(state.panels['table-tab2']).toBeDefined()
+  })
+
+  it('manages the 42-item Widget Catalog across 7 categories', () => {
+    expect(WIDGET_CATALOG.length).toBe(42)
+    expect(WIDGET_CATEGORIES.length).toBe(8) // 'all' + 7 specific
+
+    // Every item has valid metadata
+    WIDGET_CATALOG.forEach((item) => {
+      expect(item.id).toBeTruthy()
+      expect(item.title).toBeTruthy()
+      expect(item.category).toBeTruthy()
+      expect(item.widgetType).toBeTruthy()
+      expect(item.domainBadge).toBeTruthy()
+      expect(item.tags.length).toBeGreaterThan(0)
+      expect(item.defaultProps).toBeDefined()
+    })
+
+    // Verify all 7 categories are represented
+    const categories = new Set(WIDGET_CATALOG.map((w) => w.category))
+    expect(categories.has('kpi')).toBe(true)
+    expect(categories.has('analytics')).toBe(true)
+    expect(categories.has('tables')).toBe(true)
+    expect(categories.has('feeds')).toBe(true)
+    expect(categories.has('devops')).toBe(true)
+    expect(categories.has('actions')).toBe(true)
+    expect(categories.has('docs')).toBe(true)
+  })
+
+  it('manages Widget Catalog Modal open, close, placement, and one-click insertion', () => {
+    const { setIsCatalogModalOpen, setCatalogPlacementDirection, insertCatalogWidget } =
+      useReframeStore.getState()
+
+    expect(useReframeStore.getState().isCatalogModalOpen).toBe(false)
+    setIsCatalogModalOpen(true)
+    expect(useReframeStore.getState().isCatalogModalOpen).toBe(true)
+
+    setCatalogPlacementDirection('below')
+    expect(useReframeStore.getState().catalogPlacementDirection).toBe('below')
+
+    // Insert a widget from the catalog
+    const catalogItem = WIDGET_CATALOG.find((w) => w.id === 'kpi-saas-growth')!
+    expect(catalogItem).toBeDefined()
+
+    insertCatalogWidget(catalogItem, 'below')
+    const state = useReframeStore.getState()
+    const inserted = Object.values(state.panels).find(
+      (p) => p.title === 'SaaS Growth & Retention KPIs'
+    )
+    expect(inserted).toBeDefined()
+    expect(inserted?.widgetType).toBe('kpi')
+    expect(inserted?.widgetProps.items.length).toBe(4)
+
+    setIsCatalogModalOpen(false)
+    expect(useReframeStore.getState().isCatalogModalOpen).toBe(false)
+  })
+
+  it('verifies all catalog widget types are registered in REFRAME_WIDGET_COMPONENTS', () => {
+    const catalogWidgetTypes = new Set(WIDGET_CATALOG.map((w) => w.widgetType))
+    catalogWidgetTypes.forEach((type) => {
+      expect(REFRAME_WIDGET_COMPONENTS[type]).toBeDefined()
+    })
   })
 })

@@ -12,7 +12,9 @@ import {
   ArrowUpRight,
   Zap,
   Play,
-  Check
+  Check,
+  Terminal,
+  Server
 } from 'lucide-react'
 import {
   ResponsiveContainer,
@@ -593,6 +595,173 @@ export const EmbedPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
   )
 }
 
+/* ============================================================
+   8. TERMINAL CONSOLE WIDGET
+   ============================================================ */
+export const TerminalPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const welcome =
+    params?.welcomeMessage ||
+    'Connected to production cluster mesh (48 nodes)\nType "help" or "status" to inspect environment.'
+  const [history, setHistory] = useState<Array<{ cmd: string; output: string }>>([
+    {
+      cmd: 'cluster-mesh status',
+      output: '✓ 48/48 nodes healthy\n✓ zero critical alerts\n✓ latency p99: 14.2ms'
+    }
+  ])
+  const [inputVal, setInputVal] = useState('')
+
+  const handleCommand = (e: React.FormEvent) => {
+    e.preventDefault()
+    const trimmed = inputVal.trim()
+    if (!trimmed) return
+
+    if (trimmed === 'clear') {
+      setHistory([])
+      setInputVal('')
+      return
+    }
+
+    let output = `Command not recognized: "${trimmed}". Type "help" for available commands.`
+    if (trimmed === 'help') {
+      output = 'Available commands: status, ps, uptime, deploy, health, clear'
+    } else if (trimmed === 'status' || trimmed === 'health') {
+      output = 'Status: OK | Mesh Health: 99.98% | Active Nodes: 48 | Memory Pressure: Normal'
+    } else if (trimmed === 'ps') {
+      output =
+        'PID   USER      TIME  COMMAND\n1     root      48d   containerd\n42    app       12d   node-worker-pool\n88    app        4d   event-streamer'
+    } else if (trimmed === 'uptime') {
+      output = 'up 48 days, 14:22, load average: 0.42, 0.38, 0.35'
+    } else if (trimmed === 'deploy') {
+      output = 'Initiating rolling canary update... [████████████] 100% Complete. 0 errors.'
+    }
+
+    setHistory((prev) => [...prev, { cmd: trimmed, output }])
+    setInputVal('')
+  }
+
+  return (
+    <div className="reframe-panel-body p-3 bg-zinc-950 text-zinc-100 flex flex-col h-full font-mono text-xs overflow-hidden">
+      <div className="flex items-center justify-between pb-2 mb-2 border-b border-zinc-800 text-[11px] text-zinc-400 shrink-0">
+        <div className="flex items-center gap-2">
+          <Terminal className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="text-zinc-300 font-semibold">{params?.title || 'Terminal Console'}</span>
+        </div>
+        <button
+          onClick={() => setHistory([])}
+          className="hover:text-white px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-[10px]"
+          title="Clear console"
+        >
+          Clear
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto space-y-2 pr-1 text-[11px] leading-relaxed">
+        <div className="text-zinc-500 whitespace-pre-wrap">{welcome}</div>
+        {history.map((h, i) => (
+          <div key={i} className="space-y-0.5">
+            <div className="text-emerald-400 flex items-center gap-1.5">
+              <span className="text-zinc-500">$</span>
+              <span>{h.cmd}</span>
+            </div>
+            <div className="text-zinc-300 pl-3 whitespace-pre-wrap">{h.output}</div>
+          </div>
+        ))}
+      </div>
+
+      <form
+        onSubmit={handleCommand}
+        className="mt-2 pt-2 border-t border-zinc-800 flex items-center gap-1.5 shrink-0"
+      >
+        <span className="text-emerald-400 font-bold">$</span>
+        <input
+          type="text"
+          value={inputVal}
+          onChange={(e) => setInputVal(e.target.value)}
+          placeholder="Enter command (e.g. status, ps, help)..."
+          className="flex-1 bg-transparent border-0 text-white focus:outline-none text-[11px]"
+        />
+      </form>
+    </div>
+  )
+}
+
+/* ============================================================
+   9. KUBERNETES / CLUSTER TOPOLOGY WIDGET
+   ============================================================ */
+export const ClusterTopologyWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const clusterName = params?.clusterName || 'prod-mesh-01'
+  const totalNodes = params?.totalNodes || 48
+  const healthyPods = params?.healthyPods || 342
+  const warningPods = params?.warningPods || 2
+
+  const namespaces = [
+    { name: 'ingress-gw', pods: 12, cpu: '24%', mem: '42%', status: 'healthy' },
+    { name: 'api-core', pods: 48, cpu: '56%', mem: '68%', status: 'healthy' },
+    { name: 'worker-mesh', pods: 120, cpu: '78%', mem: '82%', status: 'healthy' },
+    { name: 'db-proxy', pods: 8, cpu: '18%', mem: '34%', status: 'healthy' },
+    { name: 'event-stream', pods: 32, cpu: '44%', mem: '58%', status: 'healthy' },
+    { name: 'telemetry', pods: 16, cpu: '32%', mem: '48%', status: 'warning' }
+  ]
+
+  return (
+    <div className="reframe-panel-body p-3.5 bg-zinc-900/60 text-zinc-100 flex flex-col h-full overflow-y-auto">
+      <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-zinc-800">
+        <div>
+          <div className="flex items-center gap-1.5">
+            <Server className="w-3.5 h-3.5 text-indigo-400" />
+            <h4 className="text-xs font-semibold text-zinc-100">
+              {params?.title || 'Cluster Topology'}
+            </h4>
+          </div>
+          <span className="text-[10px] text-zinc-400 font-mono">
+            Cluster: {clusterName} • {totalNodes} Nodes
+          </span>
+        </div>
+        <div className="flex items-center gap-2 text-[10px] font-mono">
+          <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            {healthyPods} Pods Healthy
+          </span>
+          {warningPods > 0 && (
+            <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              {warningPods} Warning
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 flex-1">
+        {namespaces.map((ns) => (
+          <div
+            key={ns.name}
+            className="p-2.5 rounded-lg bg-zinc-800/60 border border-zinc-700/60 flex flex-col justify-between"
+          >
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-xs font-semibold text-zinc-200 truncate">{ns.name}</span>
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  ns.status === 'healthy' ? 'bg-emerald-400' : 'bg-amber-400'
+                }`}
+              />
+            </div>
+            <div className="text-[10px] text-zinc-400 space-y-1 font-mono">
+              <div className="flex justify-between">
+                <span>Pods:</span>
+                <span className="text-zinc-200">{ns.pods}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>CPU / Mem:</span>
+                <span className="text-zinc-200">
+                  {ns.cpu} / {ns.mem}
+                </span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export const REFRAME_WIDGET_COMPONENTS: Record<string, React.FC<IDockviewPanelProps>> = {
   kpi: KpiPanelWidget,
   metric: KpiPanelWidget,
@@ -601,5 +770,7 @@ export const REFRAME_WIDGET_COMPONENTS: Record<string, React.FC<IDockviewPanelPr
   notes: NotesPanelWidget,
   activity: ActivityPanelWidget,
   actionpad: ActionPadPanelWidget,
-  embed: EmbedPanelWidget
+  embed: EmbedPanelWidget,
+  terminal: TerminalPanelWidget,
+  cluster: ClusterTopologyWidget
 }

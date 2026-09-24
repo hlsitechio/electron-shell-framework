@@ -67,7 +67,7 @@ import {
 interface WidgetItem {
   id: string
   title: string
-  widgetType: 'kpi' | 'chart' | 'table' | 'notes' | 'activity' | 'actionpad' | 'embed'
+  widgetType: 'kpi' | 'chart' | 'table' | 'notes' | 'activity' | 'actionpad' | 'embed' | 'terminal' | 'cluster'
   widgetProps: Record<string, any>
 }
 
@@ -184,7 +184,7 @@ export const ClientDashboard: React.FC = () => {
         footerConfig.visible
           ? `<footer className="border-t border-zinc-800 bg-zinc-950 px-6 py-2.5 flex items-center justify-between text-xs text-zinc-400">
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="w-2 h-2 rounded-full bg-emerald-500" />
           <span className="font-medium text-zinc-300">${footerConfig.statusLabel}</span>
           ${footerConfig.leftText ? `<span className="text-zinc-600">|</span><span>${footerConfig.leftText}</span>` : ''}
         </div>

@@ -11,6 +11,7 @@ import type {
   RightTabItem,
   FooterTabItem
 } from '../types/reframe-types'
+import type { WidgetCatalogItem } from '../widgets/catalog/widget-catalog'
 
 export interface ThemeInspectorState {
   gap: number
@@ -44,6 +45,8 @@ export interface ReframeStoreState {
   mode: 'builder' | 'client'
   isControlsOpen: boolean
   isBakeModalOpen: boolean
+  isCatalogModalOpen: boolean
+  catalogPlacementDirection: 'left' | 'right' | 'above' | 'below' | 'stack'
   activeTab: 'theme' | 'controls'
   deviceMode: 'desktop' | 'tablet' | 'mobile'
   selectedThemeKey: string
@@ -139,6 +142,14 @@ export interface ReframeStoreState {
   ) => void
   removePanel: (id: string) => void
   updatePanel: (id: string, updates: Partial<PanelConfig>) => void
+
+  // Catalog Modal & Actions
+  setIsCatalogModalOpen: (open: boolean) => void
+  setCatalogPlacementDirection: (direction: 'left' | 'right' | 'above' | 'below' | 'stack') => void
+  insertCatalogWidget: (
+    item: WidgetCatalogItem,
+    direction?: 'left' | 'right' | 'above' | 'below' | 'stack'
+  ) => void
 
   // Template Switcher
   loadTemplate: (templateId: TemplateId) => void
@@ -854,6 +865,8 @@ export const useReframeStore = create<ReframeStoreState>((set, get) => ({
   mode: 'builder',
   isControlsOpen: true,
   isBakeModalOpen: false,
+  isCatalogModalOpen: false,
+  catalogPlacementDirection: 'right',
   activeTab: 'theme',
   deviceMode: 'desktop',
   selectedThemeKey: 'dockview-theme-abyss',
@@ -933,6 +946,8 @@ export const useReframeStore = create<ReframeStoreState>((set, get) => ({
   toggleControls: () => set((state) => ({ isControlsOpen: !state.isControlsOpen })),
   setIsControlsOpen: (open) => set({ isControlsOpen: open }),
   setIsBakeModalOpen: (open) => set({ isBakeModalOpen: open }),
+  setIsCatalogModalOpen: (open) => set({ isCatalogModalOpen: open }),
+  setCatalogPlacementDirection: (direction) => set({ catalogPlacementDirection: direction }),
   setActiveTab: (tab) => set({ activeTab: tab }),
   setDeviceMode: (deviceMode) => set({ deviceMode }),
   setSelectedThemeKey: (selectedThemeKey) => set({ selectedThemeKey }),
@@ -1285,6 +1300,25 @@ export const useReframeStore = create<ReframeStoreState>((set, get) => ({
       } catch (err) {
         console.warn('Failed to add panel to dockview layout', err)
       }
+    }
+  },
+
+  insertCatalogWidget: (item, direction) => {
+    const { addPanel, catalogPlacementDirection } = get()
+    const targetDir = direction || item.defaultDirection || catalogPlacementDirection || 'right'
+    const id = `${item.widgetType}-${Date.now()}`
+    const panelConfig: PanelConfig = {
+      id,
+      title: item.title,
+      widgetType: item.widgetType,
+      widgetProps: { ...item.defaultProps },
+      closable: true
+    }
+
+    if (targetDir === 'stack') {
+      addPanel(panelConfig)
+    } else {
+      addPanel(panelConfig, { direction: targetDir })
     }
   },
 

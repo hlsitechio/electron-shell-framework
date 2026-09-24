@@ -6,6 +6,7 @@ import { DockviewCanvas } from './components/DockviewCanvas'
 import { NativeClientGrid } from './components/NativeClientGrid'
 import { ReframeControlsDrawer } from './components/ReframeControlsDrawer'
 import { BakeExportModal } from './components/BakeExportModal'
+import { WidgetCatalogModal } from './components/WidgetCatalogModal'
 import { useReframeStore } from './stores/reframe-store'
 import { Wrench, PackageCheck } from 'lucide-react'
 
@@ -55,6 +56,9 @@ export const ReframeApp: React.FC = () => {
 
       {/* Standalone Bake & Export Deliverable Modal */}
       <BakeExportModal isOpen={isBakeModalOpen} onClose={() => setIsBakeModalOpen(false)} />
+
+      {/* 42+ Pre-Made Widget Catalog Browser Modal */}
+      <WidgetCatalogModal />
     </div>
   )
 }

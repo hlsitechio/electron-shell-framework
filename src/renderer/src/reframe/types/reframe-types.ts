@@ -43,7 +43,8 @@ export interface ReframeThemeConfig {
   density: LayoutDensity
 }
 
-export type WidgetType = 'kpi' | 'chart' | 'table' | 'notes' | 'activity' | 'embed' | 'actionpad'
+export type WidgetType =
+  'kpi' | 'chart' | 'table' | 'notes' | 'activity' | 'embed' | 'actionpad' | 'terminal' | 'cluster'
 
 export interface KpiWidgetProps {
   label: string

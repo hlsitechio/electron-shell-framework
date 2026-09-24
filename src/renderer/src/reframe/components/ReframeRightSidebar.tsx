@@ -1,23 +1,20 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import {
   Sparkles,
   X,
   Plus,
-  Hash,
-  BarChart2,
-  Table as TableIcon,
-  FileText,
-  Activity,
-  Zap,
   RotateCcw,
   Palette,
   Heading,
   Footprints,
   Bot,
-  Code2
+  Code2,
+  Search,
+  Layers
 } from 'lucide-react'
 import { useReframeStore, DOCKVIEW_THEMES } from '../stores/reframe-store'
 import type { FontFamilyKey } from '../types/reframe-types'
+import { WIDGET_CATALOG, WIDGET_CATEGORIES } from '../widgets/catalog/widget-catalog'
 import { ReframeResizeHandle } from './ReframeResizeHandle'
 import { McpAgentInspector } from './McpAgentInspector'
 
@@ -39,8 +36,9 @@ export const ReframeRightSidebar: React.FC = () => {
     updateHeaderConfig,
     footerConfig,
     updateFooterConfig,
-    addPanel,
     setIsBakeModalOpen,
+    setIsCatalogModalOpen,
+    insertCatalogWidget,
     rightSidebarWidth,
     leftSidebarWidth,
     setLeftSidebarWidth,
@@ -49,37 +47,24 @@ export const ReframeRightSidebar: React.FC = () => {
 
   const [isAddingTab, setIsAddingTab] = useState(false)
   const [newTabLabel, setNewTabLabel] = useState('')
+  const [catalogSearch, setCatalogSearch] = useState('')
+  const [sidebarCategory, setSidebarCategory] = useState<string>('all')
+
+  const filteredCatalog = useMemo(() => {
+    const q = catalogSearch.toLowerCase().trim()
+    return WIDGET_CATALOG.filter((item) => {
+      const matchCat = sidebarCategory === 'all' || item.category === sidebarCategory
+      if (!matchCat) return false
+      if (!q) return true
+      return (
+        item.title.toLowerCase().includes(q) ||
+        item.description.toLowerCase().includes(q) ||
+        item.tags.some((t) => t.toLowerCase().includes(q))
+      )
+    })
+  }, [catalogSearch, sidebarCategory])
 
   if (!isRightSidebarOpen) return null
-
-  const handleAddWidget = (
-    widgetType: 'kpi' | 'chart' | 'table' | 'notes' | 'activity' | 'actionpad',
-    direction: 'right' | 'below' | 'stack'
-  ) => {
-    const id = `panel-${Date.now()}`
-    const defaultTitles = {
-      kpi: 'Executive Metric Tile',
-      chart: 'Real-time Chart',
-      table: 'Active Entity Table',
-      notes: 'Operational Runbook',
-      activity: 'Live Log Stream',
-      actionpad: 'Command Triggers'
-    }
-
-    const panelConfig = {
-      id,
-      title: defaultTitles[widgetType],
-      widgetType,
-      widgetProps: {},
-      closable: true
-    }
-
-    if (direction === 'stack') {
-      addPanel(panelConfig)
-    } else {
-      addPanel(panelConfig, { direction })
-    }
-  }
 
   const handleCreateCustomTab = (e: React.FormEvent) => {
     e.preventDefault()
@@ -170,100 +155,104 @@ export const ReframeRightSidebar: React.FC = () => {
       <div className="flex-1 overflow-y-auto p-4 space-y-5 scrollbar-thin scrollbar-thumb-zinc-800">
         {/* ── TAB 1: WIDGET LIBRARY ───────────────────────────── */}
         {activeRightTabId === 'widgets' && (
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-300 mb-1">
-                Dockview Widget Library
-              </h3>
-              <p className="text-xs text-zinc-400">
-                Click any widget to insert it directly into your live layout canvas.
-              </p>
+          <div className="space-y-3.5">
+            {/* Header + Browse Full Catalog Banner */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-300">
+                  Widget Palette
+                </h3>
+                <span className="text-[10px] font-mono text-zinc-400">
+                  {WIDGET_CATALOG.length} Pre-made
+                </span>
+              </div>
+              <button
+                onClick={() => setIsCatalogModalOpen(true)}
+                className="w-full py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-sm transition-all"
+              >
+                <Layers className="w-4 h-4" />
+                <span>Browse Full Catalog ({WIDGET_CATALOG.length}+)</span>
+              </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => handleAddWidget('kpi', 'below')}
-                className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-200 flex flex-col gap-1 transition-all text-left group"
-              >
-                <div className="flex items-center justify-between text-indigo-400">
-                  <Hash className="w-4 h-4" />
-                  <span className="text-[10px] text-zinc-400 group-hover:text-zinc-200 font-mono">
-                    + Below
-                  </span>
-                </div>
-                <span className="text-xs font-semibold text-zinc-100">KPI Summary</span>
-                <span className="text-[10px] text-zinc-400">Metric counters & deltas</span>
-              </button>
+            {/* Mini Search & Category Chips */}
+            <div className="space-y-2 pt-1">
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="Filter widgets..."
+                  value={catalogSearch}
+                  onChange={(e) => setCatalogSearch(e.target.value)}
+                  className="w-full bg-zinc-900 border border-zinc-800 focus:border-indigo-500 text-white text-[11px] pl-8 pr-2.5 py-1.5 rounded-lg focus:outline-none placeholder:text-zinc-500 transition-colors"
+                />
+              </div>
 
-              <button
-                onClick={() => handleAddWidget('chart', 'right')}
-                className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-200 flex flex-col gap-1 transition-all text-left group"
-              >
-                <div className="flex items-center justify-between text-blue-400">
-                  <BarChart2 className="w-4 h-4" />
-                  <span className="text-[10px] text-zinc-400 group-hover:text-zinc-200 font-mono">
-                    + Right
-                  </span>
-                </div>
-                <span className="text-xs font-semibold text-zinc-100">Live Chart</span>
-                <span className="text-[10px] text-zinc-400">Area, Line, Bar trends</span>
-              </button>
+              {/* Category Filter Chips */}
+              <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pb-1">
+                {WIDGET_CATEGORIES.map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSidebarCategory(cat.id)}
+                    className={`px-2 py-0.5 rounded text-[10px] whitespace-nowrap transition-colors ${
+                      sidebarCategory === cat.id
+                        ? 'bg-zinc-800 text-white border border-zinc-700 font-semibold'
+                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-              <button
-                onClick={() => handleAddWidget('table', 'below')}
-                className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-200 flex flex-col gap-1 transition-all text-left group"
-              >
-                <div className="flex items-center justify-between text-emerald-400">
-                  <TableIcon className="w-4 h-4" />
-                  <span className="text-[10px] text-zinc-400 group-hover:text-zinc-200 font-mono">
-                    + Below
-                  </span>
+            {/* Scrollable Widget Cards */}
+            <div className="space-y-2 max-h-[46vh] overflow-y-auto pr-0.5 scrollbar-thin scrollbar-thumb-zinc-800">
+              {filteredCatalog.length === 0 ? (
+                <div className="p-4 text-center text-xs text-zinc-500">
+                  No widgets found matching &quot;{catalogSearch}&quot;
                 </div>
-                <span className="text-xs font-semibold text-zinc-100">Data Table</span>
-                <span className="text-[10px] text-zinc-400">Entity records & status</span>
-              </button>
-
-              <button
-                onClick={() => handleAddWidget('notes', 'right')}
-                className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-200 flex flex-col gap-1 transition-all text-left group"
-              >
-                <div className="flex items-center justify-between text-amber-400">
-                  <FileText className="w-4 h-4" />
-                  <span className="text-[10px] text-zinc-400 group-hover:text-zinc-200 font-mono">
-                    + Right
-                  </span>
-                </div>
-                <span className="text-xs font-semibold text-zinc-100">Notes Runbook</span>
-                <span className="text-[10px] text-zinc-400">Markdown directives</span>
-              </button>
-
-              <button
-                onClick={() => handleAddWidget('activity', 'below')}
-                className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-200 flex flex-col gap-1 transition-all text-left group"
-              >
-                <div className="flex items-center justify-between text-rose-400">
-                  <Activity className="w-4 h-4" />
-                  <span className="text-[10px] text-zinc-400 group-hover:text-zinc-200 font-mono">
-                    + Below
-                  </span>
-                </div>
-                <span className="text-xs font-semibold text-zinc-100">Activity Feed</span>
-                <span className="text-[10px] text-zinc-400">Live operational events</span>
-              </button>
-
-              <button
-                onClick={() => handleAddWidget('actionpad', 'right')}
-                className="p-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-200 flex flex-col gap-1 transition-all text-left group"
-              >
-                <div className="flex items-center justify-between text-amber-300">
-                  <Zap className="w-4 h-4" />
-                  <span className="text-[10px] text-zinc-400 group-hover:text-zinc-200 font-mono">
-                    + Right
-                  </span>
-                </div>
-                <span className="text-xs font-semibold text-zinc-100">Action Pad</span>
-                <span className="text-[10px] text-zinc-400">Script execution triggers</span>
-              </button>
+              ) : (
+                filteredCatalog.map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-2.5 rounded-xl bg-zinc-900/80 border border-zinc-800 hover:border-zinc-700 transition-all space-y-1.5 group"
+                  >
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="text-xs font-semibold text-zinc-100 group-hover:text-indigo-300 transition-colors line-clamp-1">
+                        {item.title}
+                      </span>
+                      <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 shrink-0">
+                        {item.domainBadge}
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-zinc-400 line-clamp-1 leading-normal">
+                      {item.description}
+                    </p>
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-[9px] font-mono text-zinc-500 uppercase">
+                        {item.categoryLabel}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => insertCatalogWidget(item, 'below')}
+                          className="px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-[10px] font-mono transition-colors"
+                          title="Insert below active panel"
+                        >
+                          + Below
+                        </button>
+                        <button
+                          onClick={() => insertCatalogWidget(item, 'right')}
+                          className="px-2 py-0.5 rounded bg-zinc-800 hover:bg-indigo-600 text-zinc-300 hover:text-white text-[10px] font-mono transition-colors"
+                          title="Insert to the right"
+                        >
+                          + Right
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
 
             {/* Publish App Callout */}

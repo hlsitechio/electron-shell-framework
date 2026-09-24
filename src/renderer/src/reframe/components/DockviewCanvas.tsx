@@ -2,11 +2,28 @@ import React, { useEffect, useRef, useCallback } from 'react'
 import { DockviewReact, DockviewReadyEvent, DockviewApi } from 'dockview-react'
 import { useReframeStore } from '../stores/reframe-store'
 import { REFRAME_WIDGET_COMPONENTS } from '../widgets/reframe-widgets'
-import { Plus, Hash, BarChart2, Table as TableIcon, FileText, Activity, Zap } from 'lucide-react'
+import {
+  Plus,
+  Hash,
+  BarChart2,
+  Table as TableIcon,
+  FileText,
+  Activity,
+  Zap,
+  Layers
+} from 'lucide-react'
 
 export const DockviewCanvas: React.FC = () => {
-  const { mode, selectedThemeKey, themeInspector, panels, setDockviewApi, deviceMode, addPanel } =
-    useReframeStore()
+  const {
+    mode,
+    selectedThemeKey,
+    themeInspector,
+    panels,
+    setDockviewApi,
+    deviceMode,
+    addPanel,
+    setIsCatalogModalOpen
+  } = useReframeStore()
 
   const apiRef = useRef<DockviewApi | null>(null)
   const isUnmountingRef = useRef(false)
@@ -247,9 +264,9 @@ export const DockviewCanvas: React.FC = () => {
       {!isEmpty && mode === 'builder' && (
         <div className="absolute top-2 right-3 z-30 flex items-center gap-1.5">
           <button
-            onClick={() => handleAddWidget('kpi')}
+            onClick={() => setIsCatalogModalOpen(true)}
             className="px-2.5 py-1 rounded-md bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-700 text-xs font-medium flex items-center gap-1.5 shadow-sm transition-all hover:border-zinc-600"
-            title="Add another widget into layout"
+            title="Browse 42+ pre-made widgets"
           >
             <Plus className="w-3.5 h-3.5 text-zinc-300" />
             <span>Add Widget</span>
@@ -260,12 +277,12 @@ export const DockviewCanvas: React.FC = () => {
       {/* ── EMPTY CANVAS STATE: CLEAN ARCHITECTURAL DESIGN ──────── */}
       {isEmpty && (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 bg-zinc-950 select-none">
-          <div className="w-full max-w-md p-8 rounded-2xl border border-zinc-800 bg-zinc-900/60 backdrop-blur-sm flex flex-col items-center text-center space-y-6 shadow-xl relative overflow-hidden group">
+          <div className="w-full max-w-md p-8 rounded-2xl border border-zinc-800 bg-zinc-900/60 backdrop-blur-sm flex flex-col items-center text-center space-y-5 shadow-xl relative overflow-hidden group">
             {/* Center plus button */}
             <button
-              onClick={() => handleAddWidget('kpi')}
+              onClick={() => setIsCatalogModalOpen(true)}
               className="group/btn flex items-center justify-center cursor-pointer transition-transform hover:scale-105 active:scale-95 focus:outline-none"
-              title="Click to add widget and load Dockview"
+              title="Click to browse 42+ client widgets"
             >
               <div className="w-16 h-16 rounded-2xl bg-zinc-850 border border-zinc-700 group-hover/btn:border-zinc-500 group-hover/btn:bg-zinc-800 flex items-center justify-center text-zinc-300 group-hover/btn:text-white transition-all shadow-sm">
                 <Plus
@@ -281,8 +298,8 @@ export const DockviewCanvas: React.FC = () => {
                 Add Widget to Canvas
               </h3>
               <p className="text-xs text-zinc-300 max-w-sm leading-relaxed">
-                Click <span className="text-white font-semibold">+</span> to load Dockview, or
-                choose a widget below to start your layout.
+                Click <span className="text-white font-semibold">+</span> to browse 42+ pre-made
+                client widgets, or pick a starting block below.
               </p>
             </div>
 
@@ -336,6 +353,15 @@ export const DockviewCanvas: React.FC = () => {
                 <span>Action Pad</span>
               </button>
             </div>
+
+            {/* Browse Full Catalog Button */}
+            <button
+              onClick={() => setIsCatalogModalOpen(true)}
+              className="w-full py-2.5 rounded-xl bg-zinc-850 hover:bg-zinc-800 border border-zinc-750 hover:border-zinc-600 text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-sm transition-all"
+            >
+              <Layers className="w-4 h-4 text-indigo-400" />
+              <span>Browse Full Catalog (42+ Pre-made Widgets)</span>
+            </button>
           </div>
         </div>
       )}

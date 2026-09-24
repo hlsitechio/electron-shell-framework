@@ -9,7 +9,9 @@ import {
   Activity,
   Zap,
   Globe,
-  Layers
+  Layers,
+  Terminal,
+  Server
 } from 'lucide-react'
 
 const WIDGET_ICONS: Record<string, React.FC<{ className?: string }>> = {
@@ -19,7 +21,9 @@ const WIDGET_ICONS: Record<string, React.FC<{ className?: string }>> = {
   notes: FileText,
   activity: Activity,
   actionpad: Zap,
-  embed: Globe
+  embed: Globe,
+  terminal: Terminal,
+  cluster: Server
 }
 
 export const NativeClientGrid: React.FC = () => {

@@ -7,6 +7,7 @@ import { ReframeNavFooter } from './components/ReframeNavFooter'
 import { DockviewCanvas } from './components/DockviewCanvas'
 import { NativeClientGrid } from './components/NativeClientGrid'
 import { BakeExportModal } from './components/BakeExportModal'
+import { WidgetCatalogModal } from './components/WidgetCatalogModal'
 import { useReframeStore } from './stores/reframe-store'
 import { Wrench, ArrowUpRight, FileText, PackageCheck } from 'lucide-react'
 import { initReframeMcpBridge } from './mcp/reframe-mcp-bridge'
@@ -167,6 +168,9 @@ export const ReframePlatform: React.FC = () => {
 
       {/* Standalone Bake & Export Deliverable Modal */}
       <BakeExportModal isOpen={isBakeModalOpen} onClose={() => setIsBakeModalOpen(false)} />
+
+      {/* 42+ Pre-Made Widget Catalog Browser Modal */}
+      <WidgetCatalogModal />
     </div>
   )
 }
