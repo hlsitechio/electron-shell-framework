@@ -15,7 +15,10 @@ export const BakeExportModal: React.FC<BakeExportModalProps> = ({ isOpen, onClos
     panels,
     currentTemplateId,
     selectedThemeKey,
-    exportConfigJson
+    exportConfigJson,
+    activeHeaderTabId,
+    tabWorkspaces,
+    dockviewApi
   } = useReframeStore()
 
   const [activeTab, setActiveTab] = useState<'tsx' | 'json'>('tsx')
@@ -23,13 +26,17 @@ export const BakeExportModal: React.FC<BakeExportModalProps> = ({ isOpen, onClos
 
   if (!isOpen) return null
 
+  const activeWorkspace = activeHeaderTabId ? tabWorkspaces[activeHeaderTabId] : undefined
+  const layoutJson = activeWorkspace?.layoutJson || (dockviewApi ? dockviewApi.toJSON() : undefined)
+
   // Generate code dynamically
   const generatedTsx = generateStandaloneClientTsx({
     templateName: currentTemplateId,
     headerConfig,
     footerConfig,
     panels,
-    themeKey: selectedThemeKey
+    themeKey: selectedThemeKey,
+    layoutJson
   })
 
   const generatedJson = exportConfigJson()

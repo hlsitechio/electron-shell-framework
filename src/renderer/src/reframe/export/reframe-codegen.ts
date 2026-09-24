@@ -7,21 +7,26 @@ export interface CodegenOptions {
   footerConfig: FooterConfig
   panels: Record<string, PanelConfig>
   themeKey?: string
+  layoutJson?: any
 }
 
 /**
  * Generates a standalone, production-ready React TSX component
- * that renders the client deliverable using pure Tailwind CSS Grid.
- * Contains ZERO dependencies on Dockview, sashes, or builder chrome.
+ * that renders the client deliverable using pure Tailwind CSS Flex/Grid.
+ * Faithfully reproduces the Dockview layout tree with ZERO dependencies
+ * on Dockview, sashes, or builder chrome.
  */
 export function generateStandaloneClientTsx(options: CodegenOptions): string {
-  const { templateName, headerConfig, footerConfig, panels } = options
+  const { templateName, headerConfig, footerConfig, panels, layoutJson } = options
 
   const panelList = Object.values(panels)
   const fontFamily = FONT_MAP[headerConfig.fontFamily] || FONT_MAP.inter
 
-  // Format panel data as clean JSON to embed directly in the component
+  // Format panel data and layout tree as clean JSON to embed directly in the component
   const embeddedPanelsJson = JSON.stringify(panelList, null, 2)
+  const embeddedGridJson = layoutJson?.grid?.root
+    ? JSON.stringify(layoutJson.grid, null, 2)
+    : 'null'
 
   return `import React, { useState } from 'react'
 import {
@@ -72,10 +77,57 @@ interface WidgetItem {
 }
 
 const BAKED_PANELS: WidgetItem[] = ${embeddedPanelsJson}
+const LAYOUT_GRID: any = ${embeddedGridJson}
+
+function DockviewNodeRenderer({ node, orientation }: { node: any; orientation: 'HORIZONTAL' | 'VERTICAL' }) {
+  if (!node) return null
+
+  if (node.type === 'leaf') {
+    const activeViewId = node.data?.activeView || (node.data?.views && node.data.views[0])
+    const panel = BAKED_PANELS.find((p) => p.id === activeViewId)
+    if (!panel) return null
+
+    return (
+      <div className="w-full h-full rounded-xl bg-zinc-900/50 border border-zinc-800/80 overflow-hidden shadow-sm flex flex-col hover:border-zinc-700/80 transition-all backdrop-blur-sm min-h-[220px]">
+        <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between bg-zinc-900/80 shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-indigo-500" />
+            <h2 className="text-sm font-semibold text-zinc-100">{panel.title}</h2>
+          </div>
+          <span className="text-[10px] uppercase font-mono tracking-wider text-zinc-500 px-2 py-0.5 rounded bg-zinc-800/60">
+            {panel.widgetType}
+          </span>
+        </div>
+        <div className="p-4 flex-1 overflow-auto">
+          <WidgetRenderer panel={panel} />
+        </div>
+      </div>
+    )
+  }
+
+  if (node.type === 'branch') {
+    const isHorizontal = orientation === 'HORIZONTAL'
+    const nextOrientation = isHorizontal ? 'VERTICAL' : 'HORIZONTAL'
+    const children = Array.isArray(node.data) ? node.data : []
+
+    return (
+      <div className={\`w-full h-full flex gap-4 min-w-0 min-h-0 \${isHorizontal ? 'flex-col md:flex-row' : 'flex-col'}\`}>
+        {children.map((child: any, idx: number) => {
+          const flexGrow = typeof child.size === 'number' && child.size > 0 ? child.size : 1
+          return (
+            <div key={idx} className="flex-1 min-w-0 min-h-0 flex flex-col" style={{ flex: \`\${flexGrow} 1 0%\` }}>
+              <DockviewNodeRenderer node={child} orientation={nextOrientation} />
+            </div>
+          )
+        })}
+      </div>
+    )
+  }
+
+  return null
+}
 
 export const ClientDashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<string>('all')
-
   return (
     <div
       className="w-full min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans select-none"
@@ -126,40 +178,17 @@ export const ClientDashboard: React.FC = () => {
       }
 
       {/* ── MAIN DASHBOARD GRID (ZERO DOCKVIEW) ──────────────────── */}
-      <main className="flex-1 p-6 overflow-y-auto space-y-6 max-w-7xl mx-auto w-full">
-        {/* KPI Strip */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {BAKED_PANELS.filter(p => p.widgetType === 'kpi').map(panel => (
-            panel.widgetProps?.items?.map((item: any, idx: number) => (
-              <div
-                key={idx}
-                className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800/80 hover:border-zinc-700 transition-all flex flex-col justify-between shadow-sm"
-              >
-                <div className="flex items-center justify-between text-xs text-zinc-400 mb-2">
-                  <span>{item.label}</span>
-                  {item.delta && (
-                    <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                      {item.delta}
-                    </span>
-                  )}
-                </div>
-                <div className="text-2xl font-bold text-white tracking-tight">{item.value}</div>
-                {item.subtext && <div className="text-[11px] text-zinc-500 mt-1">{item.subtext}</div>}
-              </div>
-            ))
-          ))}
-        </div>
-
-        {/* Primary Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {BAKED_PANELS.filter(p => p.widgetType !== 'kpi').map(panel => {
-            const isLarge = panel.widgetType === 'chart' || panel.widgetType === 'table' || panel.widgetType === 'embed'
-            const colSpan = isLarge ? 'lg:col-span-8' : 'lg:col-span-4'
-
-            return (
+      <main className="flex-1 p-6 overflow-y-auto max-w-7xl mx-auto w-full flex flex-col min-h-0">
+        {LAYOUT_GRID?.root ? (
+          <div className="w-full h-full min-h-0 flex-1 flex flex-col">
+            <DockviewNodeRenderer node={LAYOUT_GRID.root} orientation={LAYOUT_GRID.orientation || 'HORIZONTAL'} />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 flex-1">
+            {BAKED_PANELS.map((panel) => (
               <div
                 key={panel.id}
-                className={\`\${colSpan} rounded-xl bg-zinc-900/50 border border-zinc-800/80 overflow-hidden shadow-sm flex flex-col\`}
+                className="rounded-xl bg-zinc-900/50 border border-zinc-800/80 overflow-hidden shadow-sm flex flex-col"
               >
                 <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between bg-zinc-900/80">
                   <div className="flex items-center gap-2">
@@ -174,9 +203,9 @@ export const ClientDashboard: React.FC = () => {
                   <WidgetRenderer panel={panel} />
                 </div>
               </div>
-            )
-          })}
-        </div>
+            ))}
+          </div>
+        )}
       </main>
 
       {/* ── CLIENT FOOTER FRAMING ───────────────────────────────── */}

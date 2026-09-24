@@ -177,10 +177,48 @@ export const DockviewCanvas: React.FC = () => {
             console.warn('Error placing initial panel:', p.id, err)
           }
         })
+
+        // Snapshot initial layout immediately so Client View has it from the start
+        try {
+          const initialLayout = event.api.toJSON()
+          const { activeHeaderTabId, tabWorkspaces } = useReframeStore.getState()
+          if (activeHeaderTabId && initialLayout?.grid?.root) {
+            const updated = { ...tabWorkspaces }
+            updated[activeHeaderTabId] = {
+              ...(updated[activeHeaderTabId] || {}),
+              layoutJson: initialLayout
+            }
+            useReframeStore.setState({ tabWorkspaces: updated })
+          }
+        } catch {
+          // ignore
+        }
       }
+
+      // Continuously synchronize Dockview's live layout tree to active tab workspace
+      const layoutSub = event.api.onDidLayoutChange(() => {
+        if (isUnmountingRef.current || isClearingRef.current || (event.api as any).isDisposed) {
+          return
+        }
+        try {
+          const currentLayoutJson = event.api.toJSON()
+          const { activeHeaderTabId, tabWorkspaces } = useReframeStore.getState()
+          if (activeHeaderTabId && currentLayoutJson?.grid?.root) {
+            const updatedWorkspaces = { ...tabWorkspaces }
+            updatedWorkspaces[activeHeaderTabId] = {
+              ...(updatedWorkspaces[activeHeaderTabId] || {}),
+              layoutJson: currentLayoutJson
+            }
+            useReframeStore.setState({ tabWorkspaces: updatedWorkspaces })
+          }
+        } catch {
+          // ignore
+        }
+      })
 
       return () => {
         removeSub.dispose()
+        layoutSub.dispose()
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps

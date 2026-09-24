@@ -98,6 +98,7 @@ export interface ReframeStoreState {
   setDeviceMode: (mode: 'desktop' | 'tablet' | 'mobile') => void
   setSelectedThemeKey: (themeKey: string) => void
   setDockviewApi: (api: DockviewApi | null) => void
+  setTabWorkspaceLayout: (tabId: string, layoutJson: any) => void
 
   // 4-Zone Tab Actions
   addHeaderTab: (tab: HeaderTabItem) => void
@@ -942,7 +943,30 @@ export const useReframeStore = create<ReframeStoreState>((set, get) => ({
 
   dockviewApi: null,
 
-  setMode: (mode) => set({ mode }),
+  setMode: (mode) => {
+    if (mode === 'client') {
+      const { dockviewApi, activeHeaderTabId, tabWorkspaces, panels } = get()
+      let currentLayoutJson: any = undefined
+      if (dockviewApi) {
+        try {
+          currentLayoutJson = dockviewApi.toJSON()
+        } catch {
+          // ignore
+        }
+      }
+      const updatedWorkspaces = { ...tabWorkspaces }
+      if (activeHeaderTabId) {
+        updatedWorkspaces[activeHeaderTabId] = {
+          ...(updatedWorkspaces[activeHeaderTabId] || {}),
+          panels: { ...panels },
+          layoutJson: currentLayoutJson || updatedWorkspaces[activeHeaderTabId]?.layoutJson
+        }
+      }
+      set({ mode, tabWorkspaces: updatedWorkspaces })
+    } else {
+      set({ mode })
+    }
+  },
   toggleControls: () => set((state) => ({ isControlsOpen: !state.isControlsOpen })),
   setIsControlsOpen: (open) => set({ isControlsOpen: open }),
   setIsBakeModalOpen: (open) => set({ isBakeModalOpen: open }),
@@ -952,6 +976,16 @@ export const useReframeStore = create<ReframeStoreState>((set, get) => ({
   setDeviceMode: (deviceMode) => set({ deviceMode }),
   setSelectedThemeKey: (selectedThemeKey) => set({ selectedThemeKey }),
   setDockviewApi: (dockviewApi) => set({ dockviewApi }),
+  setTabWorkspaceLayout: (tabId, layoutJson) =>
+    set((state) => ({
+      tabWorkspaces: {
+        ...state.tabWorkspaces,
+        [tabId]: {
+          ...(state.tabWorkspaces[tabId] || {}),
+          layoutJson
+        }
+      }
+    })),
 
   // 4-Zone Tab Action Handlers with Per-Tab Layout & Widget Persistence
   addHeaderTab: (tab) => {
@@ -1674,3 +1708,7 @@ export const useReframeStore = create<ReframeStoreState>((set, get) => ({
     }
   }
 }))
+
+if (typeof window !== 'undefined') {
+  ;(window as any).__REFRAME_STORE__ = useReframeStore
+}

@@ -560,4 +560,98 @@ describe('Reframe Platform & Store', () => {
       expect(REFRAME_WIDGET_COMPONENTS[type]).toBeDefined()
     })
   })
+
+  it('synchronizes and persists Dockview layout tree in tab workspace state', () => {
+    const { addHeaderTab, setTabWorkspaceLayout, setMode } = useReframeStore.getState()
+
+    // 1. Add workspace tab
+    addHeaderTab({ id: 'test-layout-sync', label: 'Sync Test Tab', closable: true })
+
+    // Mock layoutJson tree
+    const mockTree = {
+      grid: {
+        root: {
+          type: 'branch',
+          data: [
+            { type: 'leaf', data: { id: 'p1', views: ['p1'] }, size: 50 },
+            { type: 'leaf', data: { id: 'p2', views: ['p2'] }, size: 50 }
+          ]
+        },
+        height: 600,
+        width: 1000,
+        orientation: 'HORIZONTAL'
+      }
+    }
+
+    setTabWorkspaceLayout('test-layout-sync', mockTree)
+    const state = useReframeStore.getState()
+    expect(state.tabWorkspaces['test-layout-sync'].layoutJson).toEqual(mockTree)
+
+    // 2. Switching to client mode preserves the layoutJson
+    setMode('client')
+    expect(useReframeStore.getState().mode).toBe('client')
+    expect(useReframeStore.getState().tabWorkspaces['test-layout-sync'].layoutJson).toEqual(
+      mockTree
+    )
+  })
+
+  it('embeds spatial tree into standalone code export when layoutJson is provided', async () => {
+    const { generateStandaloneClientTsx } = await import('./export/reframe-codegen')
+    const state = useReframeStore.getState()
+
+    const mockLayout = {
+      grid: {
+        root: {
+          type: 'branch',
+          data: [
+            {
+              type: 'branch',
+              data: [
+                {
+                  type: 'leaf',
+                  data: { id: 'kpi-1', views: ['kpi-1'], activeView: 'kpi-1' },
+                  size: 40
+                },
+                {
+                  type: 'leaf',
+                  data: { id: 'table-1', views: ['table-1'], activeView: 'table-1' },
+                  size: 60
+                }
+              ]
+            },
+            {
+              type: 'leaf',
+              data: { id: 'chart-1', views: ['chart-1'], activeView: 'chart-1' },
+              size: 50
+            }
+          ]
+        },
+        height: 800,
+        width: 1200,
+        orientation: 'HORIZONTAL'
+      }
+    }
+
+    const tsx = generateStandaloneClientTsx({
+      templateName: 'executive',
+      headerConfig: state.headerConfig,
+      footerConfig: state.footerConfig,
+      panels: {
+        'kpi-1': { id: 'kpi-1', title: 'Top KPI', widgetType: 'kpi', widgetProps: {} },
+        'table-1': { id: 'table-1', title: 'Data Table', widgetType: 'table', widgetProps: {} },
+        'chart-1': { id: 'chart-1', title: 'Revenue Chart', widgetType: 'chart', widgetProps: {} }
+      },
+      layoutJson: mockLayout
+    })
+
+    expect(tsx).toContain('const LAYOUT_GRID: any =')
+    expect(tsx).toContain('function DockviewNodeRenderer')
+    expect(tsx).toContain("node.type === 'leaf'")
+    expect(tsx).toContain("node.type === 'branch'")
+    expect(tsx).toContain("isHorizontal ? 'flex-col md:flex-row' : 'flex-col'")
+
+    // ZERO DOCKVIEW GUARANTEE
+    expect(tsx).not.toContain('dockview-react')
+    expect(tsx).not.toContain('dockview.css')
+  })
 })
