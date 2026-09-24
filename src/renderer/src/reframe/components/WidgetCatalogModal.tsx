@@ -1,8 +1,9 @@
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo, useEffect, useRef } from 'react'
 import {
   X,
   Search,
   Plus,
+  Eye,
   TrendingUp,
   BarChart2,
   Table as TableIcon,
@@ -66,6 +67,46 @@ import {
   WIDGET_CATEGORIES,
   type WidgetCatalogItem
 } from '../widgets/catalog/widget-catalog'
+import { REFRAME_WIDGET_COMPONENTS } from '../widgets/reframe-widgets'
+
+interface ErrorBoundaryProps {
+  children: React.ReactNode
+  fallbackTitle?: string
+}
+
+interface ErrorBoundaryState {
+  hasError: boolean
+}
+
+class WidgetErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError(): ErrorBoundaryState {
+    return { hasError: true }
+  }
+
+  componentDidCatch(error: unknown) {
+    console.warn('Widget preview error:', error)
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-zinc-900/50 text-zinc-400 select-none">
+          <AlertTriangle className="w-5 h-5 text-amber-400 mb-1.5" />
+          <span className="text-xs font-semibold text-zinc-300">Preview fallback</span>
+          <span className="text-[10px] text-zinc-500 mt-1">
+            {this.props.fallbackTitle || 'Widget'} is ready to insert.
+          </span>
+        </div>
+      )
+    }
+    return this.props.children
+  }
+}
 
 const ICON_MAP: Record<string, React.FC<{ className?: string }>> = {
   TrendingUp,
@@ -141,6 +182,88 @@ export const WidgetCatalogModal: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [keepOpen, setKeepOpen] = useState(false)
   const [recentlyAddedId, setRecentlyAddedId] = useState<string | null>(null)
+  const [showPreviewOnHover, setShowPreviewOnHover] = useState(true)
+  const [activePreview, setActivePreview] = useState<{
+    item: WidgetCatalogItem
+    x: number
+    y: number
+  } | null>(null)
+
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  // Clear preview whenever modal closes
+  useEffect(() => {
+    if (!isCatalogModalOpen) {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current)
+      }
+      setActivePreview(null)
+    }
+  }, [isCatalogModalOpen])
+
+  const dismissPreview = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current)
+    }
+    setActivePreview(null)
+  }
+
+  const handleCardMouseEnter = (item: WidgetCatalogItem, el: HTMLElement) => {
+    if (!showPreviewOnHover) return
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current)
+    }
+
+    const rect = el.getBoundingClientRect()
+    const PREVIEW_WIDTH = 440
+    const PREVIEW_HEIGHT = 380
+
+    // Horizontal placement: prefer right, fallback to left, otherwise clamp
+    const spaceRight = window.innerWidth - rect.right - 16
+    const spaceLeft = rect.left - 16
+    let x = 0
+
+    if (spaceRight >= PREVIEW_WIDTH) {
+      x = rect.right + 14
+    } else if (spaceLeft >= PREVIEW_WIDTH) {
+      x = rect.left - PREVIEW_WIDTH - 14
+    } else {
+      x = Math.max(16, Math.min(window.innerWidth - PREVIEW_WIDTH - 16, rect.left))
+    }
+
+    // Vertical placement: align with top of card, clamp within viewport
+    let y = rect.top - 12
+    if (y + PREVIEW_HEIGHT > window.innerHeight - 16) {
+      y = window.innerHeight - PREVIEW_HEIGHT - 16
+    }
+    if (y < 16) {
+      y = 16
+    }
+
+    const delay = activePreview ? 70 : 180
+
+    hoverTimeoutRef.current = setTimeout(() => {
+      setActivePreview({ item, x, y })
+    }, delay)
+  }
+
+  const handleCardMouseLeave = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current)
+    }
+    hoverTimeoutRef.current = setTimeout(() => {
+      setActivePreview(null)
+    }, 100)
+  }
 
   // Close on Escape key
   useEffect(() => {
@@ -259,6 +382,20 @@ export const WidgetCatalogModal: React.FC = () => {
               </div>
             ) : null}
 
+            <label className="flex items-center gap-1.5 text-xs text-zinc-300 cursor-pointer hover:text-white transition-colors">
+              <input
+                type="checkbox"
+                checked={showPreviewOnHover}
+                onChange={(e) => {
+                  setShowPreviewOnHover(e.target.checked)
+                  if (!e.target.checked) dismissPreview()
+                }}
+                className="accent-indigo-500 rounded cursor-pointer"
+              />
+              <Eye className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Preview on hover</span>
+            </label>
+
             <label className="flex items-center gap-1.5 text-xs text-zinc-300 cursor-pointer hover:text-white">
               <input
                 type="checkbox"
@@ -343,7 +480,10 @@ export const WidgetCatalogModal: React.FC = () => {
           </div>
 
           {/* Widget Cards Grid */}
-          <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-zinc-800">
+          <div
+            onScroll={dismissPreview}
+            className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-zinc-800"
+          >
             {filteredWidgets.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-8">
                 <Search className="w-10 h-10 text-zinc-600 mb-3" />
@@ -373,6 +513,7 @@ export const WidgetCatalogModal: React.FC = () => {
                       key={item.id}
                       draggable={true}
                       onDragStart={(e) => {
+                        dismissPreview()
                         e.dataTransfer.setData(
                           'application/json',
                           JSON.stringify({
@@ -384,7 +525,12 @@ export const WidgetCatalogModal: React.FC = () => {
                         e.dataTransfer.effectAllowed = 'copyMove'
                         setTimeout(() => setIsCatalogModalOpen(false), 50)
                       }}
-                      onClick={() => handleSelectWidget(item)}
+                      onMouseEnter={(e) => handleCardMouseEnter(item, e.currentTarget)}
+                      onMouseLeave={handleCardMouseLeave}
+                      onClick={() => {
+                        dismissPreview()
+                        handleSelectWidget(item)
+                      }}
                       className="group p-4 rounded-xl bg-zinc-900/70 border border-zinc-800 hover:border-zinc-600 hover:bg-zinc-850/80 cursor-grab active:cursor-grabbing transition-all flex flex-col justify-between shadow-sm relative overflow-hidden"
                       title="Click to insert or drag directly onto canvas"
                     >
@@ -458,6 +604,93 @@ export const WidgetCatalogModal: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* ── 5. FLOATING LIVE PREVIEW POPOVER ─────────────────── */}
+      {activePreview && showPreviewOnHover && (
+        <div
+          style={{
+            position: 'fixed',
+            left: `${activePreview.x}px`,
+            top: `${activePreview.y}px`,
+            width: '440px'
+          }}
+          className="z-[70] pointer-events-none select-none bg-zinc-950/95 backdrop-blur-2xl border border-zinc-700/90 rounded-2xl p-4 shadow-[0_25px_60px_-12px_rgba(0,0,0,0.95)] ring-1 ring-white/10 animate-in fade-in zoom-in-95 duration-150 flex flex-col gap-3"
+        >
+          {/* Header: Icon, Title, Badges */}
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-700/80 flex items-center justify-center text-indigo-400 shrink-0 shadow-sm">
+                {(() => {
+                  const Icon = ICON_MAP[activePreview.item.icon] || Layers
+                  return <Icon className="w-4 h-4" />
+                })()}
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <h4 className="text-sm font-bold text-white tracking-tight truncate">
+                    {activePreview.item.title}
+                  </h4>
+                  <span className="text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700">
+                    {activePreview.item.domainBadge}
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider">
+                  {activePreview.item.categoryLabel}
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono text-[9px] font-semibold tracking-wider uppercase shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Live Preview
+            </div>
+          </div>
+
+          {/* Description */}
+          <p className="text-xs text-zinc-300 leading-relaxed line-clamp-2">
+            {activePreview.item.description}
+          </p>
+
+          {/* Live Component Preview Window */}
+          <div className="w-full h-[220px] rounded-xl bg-zinc-950 border border-zinc-800/90 overflow-hidden relative shadow-inner flex flex-col">
+            <WidgetErrorBoundary fallbackTitle={activePreview.item.title}>
+              {(() => {
+                const WidgetComponent = REFRAME_WIDGET_COMPONENTS[activePreview.item.widgetType]
+                if (!WidgetComponent) {
+                  return (
+                    <div className="h-full flex items-center justify-center text-xs text-zinc-500">
+                      Preview not available
+                    </div>
+                  )
+                }
+                return (
+                  <WidgetComponent
+                    api={{ id: `preview-${activePreview.item.id}` } as any}
+                    containerApi={null as any}
+                    params={activePreview.item.defaultProps}
+                  />
+                )
+              })()}
+            </WidgetErrorBoundary>
+          </div>
+
+          {/* Popover Footer Info */}
+          <div className="pt-2 border-t border-zinc-850 flex items-center justify-between text-[10px] text-zinc-400">
+            <div className="flex items-center gap-1.5 text-zinc-500 font-mono truncate max-w-[200px]">
+              {activePreview.item.tags.slice(0, 3).map((tag) => (
+                <span key={tag} className="text-zinc-500">
+                  #{tag}
+                </span>
+              ))}
+            </div>
+            <div className="flex items-center gap-1 text-zinc-400 font-medium">
+              <span>Click card to add</span>
+              <span>•</span>
+              <span>Drag to place</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

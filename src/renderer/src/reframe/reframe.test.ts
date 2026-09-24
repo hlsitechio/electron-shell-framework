@@ -776,4 +776,24 @@ describe('Reframe Platform & Store', () => {
     )
     expect(emptyCol).toBeDefined()
   })
+
+  it('validates that all catalog widgets have valid metadata and defaultProps for live hover previewing', () => {
+    expect(WIDGET_CATALOG.length).toBeGreaterThanOrEqual(75)
+
+    WIDGET_CATALOG.forEach((item) => {
+      expect(item.id).toBeTruthy()
+      expect(item.title).toBeTruthy()
+      expect(item.description).toBeTruthy()
+      expect(item.domainBadge).toBeTruthy()
+      expect(item.categoryLabel).toBeTruthy()
+      expect(item.tags.length).toBeGreaterThan(0)
+      expect(item.defaultProps).toBeDefined()
+      expect(typeof item.defaultProps).toBe('object')
+
+      // Ensure corresponding component is registered in REFRAME_WIDGET_COMPONENTS
+      const Component = REFRAME_WIDGET_COMPONENTS[item.widgetType]
+      expect(Component).toBeDefined()
+      expect(typeof Component).toBe('function')
+    })
+  })
 })
