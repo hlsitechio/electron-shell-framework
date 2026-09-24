@@ -108,6 +108,10 @@ export const DockviewCanvas: React.FC = () => {
         ) {
           return
         }
+        // If panel still exists in Dockview (e.g. moved or docked into another group), do not delete from store
+        if (event.api.panels?.some((p) => p.id === e.id)) {
+          return
+        }
         const currentPanels = useReframeStore.getState().panels
         if (currentPanels[e.id]) {
           const next = { ...currentPanels }
@@ -258,8 +262,10 @@ export const DockviewCanvas: React.FC = () => {
                   ? 'right'
                   : 'left'
 
-          const { addEmptySlot } = useReframeStore.getState()
-          addEmptySlot(dir, targetPanel.id)
+          setTimeout(() => {
+            const { addEmptySlot } = useReframeStore.getState()
+            addEmptySlot(dir, targetPanel.id)
+          }, 0)
         }
       })
 

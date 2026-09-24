@@ -144,13 +144,6 @@ if (!gotLock) {
       }
     })
 
-    setTimeout(() => {
-      if (!win.isDestroyed() && !win.isVisible()) {
-        log.warn('[main] ready-to-show timed out, force showing window')
-        showWindow()
-      }
-    }, 1500)
-
     win.on('close', () => {
       log.info('[main] window close event fired')
     })
@@ -180,14 +173,13 @@ if (!gotLock) {
       win.loadFile(targetFile)
     }
 
-    // Force show right away in case ready-to-show is delayed
+    // Safety timeout in case ready-to-show or did-finish-load is delayed
     setTimeout(() => {
-      if (!win.isDestroyed()) {
-        log.info('[main] fallback show timeout')
-        win.show()
-        win.focus()
+      if (!win.isDestroyed() && !win.isVisible()) {
+        log.info('[main] presenting window via fallback')
+        showWindow()
       }
-    }, 500)
+    }, 1500)
   }
 
   app.whenReady().then(() => {
