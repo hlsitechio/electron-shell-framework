@@ -151,44 +151,85 @@ export const DockviewCanvas: React.FC = () => {
 
       if (!restored) {
         const panelList = Object.values(panels)
-        panelList.forEach((p, idx) => {
+        if (panelList.length === 5) {
           try {
-            if (idx === 0) {
-              event.api.addPanel({
-                id: p.id,
-                component: p.widgetType,
-                title: p.title,
-                params: p.widgetProps
-              })
-            } else if (idx === 1) {
-              event.api.addPanel({
-                id: p.id,
-                component: p.widgetType,
-                title: p.title,
-                params: p.widgetProps,
-                position: { referencePanel: panelList[0].id, direction: 'right' }
-              })
-            } else if (idx === 2) {
-              event.api.addPanel({
-                id: p.id,
-                component: p.widgetType,
-                title: p.title,
-                params: p.widgetProps,
-                position: { referencePanel: panelList[0].id, direction: 'below' }
-              })
-            } else {
-              event.api.addPanel({
-                id: p.id,
-                component: p.widgetType,
-                title: p.title,
-                params: p.widgetProps,
-                position: { referencePanel: panelList[1].id, direction: 'below' }
-              })
-            }
+            event.api.addPanel({
+              id: panelList[0].id,
+              component: panelList[0].widgetType,
+              title: panelList[0].title,
+              params: panelList[0].widgetProps
+            })
+            event.api.addPanel({
+              id: panelList[1].id,
+              component: panelList[1].widgetType,
+              title: panelList[1].title,
+              params: panelList[1].widgetProps,
+              position: { referencePanel: panelList[0].id, direction: 'right' }
+            })
+            event.api.addPanel({
+              id: panelList[2].id,
+              component: panelList[2].widgetType,
+              title: panelList[2].title,
+              params: panelList[2].widgetProps,
+              position: { referencePanel: panelList[0].id, direction: 'below' }
+            })
+            event.api.addPanel({
+              id: panelList[3].id,
+              component: panelList[3].widgetType,
+              title: panelList[3].title,
+              params: panelList[3].widgetProps,
+              position: { referencePanel: panelList[1].id, direction: 'below' }
+            })
+            event.api.addPanel({
+              id: panelList[4].id,
+              component: panelList[4].widgetType,
+              title: panelList[4].title,
+              params: panelList[4].widgetProps,
+              position: { referencePanel: panelList[1].id, direction: 'right' }
+            })
           } catch (err) {
-            console.warn('Error placing initial panel:', p.id, err)
+            console.warn('Error placing 5-panel layout:', err)
           }
-        })
+        } else {
+          panelList.forEach((p, idx) => {
+            try {
+              if (idx === 0) {
+                event.api.addPanel({
+                  id: p.id,
+                  component: p.widgetType,
+                  title: p.title,
+                  params: p.widgetProps
+                })
+              } else if (idx === 1) {
+                event.api.addPanel({
+                  id: p.id,
+                  component: p.widgetType,
+                  title: p.title,
+                  params: p.widgetProps,
+                  position: { referencePanel: panelList[0].id, direction: 'right' }
+                })
+              } else if (idx === 2) {
+                event.api.addPanel({
+                  id: p.id,
+                  component: p.widgetType,
+                  title: p.title,
+                  params: p.widgetProps,
+                  position: { referencePanel: panelList[0].id, direction: 'below' }
+                })
+              } else {
+                event.api.addPanel({
+                  id: p.id,
+                  component: p.widgetType,
+                  title: p.title,
+                  params: p.widgetProps,
+                  position: { referencePanel: panelList[1].id, direction: 'below' }
+                })
+              }
+            } catch (err) {
+              console.warn('Error placing initial panel:', p.id, err)
+            }
+          })
+        }
 
         // Snapshot initial layout immediately so Client View has it from the start
         try {

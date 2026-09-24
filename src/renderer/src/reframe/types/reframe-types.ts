@@ -241,11 +241,24 @@ export const ACCENT_MAP: Record<
   }
 }
 
+export type TemplateId =
+  | 'executive'
+  | 'ai-studio'
+  | 'operations'
+  | 'engineering'
+  | 'meetings'
+  | 'documents'
+  | 'productivity'
+  | 'analytics'
+  | 'security'
+  | 'minimal'
+  | 'blank'
+
 export interface HeaderTabItem {
   id: string
   label: string
   icon?: string
-  templateId?: 'executive' | 'operations' | 'analytics' | 'engineering' | 'minimal' | 'blank'
+  templateId?: TemplateId
   closable?: boolean
 }
 
@@ -256,7 +269,7 @@ export interface LeftTabItem {
   viewType: 'canvas' | 'embed' | 'notes'
   url?: string
   content?: string
-  templateId?: 'executive' | 'operations' | 'analytics' | 'engineering' | 'minimal' | 'blank'
+  templateId?: TemplateId
   closable?: boolean
 }
 

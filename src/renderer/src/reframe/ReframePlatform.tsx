@@ -8,6 +8,7 @@ import { DockviewCanvas } from './components/DockviewCanvas'
 import { NativeClientGrid } from './components/NativeClientGrid'
 import { BakeExportModal } from './components/BakeExportModal'
 import { WidgetCatalogModal } from './components/WidgetCatalogModal'
+import { TemplateCatalogModal } from './components/TemplateCatalogModal'
 import { useReframeStore } from './stores/reframe-store'
 import { Wrench, ArrowUpRight, FileText, PackageCheck } from 'lucide-react'
 import { initReframeMcpBridge } from './mcp/reframe-mcp-bridge'
@@ -171,6 +172,9 @@ export const ReframePlatform: React.FC = () => {
 
       {/* 42+ Pre-Made Widget Catalog Browser Modal */}
       <WidgetCatalogModal />
+
+      {/* Starter Templates (10 Premade Suited Apps, 5 Tabs x 5 Widgets Each) */}
+      <TemplateCatalogModal />
     </div>
   )
 }

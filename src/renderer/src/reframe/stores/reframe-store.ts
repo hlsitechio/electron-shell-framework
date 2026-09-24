@@ -13,6 +13,13 @@ import type {
   LayoutScaffoldType
 } from '../types/reframe-types'
 import type { WidgetCatalogItem } from '../widgets/catalog/widget-catalog'
+import {
+  TEMPLATES,
+  type TemplateId,
+  type ReframeTemplateItem
+} from '../templates/reframe-templates'
+
+export { TEMPLATES, type TemplateId, type ReframeTemplateItem }
 
 export interface ThemeInspectorState {
   gap: number
@@ -32,9 +39,6 @@ export interface ThemeInspectorState {
   accentColor: AccentColorKey
 }
 
-export type TemplateId =
-  'executive' | 'operations' | 'analytics' | 'engineering' | 'minimal' | 'blank'
-
 export interface TabWorkspaceState {
   panels: Record<string, PanelConfig>
   layoutJson?: any
@@ -47,6 +51,7 @@ export interface ReframeStoreState {
   isControlsOpen: boolean
   isBakeModalOpen: boolean
   isCatalogModalOpen: boolean
+  isTemplateModalOpen: boolean
   catalogPlacementDirection: 'left' | 'right' | 'above' | 'below' | 'stack'
   activeTab: 'theme' | 'controls'
   deviceMode: 'desktop' | 'tablet' | 'mobile'
@@ -166,6 +171,7 @@ export interface ReframeStoreState {
   // Template Switcher
   loadTemplate: (templateId: TemplateId) => void
   clearAllTabsAndPanels: () => void
+  setIsTemplateModalOpen: (open: boolean) => void
 
   // Export / Import
   exportConfigJson: () => string
@@ -204,713 +210,36 @@ const DEFAULT_THEME_INSPECTOR: ThemeInspectorState = {
   accentColor: 'blue'
 }
 
-export const TEMPLATES: Record<
-  TemplateId,
-  {
-    name: string
-    description: string
-    themeKey: string
-    header: HeaderConfig
-    footer: FooterConfig
-    panels: Record<string, PanelConfig>
-  }
-> = {
-  executive: {
-    name: 'Executive Dashboard',
-    description:
-      'High-level financial KPIs, portfolio growth charts, enterprise pipeline, and strategy briefs.',
-    themeKey: 'dockview-theme-abyss',
-    header: {
-      visible: true,
-      title: 'Apex Capital Analytics',
-      subtitle: 'Portfolio Performance & Executive Directive Console',
-      badge: 'Enterprise v2.4',
-      fontFamily: 'outfit',
-      titleSize: 'xl',
-      titleWeight: 'bold',
-      showLogo: true,
-      logoIcon: 'Layers',
-      actions: [
-        { id: 'sync', label: 'Sync Portfolios', icon: 'RefreshCw', actionType: 'refresh' },
-        { id: 'export-pdf', label: 'Export Brief', icon: 'Download', actionType: 'export' }
-      ],
-      showWindowControls: true
-    },
-    footer: {
-      visible: true,
-      leftText: 'Region: us-east (Northern Virginia)',
-      centerText: 'Live Stream: 142 ms latency',
-      rightText: 'Apex Core Engine v2.4.1',
-      statusState: 'online',
-      statusLabel: 'Cluster Healthy',
-      fontFamily: 'outfit',
-      fontSize: 'xs'
-    },
-    panels: {
-      'kpi-summary': {
-        id: 'kpi-summary',
-        title: 'Executive Metrics',
-        widgetType: 'kpi',
-        closable: false,
-        widgetProps: {
-          items: [
-            {
-              label: 'Total AUM',
-              value: '$48.2M',
-              delta: '+14.2% YoY',
-              deltaType: 'positive',
-              subtext: 'vs $42.2M target'
-            },
-            {
-              label: 'Net Annual Recurring',
-              value: '$8.9M',
-              delta: '+22.4%',
-              deltaType: 'positive',
-              subtext: 'Across 142 accounts'
-            },
-            {
-              label: 'Sharpe Ratio',
-              value: '2.84',
-              delta: '+0.31',
-              deltaType: 'positive',
-              subtext: 'Risk-adjusted return'
-            },
-            {
-              label: 'Average LTV',
-              value: '$68.4K',
-              delta: '-1.2%',
-              deltaType: 'neutral',
-              subtext: '98.4% retention rate'
-            }
-          ]
-        }
-      },
-      'chart-revenue': {
-        id: 'chart-revenue',
-        title: 'Revenue & Yield Trajectory',
-        widgetType: 'chart',
-        closable: true,
-        widgetProps: {
-          title: 'Monthly Recurring Revenue ($K)',
-          chartType: 'area',
-          dataKey: 'revenue',
-          timeRange: '12 Months'
-        }
-      },
-      'table-holdings': {
-        id: 'table-holdings',
-        title: 'Enterprise Pipeline & Deal Flow',
-        widgetType: 'table',
-        closable: true,
-        widgetProps: {
-          title: 'Active Deal Pipeline',
-          columns: [
-            { key: 'client', header: 'Client' },
-            { key: 'tier', header: 'Tier' },
-            { key: 'value', header: 'Est. Deal Value' },
-            { key: 'stage', header: 'Stage' },
-            { key: 'status', header: 'Status' }
-          ],
-          rows: [
-            {
-              client: 'Acme Global Corp',
-              tier: 'Tier 1 Enterprise',
-              value: '$1,200,000',
-              stage: 'Procurement Final',
-              status: 'Closing Soon'
-            },
-            {
-              client: 'Helios Biopharma',
-              tier: 'Strategic Growth',
-              value: '$850,000',
-              stage: 'Security Review',
-              status: 'In Review'
-            },
-            {
-              client: 'Starlight Financial',
-              tier: 'Enterprise Plus',
-              value: '$2,400,000',
-              stage: 'Contract Signed',
-              status: 'Onboarding'
-            },
-            {
-              client: 'Nexus HyperScale',
-              tier: 'Tier 1 Enterprise',
-              value: '$1,750,000',
-              stage: 'Pilot Evaluation',
-              status: 'Active Pilot'
-            },
-            {
-              client: 'Crestline Mobility',
-              tier: 'Commercial',
-              value: '$420,000',
-              stage: 'Proposal Sent',
-              status: 'Negotiating'
-            }
-          ]
-        }
-      },
-      'notes-briefing': {
-        id: 'notes-briefing',
-        title: 'Directive & Runbook',
-        widgetType: 'notes',
-        closable: true,
-        widgetProps: {
-          title: 'Q3 Executive Directive',
-          content: `### Executive Liquidity & Expansion Directive (Q3)\n\n* **Capital Allocation Target:** $50M AUM threshold projected for October 1st.\n* **Key Deliverables:**\n  1. Complete automated compliance reporting across EU and North America entities.\n  2. Deploy high-frequency data pipelines for client portfolio visibility.\n  3. Harden internal access policies prior to SOC2 Type II audit.\n\n> "Client deliverables should emphasize transparent risk metrics and single-click reporting without unnecessary developer chrome."`
-        }
-      }
-    }
-  },
-
-  operations: {
-    name: 'Operations & SRE Monitor',
-    description:
-      'Live infrastructure telemetry, cluster health, real-time activity stream, and action triggers.',
-    themeKey: 'dockview-theme-dracula',
-    header: {
-      visible: true,
-      title: 'PulseOps Control Plane',
-      subtitle: 'Distributed SRE Telemetry & Observability Hub',
-      badge: 'Live Telemetry',
-      fontFamily: 'jetbrains',
-      titleSize: 'lg',
-      titleWeight: 'semibold',
-      showLogo: true,
-      logoIcon: 'Activity',
-      actions: [
-        { id: 'cycle', label: 'Drain Inactive', icon: 'Zap', actionType: 'alert' },
-        { id: 'refresh', label: 'Poll Health', icon: 'RefreshCw', actionType: 'refresh' }
-      ],
-      showWindowControls: true
-    },
-    footer: {
-      visible: true,
-      leftText: 'Active Pods: 48/48 (100%)',
-      centerText: 'Event Ingest: 142k events/sec',
-      rightText: 'P99 Latency: 14ms',
-      statusState: 'online',
-      statusLabel: 'Nominal',
-      fontFamily: 'jetbrains',
-      fontSize: 'xs'
-    },
-    panels: {
-      'kpi-infra': {
-        id: 'kpi-infra',
-        title: 'Infrastructure Vital Signs',
-        widgetType: 'kpi',
-        closable: false,
-        widgetProps: {
-          items: [
-            {
-              label: 'Cluster Uptime',
-              value: '99.995%',
-              delta: '+0.02%',
-              deltaType: 'positive',
-              subtext: 'Past 30 days'
-            },
-            {
-              label: 'Median Latency',
-              value: '14.2ms',
-              delta: '-2.1ms',
-              deltaType: 'positive',
-              subtext: 'Global edge cache'
-            },
-            {
-              label: 'CPU Allocation',
-              value: '38.4%',
-              delta: '+4.1%',
-              deltaType: 'neutral',
-              subtext: 'Autoscale ceiling 85%'
-            },
-            {
-              label: 'Ingest Rate',
-              value: '142 k/s',
-              delta: '+12 k/s',
-              deltaType: 'positive',
-              subtext: 'Zero dropped frames'
-            }
-          ]
-        }
-      },
-      'stream-activity': {
-        id: 'stream-activity',
-        title: 'Live Event Stream',
-        widgetType: 'activity',
-        closable: true,
-        widgetProps: {
-          title: 'Cluster Event Log',
-          filterSeverity: 'all'
-        }
-      },
-      'table-clusters': {
-        id: 'table-clusters',
-        title: 'Microservices & Endpoints',
-        widgetType: 'table',
-        closable: true,
-        widgetProps: {
-          title: 'Fleet Health Registry',
-          columns: [
-            { key: 'service', header: 'Service' },
-            { key: 'replicas', header: 'Replicas' },
-            { key: 'latency', header: 'p95' },
-            { key: 'errorRate', header: 'Error %' },
-            { key: 'health', header: 'Health' }
-          ],
-          rows: [
-            {
-              service: 'api-gateway-core',
-              replicas: '12/12',
-              latency: '8ms',
-              errorRate: '0.001%',
-              health: 'Healthy'
-            },
-            {
-              service: 'auth-neon-token',
-              replicas: '6/6',
-              latency: '12ms',
-              errorRate: '0.000%',
-              health: 'Healthy'
-            },
-            {
-              service: 'billing-stripe-worker',
-              replicas: '4/4',
-              latency: '45ms',
-              errorRate: '0.005%',
-              health: 'Healthy'
-            },
-            {
-              service: 'lakebase-query-mesh',
-              replicas: '8/8',
-              latency: '19ms',
-              errorRate: '0.000%',
-              health: 'Healthy'
-            },
-            {
-              service: 'notification-resend',
-              replicas: '3/3',
-              latency: '82ms',
-              errorRate: '0.010%',
-              health: 'Healthy'
-            }
-          ]
-        }
-      },
-      'actionpad-ops': {
-        id: 'actionpad-ops',
-        title: 'Operational Controls',
-        widgetType: 'actionpad',
-        closable: true,
-        widgetProps: {
-          title: 'Fast Action Triggers',
-          actions: [
-            {
-              id: 'flush-cache',
-              label: 'Purge Edge CDN Cache',
-              description: 'Invalidates edge caches worldwide'
-            },
-            {
-              id: 'cycle-auth',
-              label: 'Rotate Session Salts',
-              description: 'Gracefully rotates worker session keys'
-            },
-            {
-              id: 'run-diagnostics',
-              label: 'Run Full Node Diagnostics',
-              description: 'Synthesizes synthetic trace report'
-            }
-          ]
-        }
-      }
-    }
-  },
-
-  analytics: {
-    name: 'Product Analytics & Funnel Velocity',
-    description:
-      'User acquisition funnels, conversion rates, customer cohorts, and behavioral insights.',
-    themeKey: 'dockview-theme-nord',
-    header: {
-      visible: true,
-      title: 'Vanguard Growth Studio',
-      subtitle: 'Cohort Analysis & Product Funnel Diagnostics',
-      badge: 'Cohort Engine',
-      fontFamily: 'inter',
-      titleSize: 'lg',
-      titleWeight: 'semibold',
-      showLogo: true,
-      logoIcon: 'BarChart3',
-      actions: [
-        { id: 'refresh', label: 'Refresh Data', icon: 'RefreshCw', actionType: 'refresh' },
-        { id: 'export-csv', label: 'Export Cohorts', icon: 'Download', actionType: 'export' }
-      ],
-      showWindowControls: true
-    },
-    footer: {
-      visible: true,
-      leftText: 'Dataset: 2026-Q3 Production Clickstream',
-      centerText: 'Sampling: 100% Unsampled',
-      rightText: 'Last Computed: 2 mins ago',
-      statusState: 'synced',
-      statusLabel: 'Sync Complete',
-      fontFamily: 'inter',
-      fontSize: 'xs'
-    },
-    panels: {
-      'kpi-growth': {
-        id: 'kpi-growth',
-        title: 'Product Funnel KPIs',
-        widgetType: 'kpi',
-        closable: false,
-        widgetProps: {
-          items: [
-            {
-              label: 'Signup Conversion',
-              value: '4.82%',
-              delta: '+0.64%',
-              deltaType: 'positive',
-              subtext: 'Visitors to account'
-            },
-            {
-              label: 'Activation Rate',
-              value: '62.4%',
-              delta: '+3.1%',
-              deltaType: 'positive',
-              subtext: 'Setup completed within 24h'
-            },
-            {
-              label: 'Weekly Active Users',
-              value: '28,490',
-              delta: '+18.2%',
-              deltaType: 'positive',
-              subtext: 'Engaged 3+ sessions'
-            },
-            {
-              label: 'Paid Expansion',
-              value: '18.9%',
-              delta: '+1.5%',
-              deltaType: 'positive',
-              subtext: 'Seat additions'
-            }
-          ]
-        }
-      },
-      'chart-funnel': {
-        id: 'chart-funnel',
-        title: 'Conversion Funnel & Volume',
-        widgetType: 'chart',
-        closable: true,
-        widgetProps: {
-          title: 'Funnel Step Velocity',
-          chartType: 'bar',
-          dataKey: 'conversions',
-          timeRange: '30 Days'
-        }
-      },
-      'table-cohorts': {
-        id: 'table-cohorts',
-        title: 'Active Customer Cohorts',
-        widgetType: 'table',
-        closable: true,
-        widgetProps: {
-          title: 'Retention by Cohort',
-          columns: [
-            { key: 'cohort', header: 'Cohort' },
-            { key: 'users', header: 'Users' },
-            { key: 'w1', header: 'Week 1' },
-            { key: 'w4', header: 'Week 4' },
-            { key: 'w8', header: 'Week 8' }
-          ],
-          rows: [
-            {
-              cohort: '2026-08 (Enterprise Beta)',
-              users: '1,420',
-              w1: '94%',
-              w4: '88%',
-              w8: '85%'
-            },
-            { cohort: '2026-07 (Early Adopters)', users: '3,840', w1: '91%', w4: '82%', w8: '79%' },
-            {
-              cohort: '2026-06 (Self-Serve Public)',
-              users: '12,900',
-              w1: '78%',
-              w4: '64%',
-              w8: '59%'
-            },
-            {
-              cohort: '2026-05 (Developer Preview)',
-              users: '5,100',
-              w1: '84%',
-              w4: '71%',
-              w8: '68%'
-            }
-          ]
-        }
-      }
-    }
-  },
-
-  engineering: {
-    name: 'DevForge Terminal & Build Matrix',
-    description: 'Repository state, CI pipelines, build scripts execution, and package specs.',
-    themeKey: 'dockview-theme-monokai',
-    header: {
-      visible: true,
-      title: 'DevForge Terminal Matrix',
-      subtitle: 'Monorepo Pipeline & Git Orchestration Suite',
-      badge: 'v0.3.0',
-      fontFamily: 'fira',
-      titleSize: 'lg',
-      titleWeight: 'semibold',
-      showLogo: true,
-      logoIcon: 'Terminal',
-      actions: [
-        { id: 'build-all', label: 'Trigger Build', icon: 'Hammer', actionType: 'refresh' },
-        { id: 'test-all', label: 'Run Vitest', icon: 'Activity', actionType: 'alert' }
-      ],
-      showWindowControls: true
-    },
-    footer: {
-      visible: true,
-      leftText: 'Branch: main @ 7d9a1f2',
-      centerText: 'Active Worktrees: 3',
-      rightText: 'Build Status: 74/74 Passing',
-      statusState: 'online',
-      statusLabel: 'All Tests Green',
-      fontFamily: 'fira',
-      fontSize: 'xs'
-    },
-    panels: {
-      'table-prs': {
-        id: 'table-prs',
-        title: 'Active Pull Requests',
-        widgetType: 'table',
-        closable: true,
-        widgetProps: {
-          title: 'Review Queue',
-          columns: [
-            { key: 'pr', header: 'PR' },
-            { key: 'title', header: 'Title' },
-            { key: 'author', header: 'Author' },
-            { key: 'ci', header: 'CI' },
-            { key: 'status', header: 'Status' }
-          ],
-          rows: [
-            {
-              pr: '#142',
-              title: 'feat: add Reframe dynamic dockview layout engine',
-              author: 'tab_Hub',
-              ci: 'Passing',
-              status: 'Approved'
-            },
-            {
-              pr: '#141',
-              title: 'fix: resolve windows electron focus & merge conflicts',
-              author: 'upstream',
-              ci: 'Passing',
-              status: 'Merged'
-            },
-            {
-              pr: '#138',
-              title: 'perf: optimize bundle tree-shaking & icons',
-              author: 'core-team',
-              ci: 'Passing',
-              status: 'Review Needed'
-            }
-          ]
-        }
-      },
-      'stream-build': {
-        id: 'stream-build',
-        title: 'Build & Test Log Stream',
-        widgetType: 'activity',
-        closable: true,
-        widgetProps: {
-          title: 'Real-time Build Output',
-          filterSeverity: 'all'
-        }
-      },
-      'actionpad-scripts': {
-        id: 'actionpad-scripts',
-        title: 'Script Triggers',
-        widgetType: 'actionpad',
-        closable: true,
-        widgetProps: {
-          title: 'Npm Executables',
-          actions: [
-            {
-              id: 'npm-typecheck',
-              label: 'npm run typecheck',
-              description: 'Run tsc web & node compile checks'
-            },
-            {
-              id: 'npm-test',
-              label: 'npm run test',
-              description: 'Execute vitest runner (74 tests)'
-            },
-            {
-              id: 'npm-build',
-              label: 'npm run build',
-              description: 'Compile electron vite bundles'
-            }
-          ]
-        }
-      }
-    }
-  },
-
-  minimal: {
-    name: 'Minimal Executive KPI Hub',
-    description:
-      'Clean, distraction-free metrics overview optimized for client presentation displays.',
-    themeKey: 'dockview-theme-catppuccin-mocha',
-    header: {
-      visible: true,
-      title: 'Cockpit Minimal Hub',
-      subtitle: 'Distraction-Free Executive Status Display',
-      badge: 'Live Client Display',
-      fontFamily: 'geist',
-      titleSize: 'xl',
-      titleWeight: 'bold',
-      showLogo: true,
-      logoIcon: 'Sparkles',
-      actions: [{ id: 'fullscreen', label: 'Fullscreen', icon: 'Maximize2', actionType: 'alert' }],
-      showWindowControls: true
-    },
-    footer: {
-      visible: true,
-      leftText: 'Live Stream Connected',
-      centerText: 'Zero-Downtime Replication',
-      rightText: 'Client ID: 9482-B',
-      statusState: 'online',
-      statusLabel: 'Operating Normally',
-      fontFamily: 'geist',
-      fontSize: 'xs'
-    },
-    panels: {
-      'kpi-primary': {
-        id: 'kpi-primary',
-        title: 'Primary Performance Indicators',
-        widgetType: 'kpi',
-        closable: false,
-        widgetProps: {
-          items: [
-            {
-              label: 'Current Valuation',
-              value: '$124.5M',
-              delta: '+8.4%',
-              deltaType: 'positive',
-              subtext: 'Latest round evaluation'
-            },
-            {
-              label: 'Monthly Growth Rate',
-              value: '18.4%',
-              delta: '+2.1%',
-              deltaType: 'positive',
-              subtext: 'Compounded MoM'
-            },
-            {
-              label: 'Burn Multiple',
-              value: '0.82x',
-              delta: '-0.14x',
-              deltaType: 'positive',
-              subtext: 'Capital efficiency benchmark'
-            },
-            {
-              label: 'Net Promoter Score',
-              value: '74',
-              delta: '+6',
-              deltaType: 'positive',
-              subtext: 'Top decile benchmark'
-            }
-          ]
-        }
-      },
-      'chart-trajectory': {
-        id: 'chart-trajectory',
-        title: 'Growth Trajectory',
-        widgetType: 'chart',
-        closable: true,
-        widgetProps: {
-          title: '3-Year Revenue Scaling ($M)',
-          chartType: 'area',
-          dataKey: 'revenue',
-          timeRange: 'Trailing 36 Mo'
-        }
-      }
-    }
-  },
-
-  blank: {
-    name: 'Blank Slate (Empty Playground)',
-    description:
-      'Clean empty canvas with zero default tabs or widgets. Ready to build freely from scratch.',
-    themeKey: 'dockview-theme-abyss',
-    header: {
-      visible: true,
-      title: 'Blank Playground',
-      subtitle: 'Click + to add tabs, widgets, and framing',
-      badge: 'Empty Canvas',
-      fontFamily: 'inter',
-      titleSize: 'lg',
-      titleWeight: 'semibold',
-      showLogo: true,
-      logoIcon: 'Sparkles',
-      actions: [],
-      showWindowControls: true
-    },
-    footer: {
-      visible: true,
-      leftText: 'Empty Canvas',
-      centerText: 'Ready',
-      rightText: 'v1.0.0',
-      statusState: 'online',
-      statusLabel: 'Ready',
-      fontFamily: 'inter',
-      fontSize: 'xs'
-    },
-    panels: {}
-  }
-}
-
 export const useReframeStore = create<ReframeStoreState>((set, get) => ({
   mode: 'builder',
   isControlsOpen: true,
   isBakeModalOpen: false,
   isCatalogModalOpen: false,
+  isTemplateModalOpen: false,
   catalogPlacementDirection: 'right',
   targetSlotId: null,
   activeTab: 'theme',
   deviceMode: 'desktop',
-  selectedThemeKey: 'dockview-theme-abyss',
+  selectedThemeKey: TEMPLATES.executive.themeKey || 'dockview-theme-abyss',
   currentTemplateId: 'executive',
+  setIsTemplateModalOpen: (open: boolean) => set({ isTemplateModalOpen: open }),
 
-  // 4 Dynamic Framing Zones (Executive Dashboard Default)
-  headerTabs: [
-    { id: 'tab-executive', label: 'Executive Suite', templateId: 'executive', icon: 'Layers' },
-    {
-      id: 'tab-operations',
-      label: 'Operations & SRE',
-      templateId: 'operations',
-      icon: 'Activity'
-    },
-    {
-      id: 'tab-analytics',
-      label: 'Product Analytics',
-      templateId: 'analytics',
-      icon: 'BarChart3'
-    },
-    {
-      id: 'tab-engineering',
-      label: 'DevForge Matrix',
-      templateId: 'engineering',
-      icon: 'Terminal'
-    }
-  ],
-  activeHeaderTabId: 'tab-executive',
+  // 4 Dynamic Framing Zones (Executive Dashboard Default: 5 pre-made tabs, each with 5 widgets)
+  headerTabs: [...TEMPLATES.executive.headerTabs],
+  activeHeaderTabId: TEMPLATES.executive.headerTabs[0]?.id || 'tab-exec-kpis',
 
-  // Per-Tab Layout & Widget Workspaces
-  tabWorkspaces: {},
+  // Per-Tab Layout & Widget Workspaces (pre-populated with 5 tabs × 5 widgets = 25 pre-selected widgets)
+  tabWorkspaces: Object.entries(TEMPLATES.executive.tabWorkspaces).reduce(
+    (acc, [tabId, tabPanels]) => {
+      acc[tabId] = {
+        panels: { ...tabPanels },
+        layoutJson: undefined,
+        templateId: 'executive'
+      }
+      return acc
+    },
+    {} as Record<string, TabWorkspaceState>
+  ),
   isRestoringLayout: false,
 
   leftTabs: [
@@ -1176,15 +505,53 @@ export const useReframeStore = create<ReframeStoreState>((set, get) => ({
           }
         }
         if (!restored && Object.keys(targetPanels).length > 0) {
-          Object.values(targetPanels).forEach((p, idx) => {
+          const panelEntries = Object.values(targetPanels)
+          if (panelEntries.length === 5) {
             dockviewApi.addPanel({
-              id: p.id,
-              component: p.widgetType,
-              title: p.title,
-              params: p.widgetProps,
-              position: idx === 0 ? undefined : { direction: idx % 2 === 0 ? 'below' : 'right' }
+              id: panelEntries[0].id,
+              component: panelEntries[0].widgetType,
+              title: panelEntries[0].title,
+              params: panelEntries[0].widgetProps
             })
-          })
+            dockviewApi.addPanel({
+              id: panelEntries[1].id,
+              component: panelEntries[1].widgetType,
+              title: panelEntries[1].title,
+              params: panelEntries[1].widgetProps,
+              position: { referencePanel: panelEntries[0].id, direction: 'right' }
+            })
+            dockviewApi.addPanel({
+              id: panelEntries[2].id,
+              component: panelEntries[2].widgetType,
+              title: panelEntries[2].title,
+              params: panelEntries[2].widgetProps,
+              position: { referencePanel: panelEntries[0].id, direction: 'below' }
+            })
+            dockviewApi.addPanel({
+              id: panelEntries[3].id,
+              component: panelEntries[3].widgetType,
+              title: panelEntries[3].title,
+              params: panelEntries[3].widgetProps,
+              position: { referencePanel: panelEntries[1].id, direction: 'below' }
+            })
+            dockviewApi.addPanel({
+              id: panelEntries[4].id,
+              component: panelEntries[4].widgetType,
+              title: panelEntries[4].title,
+              params: panelEntries[4].widgetProps,
+              position: { referencePanel: panelEntries[1].id, direction: 'right' }
+            })
+          } else {
+            panelEntries.forEach((p, idx) => {
+              dockviewApi.addPanel({
+                id: p.id,
+                component: p.widgetType,
+                title: p.title,
+                params: p.widgetProps,
+                position: idx === 0 ? undefined : { direction: idx % 2 === 0 ? 'below' : 'right' }
+              })
+            })
+          }
         }
       } catch (err) {
         console.warn('Error switching dockview tab layout', err)
@@ -1825,122 +1192,36 @@ export const useReframeStore = create<ReframeStoreState>((set, get) => ({
       return
     }
 
-    const defaultTabsForTemplate: Record<string, HeaderTabItem[]> = {
-      executive: [
-        { id: 'tab-executive', label: 'Executive Suite', templateId: 'executive', icon: 'Layers' },
-        {
-          id: 'tab-operations',
-          label: 'Operations & SRE',
-          templateId: 'operations',
-          icon: 'Activity'
-        },
-        {
-          id: 'tab-analytics',
-          label: 'Product Analytics',
-          templateId: 'analytics',
-          icon: 'BarChart3'
-        },
-        {
-          id: 'tab-engineering',
-          label: 'DevForge Matrix',
-          templateId: 'engineering',
-          icon: 'Terminal'
-        }
-      ],
-      operations: [
-        {
-          id: 'tab-operations',
-          label: 'Operations & SRE',
-          templateId: 'operations',
-          icon: 'Activity'
-        }
-      ],
-      analytics: [
-        {
-          id: 'tab-analytics',
-          label: 'Product Analytics',
-          templateId: 'analytics',
-          icon: 'BarChart3'
-        }
-      ],
-      engineering: [
-        {
-          id: 'tab-engineering',
-          label: 'DevForge Matrix',
-          templateId: 'engineering',
-          icon: 'Terminal'
-        }
-      ],
-      minimal: [{ id: 'tab-minimal', label: 'Minimal Hub', templateId: 'minimal', icon: 'Layers' }]
-    }
-
-    const newTabs = defaultTabsForTemplate[templateId] || [
-      { id: `tab-${templateId}`, label: template.name, templateId, icon: 'Layers' }
-    ]
-
-    const defaultLeftTabs: LeftTabItem[] = [
-      { id: 'left-canvas', label: 'Active Layout Canvas', viewType: 'canvas', icon: 'LayoutGrid' },
-      { id: 'left-directives', label: 'Directives & Runbook', viewType: 'notes', icon: 'FileText' },
-      {
-        id: 'left-portal',
-        label: 'SaaS Client Preview',
-        viewType: 'embed',
-        url: 'https://dockview.dev',
-        icon: 'Globe'
-      }
-    ]
-
-    const defaultFooterTabs: FooterTabItem[] = [
-      {
-        id: 'foot-cluster',
-        label: 'Cluster',
-        value: '🟢 Healthy',
-        status: 'online',
-        content: 'Cluster us-east: 48/48 nodes online. Zero packet loss.'
-      },
-      {
-        id: 'foot-latency',
-        label: 'Latency',
-        value: '⚡ 14ms',
-        status: 'synced',
-        content: 'Median ping to edge CDN: 14.2ms. P99: 22.8ms.'
-      },
-      {
-        id: 'foot-stream',
-        label: 'Stream',
-        value: '📦 142k/s',
-        status: 'online',
-        content: 'Live telemetry ingestion active. Zero dropped frames.'
-      },
-      {
-        id: 'foot-audit',
-        label: 'Audit',
-        value: '📝 Nominal',
-        status: 'custom',
-        content: 'SOC2 Compliance rules passing. Real-time audit pipeline synced.'
-      }
-    ]
-
-    const currentLeftTabs = get().leftTabs
-    const newLeftTabs =
-      currentLeftTabs.length === 0 && templateId === 'executive' ? defaultLeftTabs : currentLeftTabs
-
-    const currentFooterTabs = get().footerTabs
-    const newFooterTabs =
-      currentFooterTabs.length === 0 && templateId === 'executive'
-        ? defaultFooterTabs
-        : currentFooterTabs
+    const newTabs =
+      template.headerTabs && template.headerTabs.length > 0
+        ? [...template.headerTabs]
+        : [
+            {
+              id: `tab-${templateId}`,
+              label: template.name,
+              templateId,
+              icon: template.icon || 'Layers'
+            }
+          ]
 
     const newWorkspaces: Record<string, TabWorkspaceState> = {}
-    newTabs.forEach((tab) => {
-      const tabTplId = (tab.templateId || templateId) as TemplateId
-      const tabPanels = TEMPLATES[tabTplId]?.panels ? { ...TEMPLATES[tabTplId].panels } : {}
-      newWorkspaces[tab.id] = {
-        panels: tabPanels,
-        layoutJson: undefined,
-        templateId: tabTplId
-      }
-    })
+    if (template.tabWorkspaces && Object.keys(template.tabWorkspaces).length > 0) {
+      Object.entries(template.tabWorkspaces).forEach(([tabId, tabPanels]) => {
+        newWorkspaces[tabId] = {
+          panels: { ...tabPanels },
+          layoutJson: undefined,
+          templateId
+        }
+      })
+    } else {
+      newTabs.forEach((tab) => {
+        newWorkspaces[tab.id] = {
+          panels: { ...template.panels },
+          layoutJson: undefined,
+          templateId
+        }
+      })
+    }
 
     const initialActiveId = newTabs[0]?.id || ''
     const initialPanels =
@@ -1956,27 +1237,60 @@ export const useReframeStore = create<ReframeStoreState>((set, get) => ({
       headerTabs: newTabs,
       activeHeaderTabId: initialActiveId,
       tabWorkspaces: newWorkspaces,
-      leftTabs: newLeftTabs,
-      activeLeftTabId: newLeftTabs[0]?.id || '',
-      footerTabs: newFooterTabs,
       panels: initialPanels,
       isRestoringLayout: true
     })
 
-    // If dockviewApi exists, we will re-initialize panels in DockviewCanvas
     if (dockviewApi) {
       try {
         dockviewApi.clear()
         const panelEntries = Object.values(initialPanels)
-        panelEntries.forEach((p, idx) => {
+        if (panelEntries.length === 5) {
           dockviewApi.addPanel({
-            id: p.id,
-            component: p.widgetType,
-            title: p.title,
-            params: p.widgetProps,
-            position: idx === 0 ? undefined : { direction: idx % 2 === 0 ? 'below' : 'right' }
+            id: panelEntries[0].id,
+            component: panelEntries[0].widgetType,
+            title: panelEntries[0].title,
+            params: panelEntries[0].widgetProps
           })
-        })
+          dockviewApi.addPanel({
+            id: panelEntries[1].id,
+            component: panelEntries[1].widgetType,
+            title: panelEntries[1].title,
+            params: panelEntries[1].widgetProps,
+            position: { referencePanel: panelEntries[0].id, direction: 'right' }
+          })
+          dockviewApi.addPanel({
+            id: panelEntries[2].id,
+            component: panelEntries[2].widgetType,
+            title: panelEntries[2].title,
+            params: panelEntries[2].widgetProps,
+            position: { referencePanel: panelEntries[0].id, direction: 'below' }
+          })
+          dockviewApi.addPanel({
+            id: panelEntries[3].id,
+            component: panelEntries[3].widgetType,
+            title: panelEntries[3].title,
+            params: panelEntries[3].widgetProps,
+            position: { referencePanel: panelEntries[1].id, direction: 'below' }
+          })
+          dockviewApi.addPanel({
+            id: panelEntries[4].id,
+            component: panelEntries[4].widgetType,
+            title: panelEntries[4].title,
+            params: panelEntries[4].widgetProps,
+            position: { referencePanel: panelEntries[1].id, direction: 'right' }
+          })
+        } else {
+          panelEntries.forEach((p, idx) => {
+            dockviewApi.addPanel({
+              id: p.id,
+              component: p.widgetType,
+              title: p.title,
+              params: p.widgetProps,
+              position: idx === 0 ? undefined : { direction: idx % 2 === 0 ? 'below' : 'right' }
+            })
+          })
+        }
       } catch (err) {
         console.warn('Failed to load template into dockview', err)
       } finally {

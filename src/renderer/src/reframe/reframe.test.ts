@@ -89,20 +89,26 @@ describe('Reframe Platform & Store', () => {
     expect(state.currentTemplateId).toBe('operations')
     expect(state.selectedThemeKey).toBe('dockview-theme-dracula')
     expect(state.headerConfig.title).toBe('PulseOps Control Plane')
-    expect(state.panels['kpi-infra']).toBeDefined()
+    expect(state.headerTabs.length).toBeGreaterThanOrEqual(5)
+    expect(Object.keys(state.panels).length).toBeGreaterThanOrEqual(5)
+    expect(state.panels['kpi-vital']).toBeDefined()
 
     // Test Engineering template
     loadTemplate('engineering')
     state = useReframeStore.getState()
     expect(state.currentTemplateId).toBe('engineering')
-    expect(state.selectedThemeKey).toBe('dockview-theme-monokai')
-    expect(state.headerConfig.title).toBe('DevForge Terminal Matrix')
+    expect(state.selectedThemeKey).toBe('dockview-theme-github-dark')
+    expect(state.headerConfig.title).toBe('DevForge Engineering Matrix')
+    expect(state.headerTabs.length).toBeGreaterThanOrEqual(5)
+    expect(Object.keys(state.panels).length).toBeGreaterThanOrEqual(5)
 
     // Test Minimal template
     loadTemplate('minimal')
     state = useReframeStore.getState()
     expect(state.currentTemplateId).toBe('minimal')
-    expect(state.headerConfig.title).toBe('Cockpit Minimal Hub')
+    expect(state.headerConfig.title).toBe('Minimal Command Center')
+    expect(state.headerTabs.length).toBeGreaterThanOrEqual(5)
+    expect(Object.keys(state.panels).length).toBeGreaterThanOrEqual(5)
   })
 
   it('exports and imports valid JSON template configurations', () => {
@@ -179,10 +185,10 @@ describe('Reframe Platform & Store', () => {
     expect(state.headerTabs[1].id).toBe(initialFirst)
 
     // Switch tab
-    setActiveHeaderTab('tab-operations')
+    setActiveHeaderTab('tab-exec-markets')
     state = useReframeStore.getState()
-    expect(state.activeHeaderTabId).toBe('tab-operations')
-    expect(state.currentTemplateId).toBe('operations')
+    expect(state.activeHeaderTabId).toBe('tab-exec-markets')
+    expect(state.currentTemplateId).toBe('executive')
 
     // Remove tab with red X
     removeHeaderTab('test-hdr')
@@ -268,6 +274,15 @@ describe('Reframe Platform & Store', () => {
     toggleBottomDrawer('foot-test')
     state = useReframeStore.getState()
     expect(state.isBottomDrawerOpen).toBe(false)
+
+    // Add second footer tab for reordering
+    addFooterTab({
+      id: 'foot-test-2',
+      label: 'Telemetry Rate',
+      value: '142k/s',
+      status: 'synced',
+      closable: true
+    })
 
     // Reorder footer tabs
     reorderFooterTabs(0, 1)
@@ -795,5 +810,101 @@ describe('Reframe Platform & Store', () => {
       expect(Component).toBeDefined()
       expect(typeof Component).toBe('function')
     })
+  })
+
+  it('guarantees all 10 starter templates have at least 5 tabs and at least 5 widgets per tab', async () => {
+    const { TEMPLATES } = await import('./templates/reframe-templates')
+    const starterTemplateIds = [
+      'executive',
+      'ai-studio',
+      'operations',
+      'engineering',
+      'meetings',
+      'documents',
+      'productivity',
+      'analytics',
+      'security',
+      'minimal'
+    ] as const
+
+    expect(starterTemplateIds.length).toBe(10)
+
+    for (const tplId of starterTemplateIds) {
+      const template = TEMPLATES[tplId]
+      expect(template).toBeDefined()
+      expect(template.id).toBe(tplId)
+      expect(template.name).toBeTruthy()
+      expect(template.description).toBeTruthy()
+      expect(template.themeKey).toBeTruthy()
+      expect(template.header).toBeDefined()
+      expect(template.footer).toBeDefined()
+
+      // At least 5 tabs requirement
+      expect(template.headerTabs.length).toBeGreaterThanOrEqual(5)
+
+      // At least 5 widgets per tab requirement
+      for (const tab of template.headerTabs) {
+        expect(tab.id).toBeTruthy()
+        expect(tab.label).toBeTruthy()
+        const tabWorkspace = template.tabWorkspaces[tab.id]
+        expect(tabWorkspace).toBeDefined()
+        const widgetCount = Object.keys(tabWorkspace).length
+        expect(widgetCount).toBeGreaterThanOrEqual(5)
+
+        // Validate each widget definition
+        Object.values(tabWorkspace).forEach((widget) => {
+          expect(widget.id).toBeTruthy()
+          expect(widget.title).toBeTruthy()
+          expect(widget.widgetType).toBeTruthy()
+          expect(REFRAME_WIDGET_COMPONENTS[widget.widgetType]).toBeDefined()
+        })
+      }
+
+      // Initial active tab panels also >= 5
+      expect(Object.keys(template.panels).length).toBeGreaterThanOrEqual(5)
+    }
+  })
+
+  it('loads starter templates and allows switching between their 5 pre-made tabs', async () => {
+    const { loadTemplate, setActiveHeaderTab } = useReframeStore.getState()
+
+    // Test Meetings template
+    loadTemplate('meetings')
+    let state = useReframeStore.getState()
+    expect(state.currentTemplateId).toBe('meetings')
+    expect(state.headerTabs.length).toBeGreaterThanOrEqual(5)
+    expect(Object.keys(state.panels).length).toBeGreaterThanOrEqual(5)
+
+    // Switch to tab 2 in meetings template
+    const secondTabId = state.headerTabs[1].id
+    setActiveHeaderTab(secondTabId)
+    state = useReframeStore.getState()
+    expect(state.activeHeaderTabId).toBe(secondTabId)
+    expect(Object.keys(state.panels).length).toBeGreaterThanOrEqual(5)
+
+    // Switch to Documents template
+    loadTemplate('documents')
+    state = useReframeStore.getState()
+    expect(state.currentTemplateId).toBe('documents')
+    expect(state.headerTabs.length).toBeGreaterThanOrEqual(5)
+    expect(Object.keys(state.panels).length).toBeGreaterThanOrEqual(5)
+
+    // Test Productivity template
+    loadTemplate('productivity')
+    state = useReframeStore.getState()
+    expect(state.currentTemplateId).toBe('productivity')
+    expect(state.headerTabs.length).toBeGreaterThanOrEqual(5)
+    expect(Object.keys(state.panels).length).toBeGreaterThanOrEqual(5)
+  })
+
+  it('manages Template Catalog Modal state', () => {
+    const { setIsTemplateModalOpen } = useReframeStore.getState()
+    expect(useReframeStore.getState().isTemplateModalOpen).toBe(false)
+
+    setIsTemplateModalOpen(true)
+    expect(useReframeStore.getState().isTemplateModalOpen).toBe(true)
+
+    setIsTemplateModalOpen(false)
+    expect(useReframeStore.getState().isTemplateModalOpen).toBe(false)
   })
 })

@@ -15,7 +15,8 @@ import {
   ChevronDown,
   Minus,
   Square,
-  Share2
+  Share2,
+  LayoutTemplate
 } from 'lucide-react'
 import { useReframeStore, TEMPLATES, TemplateId } from '../stores/reframe-store'
 import type { HeaderTabItem } from '../types/reframe-types'
@@ -43,6 +44,7 @@ export const ReframeNavHeader: React.FC = () => {
     isRightSidebarOpen,
     toggleRightSidebar,
     setIsBakeModalOpen,
+    setIsTemplateModalOpen,
     themeInspector
   } = useReframeStore()
 
@@ -306,21 +308,31 @@ export const ReframeNavHeader: React.FC = () => {
         className="app-no-drag flex items-center gap-2 shrink-0"
         style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
       >
-        {/* Template Quick Selector */}
+        {/* Starter Templates (Gallery Modal & Quick Selector) */}
         {mode === 'builder' && (
-          <div className="relative">
-            <select
-              value={currentTemplateId}
-              onChange={(e) => loadTemplate(e.target.value as TemplateId)}
-              className="appearance-none bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-200 text-xs rounded-lg px-2.5 py-1.5 pr-7 focus:outline-none cursor-pointer font-medium"
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setIsTemplateModalOpen(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 hover:text-indigo-200 border border-indigo-500/30 transition-all shadow-sm"
+              title="Open Starter Templates Gallery (10 Templates with 5 Tabs & 5 Widgets Each)"
             >
-              {Object.entries(TEMPLATES).map(([key, t]) => (
-                <option key={key} value={key}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="w-3 h-3 text-zinc-400 absolute right-2 top-2 pointer-events-none" />
+              <LayoutTemplate className="w-3.5 h-3.5 text-indigo-400" />
+              <span>Templates</span>
+            </button>
+            <div className="relative">
+              <select
+                value={currentTemplateId}
+                onChange={(e) => loadTemplate(e.target.value as TemplateId)}
+                className="appearance-none bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-200 text-xs rounded-lg px-2.5 py-1.5 pr-7 focus:outline-none cursor-pointer font-medium"
+              >
+                {Object.entries(TEMPLATES).map(([key, t]) => (
+                  <option key={key} value={key}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-3 h-3 text-zinc-400 absolute right-2 top-2 pointer-events-none" />
+            </div>
           </div>
         )}
 
