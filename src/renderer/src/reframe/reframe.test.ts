@@ -735,4 +735,41 @@ describe('Reframe Platform & Store', () => {
     // slot-2 remains an empty wireframe slot
     expect(state.panels['slot-2']?.widgetType).toBe('empty')
   })
+
+  it('supports drag-and-drop creation of new rows and columns relative to single panels', () => {
+    const { addPanel, addEmptySlot } = useReframeStore.getState()
+
+    // Start with a single panel (e.g. terminal)
+    useReframeStore.setState({ panels: {} })
+    addPanel({
+      id: 'terminal-cli',
+      title: 'Interactive Developer CLI & Terminal',
+      widgetType: 'notes',
+      widgetProps: {},
+      closable: true
+    })
+
+    expect(Object.keys(useReframeStore.getState().panels).length).toBe(1)
+    expect(useReframeStore.getState().panels['terminal-cli']).toBeDefined()
+
+    // Simulate dragging the widget down: creates an empty row below
+    addEmptySlot('below', 'terminal-cli')
+    let state = useReframeStore.getState()
+    expect(Object.keys(state.panels).length).toBe(2)
+
+    const emptyRow = Object.values(state.panels).find(
+      (p) => p.widgetType === 'empty' && p.title === 'Empty Row'
+    )
+    expect(emptyRow).toBeDefined()
+
+    // Simulate dragging to the right: creates an empty column to the right
+    addEmptySlot('right', 'terminal-cli')
+    state = useReframeStore.getState()
+    expect(Object.keys(state.panels).length).toBe(3)
+
+    const emptyCol = Object.values(state.panels).find(
+      (p) => p.widgetType === 'empty' && p.title === 'Empty Column'
+    )
+    expect(emptyCol).toBeDefined()
+  })
 })

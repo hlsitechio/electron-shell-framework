@@ -13,7 +13,8 @@ import {
   Layers,
   Columns,
   Rows,
-  LayoutGrid
+  LayoutGrid,
+  GripVertical
 } from 'lucide-react'
 import { useReframeStore, DOCKVIEW_THEMES } from '../stores/reframe-store'
 import type { FontFamilyKey } from '../types/reframe-types'
@@ -174,14 +175,38 @@ export const ReframeRightSidebar: React.FC = () => {
               <div className="grid grid-cols-2 gap-1.5">
                 <button
                   onClick={() => addEmptySlot('right')}
-                  className="px-2 py-1.5 rounded-lg bg-zinc-850 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 hover:border-zinc-700 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors"
+                  draggable={true}
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData(
+                      'application/json',
+                      JSON.stringify({
+                        type: 'reframe-empty-slot',
+                        direction: 'right'
+                      })
+                    )
+                    e.dataTransfer.effectAllowed = 'copyMove'
+                  }}
+                  className="px-2 py-1.5 rounded-lg bg-zinc-850 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 hover:border-zinc-700 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-grab active:cursor-grabbing"
+                  title="Click to add or drag onto canvas"
                 >
                   <Columns className="w-3 h-3 text-indigo-400" />
                   <span>+ Empty Col</span>
                 </button>
                 <button
                   onClick={() => addEmptySlot('below')}
-                  className="px-2 py-1.5 rounded-lg bg-zinc-850 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 hover:border-zinc-700 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors"
+                  draggable={true}
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData(
+                      'application/json',
+                      JSON.stringify({
+                        type: 'reframe-empty-slot',
+                        direction: 'below'
+                      })
+                    )
+                    e.dataTransfer.effectAllowed = 'copyMove'
+                  }}
+                  className="px-2 py-1.5 rounded-lg bg-zinc-850 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 hover:border-zinc-700 text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-grab active:cursor-grabbing"
+                  title="Click to add or drag onto canvas"
                 >
                   <Rows className="w-3 h-3 text-emerald-400" />
                   <span>+ Empty Row</span>
@@ -294,33 +319,55 @@ export const ReframeRightSidebar: React.FC = () => {
                 filteredCatalog.map((item) => (
                   <div
                     key={item.id}
-                    className="p-2.5 rounded-xl bg-zinc-900/80 border border-zinc-800 hover:border-zinc-700 transition-all space-y-1.5 group"
+                    draggable={true}
+                    onDragStart={(e) => {
+                      e.dataTransfer.setData(
+                        'application/json',
+                        JSON.stringify({
+                          type: 'reframe-catalog-widget',
+                          item
+                        })
+                      )
+                      e.dataTransfer.setData('text/plain', item.title)
+                      e.dataTransfer.effectAllowed = 'copyMove'
+                    }}
+                    className="p-2.5 rounded-xl bg-zinc-900/80 border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-850/60 transition-all space-y-1.5 group cursor-grab active:cursor-grabbing select-none"
+                    title="Drag onto canvas or use + Below / + Right"
                   >
                     <div className="flex items-center justify-between gap-1">
-                      <span className="text-xs font-semibold text-zinc-100 group-hover:text-indigo-300 transition-colors line-clamp-1">
-                        {item.title}
-                      </span>
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <GripVertical className="w-3 h-3 text-zinc-600 group-hover:text-zinc-400 shrink-0" />
+                        <span className="text-xs font-semibold text-zinc-100 group-hover:text-indigo-300 transition-colors truncate">
+                          {item.title}
+                        </span>
+                      </div>
                       <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-400 shrink-0">
                         {item.domainBadge}
                       </span>
                     </div>
-                    <p className="text-[10px] text-zinc-400 line-clamp-1 leading-normal">
+                    <p className="text-[10px] text-zinc-400 line-clamp-1 leading-normal pl-4.5">
                       {item.description}
                     </p>
                     <div className="flex items-center justify-between pt-1">
-                      <span className="text-[9px] font-mono text-zinc-500 uppercase">
+                      <span className="text-[9px] font-mono text-zinc-500 uppercase pl-4.5">
                         {item.categoryLabel}
                       </span>
                       <div className="flex items-center gap-1">
                         <button
-                          onClick={() => insertCatalogWidget(item, 'below')}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            insertCatalogWidget(item, 'below')
+                          }}
                           className="px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-[10px] font-mono transition-colors"
                           title="Insert below active panel"
                         >
                           + Below
                         </button>
                         <button
-                          onClick={() => insertCatalogWidget(item, 'right')}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            insertCatalogWidget(item, 'right')
+                          }}
                           className="px-2 py-0.5 rounded bg-zinc-800 hover:bg-indigo-600 text-zinc-300 hover:text-white text-[10px] font-mono transition-colors"
                           title="Insert to the right"
                         >

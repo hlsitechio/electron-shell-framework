@@ -331,8 +331,22 @@ export const WidgetCatalogModal: React.FC = () => {
                   return (
                     <div
                       key={item.id}
+                      draggable={true}
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData(
+                          'application/json',
+                          JSON.stringify({
+                            type: 'reframe-catalog-widget',
+                            item
+                          })
+                        )
+                        e.dataTransfer.setData('text/plain', item.title)
+                        e.dataTransfer.effectAllowed = 'copyMove'
+                        setTimeout(() => setIsCatalogModalOpen(false), 50)
+                      }}
                       onClick={() => handleSelectWidget(item)}
-                      className="group p-4 rounded-xl bg-zinc-900/70 border border-zinc-800 hover:border-zinc-600 hover:bg-zinc-850/80 cursor-pointer transition-all flex flex-col justify-between shadow-sm relative overflow-hidden"
+                      className="group p-4 rounded-xl bg-zinc-900/70 border border-zinc-800 hover:border-zinc-600 hover:bg-zinc-850/80 cursor-grab active:cursor-grabbing transition-all flex flex-col justify-between shadow-sm relative overflow-hidden"
+                      title="Click to insert or drag directly onto canvas"
                     >
                       <div>
                         {/* Card Header: Icon + Domain Badge */}

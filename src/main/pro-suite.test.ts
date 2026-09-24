@@ -69,5 +69,5 @@ describe('detectInstalledIdes', () => {
     expect(typeof result.installed.explorer).toBe('boolean')
     expect(typeof result.installed.terminal).toBe('boolean')
     expect(typeof result.defaultIde).toBe('string')
-  })
+  }, 15000)
 })

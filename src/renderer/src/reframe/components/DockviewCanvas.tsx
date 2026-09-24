@@ -224,9 +224,141 @@ export const DockviewCanvas: React.FC = () => {
         }
       })
 
+      // ── 1. Drag & drop creation of rows and columns when moving a widget within Dockview ──
+      const willDropSub = event.api.onWillDrop((e) => {
+        if (isUnmountingRef.current || isClearingRef.current || (event.api as any).isDisposed) {
+          return
+        }
+
+        const data = e.getData()
+        const targetGroup = e.group
+        if (!targetGroup || !data) return
+
+        // Check if this is a single-panel group where the dragged panel is that panel
+        const isSingle = targetGroup.model.size === 1
+        const isEdge =
+          e.position === 'top' ||
+          e.position === 'bottom' ||
+          e.position === 'left' ||
+          e.position === 'right'
+
+        const isOwnPanel =
+          data.groupId === targetGroup.id ||
+          targetGroup.model.panels.some((p) => p.id === data.panelId)
+
+        if (isSingle && isEdge && isOwnPanel) {
+          e.preventDefault()
+          const targetPanel = targetGroup.model.panels[0]
+          const dir =
+            e.position === 'bottom'
+              ? 'below'
+              : e.position === 'top'
+                ? 'above'
+                : e.position === 'right'
+                  ? 'right'
+                  : 'left'
+
+          const { addEmptySlot } = useReframeStore.getState()
+          addEmptySlot(dir, targetPanel.id)
+        }
+      })
+
+      // ── 2. Clean up placeholder empty slot when a real widget is dropped into its group ──
+      const addPanelSub = event.api.onDidAddPanel((e) => {
+        if (isUnmountingRef.current || isClearingRef.current || (event.api as any).isDisposed) {
+          return
+        }
+        const group = e.group
+        if (group && group.model.size > 1 && e.params?.widgetType !== 'empty') {
+          const emptyPanel = group.model.panels.find((p) => {
+            const pConfig = useReframeStore.getState().panels[p.id]
+            return pConfig?.widgetType === 'empty' || p.params?.widgetType === 'empty'
+          })
+          if (emptyPanel) {
+            const { removePanel } = useReframeStore.getState()
+            removePanel(emptyPanel.id)
+          }
+        }
+      })
+
+      // ── 3. HTML5 Drag & Drop from the sidebar palette onto Dockview ──
+      const unhandledDragSub = event.api.onUnhandledDragOver((e) => {
+        e.accept()
+      })
+
+      const didDropSub = event.api.onDidDrop((e) => {
+        if (isUnmountingRef.current || isClearingRef.current || (event.api as any).isDisposed) {
+          return
+        }
+
+        try {
+          const dt = e.nativeEvent instanceof DragEvent ? e.nativeEvent.dataTransfer : null
+          const raw = dt?.getData('application/json') || dt?.getData('text/plain')
+          if (!raw) return
+
+          const payload = JSON.parse(raw)
+
+          if (payload.type === 'reframe-catalog-widget' && payload.item) {
+            const item = payload.item
+            const targetPanel = e.panel || e.group?.model.activePanel
+            const isTargetEmpty =
+              targetPanel &&
+              (targetPanel.params?.widgetType === 'empty' ||
+                useReframeStore.getState().panels[targetPanel.id]?.widgetType === 'empty')
+
+            if (isTargetEmpty && targetPanel) {
+              useReframeStore.getState().fillEmptySlot(targetPanel.id, item)
+              return
+            }
+
+            const directionMap: Record<string, 'left' | 'right' | 'above' | 'below'> = {
+              top: 'above',
+              bottom: 'below',
+              left: 'left',
+              right: 'right'
+            }
+
+            const direction = directionMap[e.position] || 'below'
+
+            if (targetPanel && e.position !== 'center') {
+              useReframeStore.getState().addPanel(
+                {
+                  id: `${item.widgetType}-${Date.now().toString(36)}`,
+                  title: item.title,
+                  widgetType: item.widgetType,
+                  widgetProps: item.defaultProps || {},
+                  closable: true
+                },
+                { referencePanel: targetPanel.id, direction }
+              )
+            } else {
+              useReframeStore.getState().insertCatalogWidget(item, direction)
+            }
+          } else if (payload.type === 'reframe-empty-slot') {
+            const targetPanel = e.panel || e.group?.model.activePanel
+            const dir =
+              payload.direction ||
+              (e.position === 'bottom'
+                ? 'below'
+                : e.position === 'top'
+                  ? 'above'
+                  : e.position === 'left'
+                    ? 'left'
+                    : 'right')
+            useReframeStore.getState().addEmptySlot(dir, targetPanel?.id)
+          }
+        } catch {
+          // ignore non-json drag payloads
+        }
+      })
+
       return () => {
         removeSub.dispose()
         layoutSub.dispose()
+        willDropSub.dispose()
+        addPanelSub.dispose()
+        unhandledDragSub.dispose()
+        didDropSub.dispose()
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -312,8 +444,19 @@ export const DockviewCanvas: React.FC = () => {
           {/* Quick empty column & row buttons */}
           <button
             onClick={() => addEmptySlot('right')}
-            className="px-2.5 py-1 rounded-md bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-800 hover:border-zinc-700 text-xs font-medium flex items-center gap-1.5 transition-colors"
-            title="Add a new blank column to the right"
+            draggable={true}
+            onDragStart={(e) => {
+              e.dataTransfer.setData(
+                'application/json',
+                JSON.stringify({
+                  type: 'reframe-empty-slot',
+                  direction: 'right'
+                })
+              )
+              e.dataTransfer.effectAllowed = 'copyMove'
+            }}
+            className="px-2.5 py-1 rounded-md bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-800 hover:border-zinc-700 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-grab active:cursor-grabbing"
+            title="Click or drag onto canvas to add a new blank column to the right"
           >
             <Columns className="w-3.5 h-3.5 text-indigo-400" />
             <span>+ Column</span>
@@ -321,8 +464,19 @@ export const DockviewCanvas: React.FC = () => {
 
           <button
             onClick={() => addEmptySlot('below')}
-            className="px-2.5 py-1 rounded-md bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-800 hover:border-zinc-700 text-xs font-medium flex items-center gap-1.5 transition-colors"
-            title="Add a new blank row below"
+            draggable={true}
+            onDragStart={(e) => {
+              e.dataTransfer.setData(
+                'application/json',
+                JSON.stringify({
+                  type: 'reframe-empty-slot',
+                  direction: 'below'
+                })
+              )
+              e.dataTransfer.effectAllowed = 'copyMove'
+            }}
+            className="px-2.5 py-1 rounded-md bg-zinc-900 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-800 hover:border-zinc-700 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-grab active:cursor-grabbing"
+            title="Click or drag onto canvas to add a new blank row below"
           >
             <Rows className="w-3.5 h-3.5 text-emerald-400" />
             <span>+ Row</span>
