@@ -500,9 +500,9 @@ describe('Reframe Platform & Store', () => {
     expect(state.panels['table-tab2']).toBeDefined()
   })
 
-  it('manages the 42-item Widget Catalog across 7 categories', () => {
-    expect(WIDGET_CATALOG.length).toBe(42)
-    expect(WIDGET_CATEGORIES.length).toBe(8) // 'all' + 7 specific
+  it('manages the 48-item Widget Catalog across 8 categories including AI', () => {
+    expect(WIDGET_CATALOG.length).toBe(48)
+    expect(WIDGET_CATEGORIES.length).toBe(9) // 'all' + 8 specific
 
     // Every item has valid metadata
     WIDGET_CATALOG.forEach((item) => {
@@ -515,8 +515,9 @@ describe('Reframe Platform & Store', () => {
       expect(item.defaultProps).toBeDefined()
     })
 
-    // Verify all 7 categories are represented
+    // Verify all 8 categories are represented
     const categories = new Set(WIDGET_CATALOG.map((w) => w.category))
+    expect(categories.has('ai')).toBe(true)
     expect(categories.has('kpi')).toBe(true)
     expect(categories.has('analytics')).toBe(true)
     expect(categories.has('tables')).toBe(true)

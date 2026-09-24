@@ -19,7 +19,17 @@ import {
   Rows,
   LayoutGrid,
   Plus,
-  Trash2
+  Trash2,
+  Bot,
+  Sparkles,
+  Send,
+  BrainCircuit,
+  Sliders,
+  FileCode,
+  Copy,
+  FileText,
+  Database,
+  Network
 } from 'lucide-react'
 import { useReframeStore } from '../stores/reframe-store'
 import { WIDGET_CATALOG } from './catalog/widget-catalog'
@@ -769,8 +779,898 @@ export const ClusterTopologyWidget: React.FC<IDockviewPanelProps> = ({ params })
   )
 }
 
+let chatMsgCounter = 0
+const makeMsgId = (prefix: string): string => `${prefix}-${++chatMsgCounter}`
+const getChatTimestamp = (): string => {
+  const d = new Date()
+  return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`
+}
+
 /* ============================================================
-   10. EMPTY / WIREFRAME SLOT WIDGET
+   10. AI COPILOT & CHAT WIDGET
+   ============================================================ */
+export const AiChatPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const defaultModels = params?.models || [
+    'Claude 3.7 Sonnet',
+    'GPT-4o',
+    'DeepSeek R1',
+    'Gemini 2.0 Flash'
+  ]
+  const [selectedModel, setSelectedModel] = useState<string>(
+    params?.activeModel || defaultModels[0]
+  )
+  const [tokenCount, setTokenCount] = useState<number>(params?.tokenCount || 1420)
+  const [messages, setMessages] = useState<
+    Array<{ id: string; sender: 'ai' | 'user'; author: string; timestamp: string; content: string }>
+  >(
+    params?.messages || [
+      {
+        id: 'msg-1',
+        sender: 'ai',
+        author: 'Claude 3.7',
+        timestamp: '11:24 AM',
+        content:
+          'I have analyzed telemetry across all 14 active production clusters. Median p95 latency is stable at 14.2ms, but pod `billing-worker-02` shows elevated heap usage (84%). Would you like me to inspect memory allocations or generate a remediation patch?'
+      },
+      {
+        id: 'msg-2',
+        sender: 'user',
+        author: 'You',
+        timestamp: '11:25 AM',
+        content:
+          'Inspect memory allocations and explain if this is related to the recent Redis v7 upgrade.'
+      },
+      {
+        id: 'msg-3',
+        sender: 'ai',
+        author: 'Claude 3.7',
+        timestamp: '11:25 AM',
+        content:
+          'Confirmed correlation: Redis connection pool timeout was reduced to 250ms during the v7 migration, causing socket reconnect loops under peak queue ingestion. I have prepared an automatic pool threshold patch ready for your approval.'
+      }
+    ]
+  )
+  const [inputVal, setInputVal] = useState('')
+  const [isThinking, setIsThinking] = useState(false)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+
+  const quickPrompts = params?.quickPrompts || [
+    'Summarize active incident report',
+    'Analyze latency bottle-necks across nodes',
+    'Draft executive compliance brief',
+    'Synthesize SQL query optimization'
+  ]
+
+  const handleSendMessage = (textToSend?: string) => {
+    const text = (textToSend || inputVal).trim()
+    if (!text) return
+
+    const newMsg = {
+      id: makeMsgId('usr'),
+      sender: 'user' as const,
+      author: 'You',
+      timestamp: getChatTimestamp(),
+      content: text
+    }
+
+    setMessages((prev) => [...prev, newMsg])
+    if (!textToSend) setInputVal('')
+    setIsThinking(true)
+    setTokenCount((prev) => prev + Math.floor(text.length / 3) + 40)
+
+    setTimeout(() => {
+      let reply = `I evaluated "${text}". Verified against the live enterprise schema: Zero schema drifts detected and query execution plans are within nominal P95 boundaries.`
+      const lower = text.toLowerCase()
+      if (lower.includes('incident') || lower.includes('report')) {
+        reply = `Incident Report Summary (#INC-849):\n• Trigger: Socket starvation during failover.\n• Impact: 0.04% requests dropped across 2 minutes.\n• Resolution: Replica autoscaled to 8 instances. Cluster telemetry normal.`
+      } else if (lower.includes('latency') || lower.includes('node')) {
+        reply = `Latency Breakdown:\n• Node worker-us-east-1: 11.2ms (healthy)\n• Node worker-us-east-4: 38.6ms (high memory pressure)\n• Edge Gateway: 4.1ms\nRecommendation: Migrate queue consumption away from worker-4.`
+      } else if (lower.includes('sql') || lower.includes('optimization')) {
+        reply = `Recommended Indexing Patch:\nCREATE INDEX CONCURRENTLY idx_orders_customer_tenant ON orders (tenant_id, created_at DESC);\nExpected reduction in sequential scans: ~78%.`
+      } else if (lower.includes('compliance') || lower.includes('brief')) {
+        reply = `Executive Brief Prepared:\n• SOC2 Type II compliance: In compliance (90-day retention verified)\n• GDPR Right-to-Erasure: Automated webhook active\n• Encryption: TLS 1.3 + AES-256 enabled on all partitions.`
+      }
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: makeMsgId('ai'),
+          sender: 'ai',
+          author: selectedModel.split(' ')[0],
+          timestamp: getChatTimestamp(),
+          content: reply
+        }
+      ])
+      setIsThinking(false)
+      setTokenCount((prev) => prev + Math.floor(reply.length / 3))
+    }, 450)
+  }
+
+  const handleCopy = (id: string, content: string) => {
+    navigator.clipboard?.writeText(content)
+    setCopiedId(id)
+    setTimeout(() => setCopiedId(null), 1500)
+  }
+
+  return (
+    <div className="reframe-panel-body p-3.5 bg-zinc-950/70 text-zinc-100 flex flex-col h-full overflow-hidden select-text">
+      {/* Top Copilot Bar */}
+      <div className="flex items-center justify-between pb-2.5 mb-2 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+            <Bot className="w-3.5 h-3.5" />
+          </div>
+          <div>
+            <h4 className="text-xs font-semibold text-zinc-200 flex items-center gap-1.5">
+              <span>{params?.title || 'Enterprise AI Copilot'}</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            </h4>
+            <div className="text-[10px] text-zinc-500 font-mono">
+              Ctx: {tokenCount.toLocaleString()} /{' '}
+              {(params?.contextLimit || 128000).toLocaleString()} tokens
+            </div>
+          </div>
+        </div>
+
+        {/* Model Selector & Clear */}
+        <div className="flex items-center gap-2">
+          <select
+            value={selectedModel}
+            onChange={(e) => setSelectedModel(e.target.value)}
+            className="bg-zinc-900 border border-zinc-700/80 rounded px-2 py-1 text-[11px] font-medium text-zinc-200 focus:outline-none focus:border-indigo-500"
+          >
+            {defaultModels.map((m: string) => (
+              <option key={m} value={m}>
+                {m}
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={() => setMessages([])}
+            className="px-2 py-1 rounded bg-zinc-900/80 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 text-[10px] transition-colors"
+            title="Clear conversation"
+          >
+            Clear
+          </button>
+        </div>
+      </div>
+
+      {/* Messages Scroll Area */}
+      <div className="flex-1 overflow-y-auto space-y-3 pr-1 text-xs">
+        {messages.map((m) => {
+          const isUser = m.sender === 'user'
+          return (
+            <div
+              key={m.id}
+              className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} group`}
+            >
+              <div className="flex items-center gap-1.5 text-[10px] text-zinc-500 mb-1 px-1">
+                <span className="font-semibold text-zinc-400">{m.author}</span>
+                <span>•</span>
+                <span>{m.timestamp}</span>
+              </div>
+              <div
+                className={`relative max-w-[88%] rounded-xl px-3.5 py-2.5 text-xs leading-relaxed ${
+                  isUser
+                    ? 'bg-indigo-600 text-white rounded-br-sm shadow-sm'
+                    : 'bg-zinc-850/80 border border-zinc-700/60 text-zinc-200 rounded-bl-sm'
+                }`}
+              >
+                <div className="whitespace-pre-wrap font-sans">{m.content}</div>
+                {!isUser && (
+                  <button
+                    onClick={() => handleCopy(m.id, m.content)}
+                    className="absolute top-2 right-2 p-1 rounded bg-zinc-800/80 opacity-0 group-hover:opacity-100 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-opacity"
+                    title="Copy message"
+                  >
+                    {copiedId === m.id ? (
+                      <Check className="w-3 h-3 text-emerald-400" />
+                    ) : (
+                      <Copy className="w-3 h-3" />
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
+          )
+        })}
+
+        {isThinking && (
+          <div className="flex items-center gap-2 p-2 rounded-lg bg-zinc-900/50 border border-zinc-800 w-fit text-xs text-zinc-400">
+            <Sparkles className="w-3.5 h-3.5 text-indigo-400 animate-spin" />
+            <span className="text-[11px]">{selectedModel} is synthesizing analysis...</span>
+          </div>
+        )}
+      </div>
+
+      {/* Quick Prompts Row */}
+      {quickPrompts.length > 0 && (
+        <div className="flex items-center gap-1.5 overflow-x-auto py-2 border-t border-zinc-800/80 shrink-0 scrollbar-none">
+          {quickPrompts.map((qp: string, idx: number) => (
+            <button
+              key={idx}
+              onClick={() => handleSendMessage(qp)}
+              className="shrink-0 px-2 py-1 rounded-md text-[10px] bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 hover:border-zinc-700 transition-colors whitespace-nowrap"
+            >
+              + {qp}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Input Composer */}
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          handleSendMessage()
+        }}
+        className="pt-2 border-t border-zinc-800 flex items-center gap-2 shrink-0"
+      >
+        <input
+          type="text"
+          value={inputVal}
+          onChange={(e) => setInputVal(e.target.value)}
+          placeholder={`Ask ${selectedModel} or type prompt...`}
+          className="flex-1 bg-zinc-900/80 border border-zinc-700/80 rounded-lg px-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500 transition-colors"
+        />
+        <button
+          type="submit"
+          disabled={!inputVal.trim() || isThinking}
+          className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:hover:bg-indigo-600 text-white text-xs font-semibold flex items-center gap-1 transition-all"
+        >
+          <Send className="w-3 h-3" />
+          <span>Send</span>
+        </button>
+      </form>
+    </div>
+  )
+}
+
+/* ============================================================
+   11. AUTONOMOUS AGENT & SWARM REASONING WIDGET
+   ============================================================ */
+export const AiAgentPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const isSwarm = Array.isArray(params?.agents) && params.agents.length > 0
+  const [steps, setSteps] = useState(
+    params?.steps || [
+      {
+        id: 'step-1',
+        title: 'Context Retrieval & Metric Ingest',
+        status: 'completed',
+        time: '120ms',
+        detail: 'Queried Datadog APM API for 14 clusters. Ingested 4,820 metric points.'
+      },
+      {
+        id: 'step-2',
+        title: 'Tool Call: kubernetes_get_pod_status(ns="production")',
+        status: 'completed',
+        time: '340ms',
+        detail: 'Identified 2 unevicted pods in crashLoopBackOff on node worker-us-east-4.'
+      },
+      {
+        id: 'step-3',
+        title: 'CoT Reasoning: Synthesize Rolling Autoscale Mitigation',
+        status: 'running',
+        time: 'Live',
+        detail:
+          'Evaluating whether horizontal pod autoscaler can drain worker-04 without dropping active WebSockets.'
+      }
+    ]
+  )
+
+  const [approvalState, setApprovalState] = useState<'pending' | 'approved' | 'rejected'>('pending')
+
+  const handleApprove = () => {
+    setApprovalState('approved')
+    setSteps((prev: any[]) => [
+      ...prev.map((s) => (s.id === 'step-3' ? { ...s, status: 'completed', time: '1.2s' } : s)),
+      {
+        id: 'step-4',
+        title: 'Action Executed: Scaled replicas 4 -> 8 & drained worker-04',
+        status: 'completed',
+        time: '420ms',
+        detail:
+          'Kubernetes deployment updated successfully. Zero 5xx responses recorded during canary shift.'
+      },
+      {
+        id: 'step-5',
+        title: 'Verification: Latency SLO & Pod Readiness Probes',
+        status: 'completed',
+        time: '210ms',
+        detail: 'All 8 pods passed initial readiness checks. Median response time 13.8ms.'
+      }
+    ])
+  }
+
+  const handleReject = () => {
+    setApprovalState('rejected')
+    setSteps((prev: any[]) => [
+      ...prev.map((s) => (s.id === 'step-3' ? { ...s, status: 'completed', time: 'Aborted' } : s)),
+      {
+        id: 'step-4',
+        title: 'Execution Halted by Operator',
+        status: 'warning',
+        time: 'Now',
+        detail: 'Operator declined automated cluster mutation. SRE on-call paged for manual triage.'
+      }
+    ])
+  }
+
+  if (isSwarm) {
+    const agents = params.agents
+    return (
+      <div className="reframe-panel-body p-3.5 bg-zinc-950/70 text-zinc-100 flex flex-col h-full overflow-y-auto">
+        <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-zinc-800">
+          <div className="flex items-center gap-2">
+            <Network className="w-4 h-4 text-purple-400" />
+            <div>
+              <h4 className="text-xs font-semibold text-zinc-100">
+                {params?.title || 'Multi-Agent Swarm Pipeline'}
+              </h4>
+              <span className="text-[10px] text-zinc-400 font-mono">
+                {params?.swarmName || 'Autonomous App Builder Swarm'} •{' '}
+                {params?.totalThroughput || '48 tasks/min'}
+              </span>
+            </div>
+          </div>
+          <span className="px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[10px] font-mono">
+            4 AGENTS SYNCHRONIZED
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 flex-1">
+          {agents.map((agent: any) => (
+            <div
+              key={agent.id}
+              className="p-3 rounded-lg bg-zinc-850/70 border border-zinc-700/60 hover:border-zinc-600 transition-all flex flex-col justify-between"
+            >
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <BrainCircuit className="w-3.5 h-3.5 text-indigo-400" />
+                  <span className="text-xs font-semibold text-zinc-200">{agent.name}</span>
+                </div>
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              </div>
+              <div className="text-[11px] text-zinc-400 space-y-1 font-mono">
+                <div className="flex justify-between">
+                  <span>Role:</span>
+                  <span className="text-zinc-200">{agent.role}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Current Load:</span>
+                  <span className="text-indigo-400 font-bold">{agent.load}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="reframe-panel-body p-3.5 bg-zinc-950/70 text-zinc-100 flex flex-col h-full overflow-y-auto">
+      {/* Agent Header */}
+      <div className="flex items-center justify-between pb-2.5 mb-3 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-lg bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-400">
+            <BrainCircuit className="w-3.5 h-3.5" />
+          </div>
+          <div>
+            <h4 className="text-xs font-semibold text-zinc-200 flex items-center gap-1.5">
+              <span>{params?.agentName || 'Autonomous Sentinel Agent'}</span>
+              <span className="px-1.5 py-0.2 rounded text-[9px] bg-purple-500/20 text-purple-300 font-mono">
+                COT LOOP
+              </span>
+            </h4>
+            <div className="text-[10px] text-zinc-500 font-mono">
+              Status: {params?.status || 'Active Reasoning'} • Iteration {params?.iterations || 3}{' '}
+              of {params?.maxIterations || 8}
+            </div>
+          </div>
+        </div>
+
+        <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-mono">
+          AUTONOMOUS
+        </span>
+      </div>
+
+      {/* Thought Trace Steps */}
+      <div className="space-y-2 flex-1 overflow-y-auto pr-1">
+        {steps.map((st: any, idx: number) => {
+          const isDone = st.status === 'completed'
+          const isRunning = st.status === 'running'
+          const isWarn = st.status === 'warning'
+          return (
+            <div
+              key={st.id || idx}
+              className={`p-2.5 rounded-lg border text-xs transition-all ${
+                isDone
+                  ? 'bg-zinc-900/60 border-zinc-800/80 text-zinc-300'
+                  : isRunning
+                    ? 'bg-indigo-950/20 border-indigo-500/40 text-indigo-100 shadow-sm'
+                    : isWarn
+                      ? 'bg-rose-950/20 border-rose-500/40 text-rose-200'
+                      : 'bg-zinc-900/30 border-zinc-800/40 text-zinc-500'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-1.5 font-medium">
+                  {isDone ? (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  ) : isRunning ? (
+                    <Sparkles className="w-3.5 h-3.5 text-indigo-400 shrink-0 animate-spin" />
+                  ) : (
+                    <AlertTriangle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                  )}
+                  <span className="text-zinc-200 text-[11px] font-semibold">{st.title}</span>
+                </div>
+                <span className="text-[10px] font-mono text-zinc-400">{st.time}</span>
+              </div>
+              <p className="text-[11px] text-zinc-400 font-mono pl-5 leading-relaxed">
+                {st.detail}
+              </p>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Human In The Loop Approval Block */}
+      {params?.pendingApproval && (
+        <div className="mt-3 pt-3 border-t border-zinc-800 shrink-0">
+          <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs">
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center gap-1.5 font-semibold text-amber-300">
+                <AlertTriangle className="w-3.5 h-3.5" />
+                <span>Action Requires Operator Approval</span>
+              </div>
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                {params.pendingApproval.riskLevel} Risk
+              </span>
+            </div>
+            <p className="text-[11px] text-zinc-300 mb-2.5">{params.pendingApproval.description}</p>
+
+            {approvalState === 'pending' ? (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleApprove}
+                  className="flex-1 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Approve & Execute Action</span>
+                </button>
+                <button
+                  onClick={handleReject}
+                  className="px-3 py-1.5 rounded-md bg-zinc-800 hover:bg-rose-900/50 text-zinc-300 hover:text-rose-200 border border-zinc-700 text-xs transition-colors"
+                >
+                  Reject
+                </button>
+              </div>
+            ) : approvalState === 'approved' ? (
+              <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-semibold py-0.5">
+                <Check className="w-3.5 h-3.5" />
+                <span>Action Approved by Operator • Executing payload</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 text-xs text-rose-400 font-semibold py-0.5">
+                <XCircle className="w-3.5 h-3.5" />
+                <span>Action Rejected by Operator • Loop halted</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ============================================================
+   12. RAG VECTOR KNOWLEDGE RETRIEVER WIDGET
+   ============================================================ */
+export const AiRagPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const [searchQuery, setSearchQuery] = useState(
+    params?.query || 'SOC2 Type II audit data retention requirements'
+  )
+  const [minScore, setMinScore] = useState<number>(85)
+  const [copiedChunkId, setCopiedChunkId] = useState<string | null>(null)
+
+  const chunks = params?.chunks || [
+    {
+      id: 'chunk-1',
+      document: 'SOC2_Compliance_Master_Policy_2026.pdf',
+      score: 98.4,
+      section: 'Section 4.2: Data Retention & Encryption at Rest',
+      snippet:
+        'All customer clickstream logs and diagnostic telemetry containing PII must be encrypted using AES-256-GCM and purged after 90 days unless subject to legal preservation hold.'
+    },
+    {
+      id: 'chunk-2',
+      document: 'GDPR_Data_Classification_Matrix.docx',
+      score: 94.1,
+      section: 'Article 17: Right to Erasure Execution Protocol',
+      snippet:
+        'Clickstream telemetry must maintain pseudonymized foreign keys referencing the customer master table, allowing instant cascade deletion within 24 hours of erasure request.'
+    },
+    {
+      id: 'chunk-3',
+      document: 'Kafka_Retention_Runbook_v3.md',
+      score: 89.7,
+      section: 'Topic Tiering & Compaction Policies',
+      snippet:
+        'Retention period on topic production.clickstream.raw is configured to 2160h (90 days). Cold archival storage is streamed directly into immutable AWS S3 Glacier Vault.'
+    }
+  ]
+
+  const filteredChunks = chunks.filter((c: any) => c.score >= minScore)
+
+  const handleCopyChunk = (id: string, text: string) => {
+    navigator.clipboard?.writeText(text)
+    setCopiedChunkId(id)
+    setTimeout(() => setCopiedChunkId(null), 1500)
+  }
+
+  return (
+    <div className="reframe-panel-body p-3.5 bg-zinc-950/70 text-zinc-100 flex flex-col h-full overflow-hidden select-text">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-2 mb-2.5 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-lg bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+            <Database className="w-3.5 h-3.5" />
+          </div>
+          <div>
+            <h4 className="text-xs font-semibold text-zinc-200">
+              {params?.title || 'Vector Knowledge Retriever'}
+            </h4>
+            <div className="text-[10px] text-zinc-500 font-mono">
+              {params?.indexName || 'text-embedding-3-large'} •{' '}
+              {params?.totalVectors || '142k vectors'}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5 text-[10px] font-mono text-zinc-400">
+          <span>Min Score:</span>
+          <button
+            onClick={() => setMinScore((prev) => (prev === 90 ? 80 : 90))}
+            className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-700 hover:border-zinc-600 text-zinc-200"
+          >
+            &gt; {minScore}%
+          </button>
+        </div>
+      </div>
+
+      {/* Semantic Query Input */}
+      <div className="relative mb-3 shrink-0">
+        <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-2.5 top-2.5" />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Semantic vector query..."
+          className="w-full bg-zinc-900/90 border border-zinc-700/80 rounded-lg pl-8 pr-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500 transition-colors"
+        />
+      </div>
+
+      {/* Chunks List */}
+      <div className="flex-1 overflow-y-auto space-y-2.5 pr-1">
+        {filteredChunks.map((chunk: any) => (
+          <div
+            key={chunk.id}
+            className="p-3 rounded-lg bg-zinc-850/80 border border-zinc-700/60 hover:border-zinc-600 transition-all text-xs"
+          >
+            <div className="flex items-center justify-between mb-1.5">
+              <div className="flex items-center gap-1.5 text-zinc-200 font-semibold truncate max-w-[70%]">
+                <FileText className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span className="truncate">{chunk.document}</span>
+              </div>
+              <span
+                className={`px-2 py-0.5 rounded font-mono text-[10px] font-bold ${
+                  chunk.score >= 95
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                    : 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30'
+                }`}
+              >
+                {chunk.score}% Match
+              </span>
+            </div>
+
+            <div className="text-[10px] text-zinc-400 font-mono mb-2">{chunk.section}</div>
+            <p className="text-[11px] text-zinc-300 leading-relaxed font-sans bg-zinc-900/60 p-2 rounded border border-zinc-800">
+              "{chunk.snippet}"
+            </p>
+
+            <div className="flex justify-end mt-2">
+              <button
+                onClick={() => handleCopyChunk(chunk.id, chunk.snippet)}
+                className="flex items-center gap-1 px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-[10px] transition-colors"
+              >
+                {copiedChunkId === chunk.id ? (
+                  <>
+                    <Check className="w-3 h-3 text-emerald-400" />
+                    <span>Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3 h-3" />
+                    <span>Copy Chunk</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   13. PROMPT STUDIO & HYPERPARAMETER PLAYGROUND WIDGET
+   ============================================================ */
+export const AiPromptPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const [systemPrompt, setSystemPrompt] = useState(
+    params?.systemPrompt ||
+      'You are an elite enterprise financial copilot. Analyze portfolio allocation, calculate Sharpe ratios, and format deliverables with executive precision.'
+  )
+  const [temperature, setTemperature] = useState<number>(params?.temperature ?? 0.35)
+  const [topP, setTopP] = useState<number>(params?.topP ?? 0.9)
+  const [maxTokens, setMaxTokens] = useState<number>(params?.maxTokens ?? 4096)
+  const [isRunningEval, setIsRunningEval] = useState(false)
+  const [evalResult, setEvalResult] = useState<string | null>(null)
+
+  const benchmark = params?.benchmark || {
+    latency: '215ms',
+    inputTokens: 142,
+    outputTokens: 520,
+    costEstimate: '$0.0028',
+    throughput: '94.2 t/s'
+  }
+
+  const handleRunEval = () => {
+    setIsRunningEval(true)
+    setTimeout(() => {
+      setEvalResult(
+        'Evaluation complete (Score: 98.2/100):\n• Zero hallucinations detected\n• Mathematical consistency verified\n• Formatted output conforms to standard risk deliverable schema'
+      )
+      setIsRunningEval(false)
+    }, 500)
+  }
+
+  return (
+    <div className="reframe-panel-body p-3.5 bg-zinc-950/70 text-zinc-100 flex flex-col h-full overflow-y-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-lg bg-amber-600/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
+            <Sliders className="w-3.5 h-3.5" />
+          </div>
+          <div>
+            <h4 className="text-xs font-semibold text-zinc-200">
+              {params?.title || 'Prompt Studio & Hyperparameter Playground'}
+            </h4>
+            <div className="text-[10px] text-zinc-500 font-mono">
+              Preset: Customer Escalation Analyzer • v4.2
+            </div>
+          </div>
+        </div>
+
+        <button
+          onClick={handleRunEval}
+          disabled={isRunningEval}
+          className="px-3 py-1 rounded bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs flex items-center gap-1.5 transition-colors disabled:opacity-50"
+        >
+          {isRunningEval ? (
+            <Sparkles className="w-3 h-3 animate-spin" />
+          ) : (
+            <Play className="w-3 h-3" />
+          )}
+          <span>Run Eval</span>
+        </button>
+      </div>
+
+      {/* System Prompt Input */}
+      <div className="mb-3 shrink-0">
+        <label className="block text-[11px] font-semibold text-zinc-300 mb-1">
+          System Persona Directive
+        </label>
+        <textarea
+          rows={3}
+          value={systemPrompt}
+          onChange={(e) => setSystemPrompt(e.target.value)}
+          className="w-full bg-zinc-900 border border-zinc-700/80 rounded-lg p-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 font-mono leading-relaxed"
+        />
+      </div>
+
+      {/* Sliders Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3 shrink-0">
+        <div className="p-2.5 rounded-lg bg-zinc-900/80 border border-zinc-800">
+          <div className="flex justify-between text-[11px] mb-1 font-mono">
+            <span className="text-zinc-400">Temperature</span>
+            <span className="text-amber-400 font-bold">{temperature.toFixed(2)}</span>
+          </div>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.05"
+            value={temperature}
+            onChange={(e) => setTemperature(parseFloat(e.target.value))}
+            className="w-full accent-amber-500 cursor-pointer"
+          />
+        </div>
+
+        <div className="p-2.5 rounded-lg bg-zinc-900/80 border border-zinc-800">
+          <div className="flex justify-between text-[11px] mb-1 font-mono">
+            <span className="text-zinc-400">Top-P</span>
+            <span className="text-amber-400 font-bold">{topP.toFixed(2)}</span>
+          </div>
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.05"
+            value={topP}
+            onChange={(e) => setTopP(parseFloat(e.target.value))}
+            className="w-full accent-amber-500 cursor-pointer"
+          />
+        </div>
+
+        <div className="p-2.5 rounded-lg bg-zinc-900/80 border border-zinc-800">
+          <div className="flex justify-between text-[11px] mb-1 font-mono">
+            <span className="text-zinc-400">Max Tokens</span>
+            <span className="text-amber-400 font-bold">{maxTokens}</span>
+          </div>
+          <input
+            type="range"
+            min="256"
+            max="8192"
+            step="256"
+            value={maxTokens}
+            onChange={(e) => setMaxTokens(parseInt(e.target.value))}
+            className="w-full accent-amber-500 cursor-pointer"
+          />
+        </div>
+      </div>
+
+      {/* Benchmarks Bar */}
+      <div className="grid grid-cols-4 gap-2 p-2.5 rounded-lg bg-zinc-900/60 border border-zinc-800 text-[10px] font-mono text-zinc-400 mb-3 shrink-0">
+        <div>
+          <span className="block text-zinc-500">Latency</span>
+          <span className="text-zinc-200 font-semibold">{benchmark.latency}</span>
+        </div>
+        <div>
+          <span className="block text-zinc-500">Est. Cost</span>
+          <span className="text-zinc-200 font-semibold">{benchmark.costEstimate}</span>
+        </div>
+        <div>
+          <span className="block text-zinc-500">Tokens</span>
+          <span className="text-zinc-200 font-semibold">
+            {benchmark.inputTokens} / {benchmark.outputTokens}
+          </span>
+        </div>
+        <div>
+          <span className="block text-zinc-500">Speed</span>
+          <span className="text-emerald-400 font-semibold">{benchmark.throughput}</span>
+        </div>
+      </div>
+
+      {/* Evaluation Output */}
+      {evalResult && (
+        <div className="p-2.5 rounded-lg bg-emerald-950/20 border border-emerald-500/40 text-xs text-emerald-200 font-mono whitespace-pre-line leading-relaxed">
+          {evalResult}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/* ============================================================
+   14. AI CODE GENERATOR & DIFF VIEWER WIDGET
+   ============================================================ */
+export const AiCodeGenPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const [applied, setApplied] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  const filename = params?.filename || 'auth-session-manager.service.ts'
+  const summary =
+    params?.summary || 'Migrated symmetric HMAC tokens to ES256 asymmetric ECDSA signatures.'
+  const stats = params?.stats || { added: 18, removed: 4 }
+  const diffLines = params?.diffLines || [
+    { type: 'normal', content: 'export class AuthSessionManager {' },
+    { type: 'normal', content: '  private keyStore: KeyVaultCache;' },
+    { type: 'delete', content: '-   private hmacSecret = process.env.JWT_SECRET;' },
+    { type: 'add', content: '+   private publicKeyUrl = process.env.AUTH_JWKS_ENDPOINT;' },
+    {
+      type: 'add',
+      content: '+   private ecdsaVerifier = new ES256TokenVerifier(this.publicKeyUrl);'
+    },
+    { type: 'normal', content: '' },
+    {
+      type: 'normal',
+      content: '  async verifyIncomingSession(token: string): Promise<UserSession> {'
+    },
+    { type: 'delete', content: '-     return jwt.verify(token, this.hmacSecret);' },
+    { type: 'add', content: '+     const cachedKey = await this.keyStore.getOrFetch(token.kid);' },
+    { type: 'add', content: '+     return this.ecdsaVerifier.verify(token, cachedKey);' },
+    { type: 'normal', content: '  }' },
+    { type: 'normal', content: '}' }
+  ]
+
+  const handleCopyCode = () => {
+    const raw = diffLines.map((l: any) => l.content).join('\n')
+    navigator.clipboard?.writeText(raw)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+
+  return (
+    <div className="reframe-panel-body p-3.5 bg-zinc-950/70 text-zinc-100 flex flex-col h-full overflow-hidden select-text">
+      {/* Diff Header */}
+      <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="w-6 h-6 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
+            <FileCode className="w-3.5 h-3.5" />
+          </div>
+          <div>
+            <h4 className="text-xs font-semibold text-zinc-200 font-mono">{filename}</h4>
+            <div className="text-[10px] text-zinc-500 font-mono">
+              <span className="text-emerald-400 font-bold">+{stats.added}</span> /{' '}
+              <span className="text-rose-400 font-bold">-{stats.removed}</span> lines
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleCopyCode}
+            className="flex items-center gap-1 px-2.5 py-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-300 hover:text-white text-[10px] transition-colors"
+          >
+            {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+            <span>{copied ? 'Copied' : 'Copy'}</span>
+          </button>
+          <button
+            onClick={() => setApplied(true)}
+            disabled={applied}
+            className="flex items-center gap-1 px-3 py-1 rounded bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800/60 text-white font-semibold text-[10px] transition-colors"
+          >
+            <Check className="w-3 h-3" />
+            <span>{applied ? 'Applied ✓' : 'Apply Patch'}</span>
+          </button>
+        </div>
+      </div>
+
+      <p className="text-[11px] text-zinc-400 mb-2 shrink-0 font-sans">{summary}</p>
+
+      {/* Unified Diff Box */}
+      <div className="flex-1 overflow-y-auto font-mono text-[11px] bg-zinc-950 p-2.5 rounded-lg border border-zinc-800 space-y-0.5 leading-relaxed">
+        {diffLines.map((line: any, idx: number) => {
+          const isAdd = line.type === 'add'
+          const isDel = line.type === 'delete'
+          return (
+            <div
+              key={idx}
+              className={`px-2 py-0.5 rounded flex items-center gap-2 ${
+                isAdd
+                  ? 'bg-emerald-950/40 text-emerald-300 border-l-2 border-emerald-500'
+                  : isDel
+                    ? 'bg-rose-950/40 text-rose-300 border-l-2 border-rose-500'
+                    : 'text-zinc-400'
+              }`}
+            >
+              <span className="w-6 shrink-0 text-zinc-600 text-[10px] select-none text-right">
+                {idx + 1}
+              </span>
+              <span className="whitespace-pre">{line.content}</span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   15. EMPTY / WIREFRAME SLOT WIDGET
    ============================================================ */
 export const EmptySlotWidget: React.FC<IDockviewPanelProps> = ({ api }) => {
   const panelId = api.id
@@ -843,11 +1743,23 @@ export const EmptySlotWidget: React.FC<IDockviewPanelProps> = ({ api }) => {
           className="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
         >
           <Plus className="w-3.5 h-3.5" />
-          <span>Choose Widget (42+)</span>
+          <span>Choose Widget (48+)</span>
         </button>
 
         {/* Quick 1-click pills */}
         <div className="flex flex-wrap items-center justify-center gap-1.5 mt-3 pt-3 border-t border-zinc-800/60 max-w-xs">
+          <button
+            onClick={() => handleQuickFill('aichat')}
+            className="px-2 py-0.5 rounded text-[10px] bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 hover:text-indigo-200 border border-indigo-500/30 transition-colors"
+          >
+            + AI Chat
+          </button>
+          <button
+            onClick={() => handleQuickFill('aiagent')}
+            className="px-2 py-0.5 rounded text-[10px] bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 hover:text-purple-200 border border-purple-500/30 transition-colors"
+          >
+            + Agent
+          </button>
           <button
             onClick={() => handleQuickFill('kpi')}
             className="px-2 py-0.5 rounded text-[10px] bg-zinc-850 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 transition-colors"
@@ -871,12 +1783,6 @@ export const EmptySlotWidget: React.FC<IDockviewPanelProps> = ({ api }) => {
             className="px-2 py-0.5 rounded text-[10px] bg-zinc-850 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 transition-colors"
           >
             + Terminal
-          </button>
-          <button
-            onClick={() => handleQuickFill('notes')}
-            className="px-2 py-0.5 rounded text-[10px] bg-zinc-850 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 transition-colors"
-          >
-            + Runbook
           </button>
         </div>
       </div>
@@ -902,5 +1808,15 @@ export const REFRAME_WIDGET_COMPONENTS: Record<string, React.FC<IDockviewPanelPr
   terminal: TerminalPanelWidget,
   cluster: ClusterTopologyWidget,
   empty: EmptySlotWidget,
-  slot: EmptySlotWidget
+  slot: EmptySlotWidget,
+  aichat: AiChatPanelWidget,
+  chat: AiChatPanelWidget,
+  aiagent: AiAgentPanelWidget,
+  agent: AiAgentPanelWidget,
+  airag: AiRagPanelWidget,
+  rag: AiRagPanelWidget,
+  aiprompt: AiPromptPanelWidget,
+  prompt: AiPromptPanelWidget,
+  aicode: AiCodeGenPanelWidget,
+  code: AiCodeGenPanelWidget
 }

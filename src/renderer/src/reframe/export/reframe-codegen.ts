@@ -271,6 +271,90 @@ function WidgetRenderer({ panel }: { panel: WidgetItem }) {
     )
   }
 
+  if (panel.widgetType === 'aichat' || panel.widgetType === 'chat') {
+    return (
+      <div className="flex flex-col h-full min-h-[220px] text-xs">
+        <div className="flex-1 space-y-2.5 overflow-y-auto mb-3">
+          <div className="p-2.5 rounded-lg bg-zinc-800/80 border border-zinc-700/60 text-zinc-200">
+            <span className="font-semibold text-indigo-400 block mb-1">Claude 3.7 Copilot</span>
+            <p>Telemetry analyzed. 14 production clusters operational. All SLOs within healthy parameters.</p>
+          </div>
+          <div className="p-2.5 rounded-lg bg-indigo-600/30 border border-indigo-500/40 text-white ml-auto max-w-[85%]">
+            <span className="font-semibold text-indigo-200 block mb-1">You</span>
+            <p>Show active alerts and recommended remediation.</p>
+          </div>
+        </div>
+        <div className="pt-2 border-t border-zinc-800 flex gap-2">
+          <input
+            type="text"
+            placeholder="Ask AI Copilot..."
+            disabled
+            className="flex-1 bg-zinc-900 border border-zinc-800 rounded px-2.5 py-1 text-xs text-zinc-400"
+          />
+          <button disabled className="px-3 py-1 rounded bg-indigo-600/80 text-white text-xs font-semibold">
+            Send
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'aiagent' || panel.widgetType === 'agent') {
+    return (
+      <div className="space-y-2 text-xs">
+        <div className="p-2.5 rounded-lg bg-zinc-800/60 border border-zinc-700/60 flex items-center justify-between">
+          <span className="font-medium text-zinc-200">1. Context & Telemetry Retrieval</span>
+          <span className="text-[10px] text-emerald-400 font-mono">Completed (120ms)</span>
+        </div>
+        <div className="p-2.5 rounded-lg bg-zinc-800/60 border border-zinc-700/60 flex items-center justify-between">
+          <span className="font-medium text-zinc-200">2. Tool: kubernetes_get_pod_status</span>
+          <span className="text-[10px] text-emerald-400 font-mono">Completed (340ms)</span>
+        </div>
+        <div className="p-2.5 rounded-lg bg-indigo-950/30 border border-indigo-500/40 flex items-center justify-between text-indigo-200">
+          <span className="font-medium">3. Autonomous CoT Synthesis</span>
+          <span className="text-[10px] text-indigo-400 font-mono animate-pulse">Running</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'airag' || panel.widgetType === 'rag') {
+    return (
+      <div className="space-y-2 text-xs">
+        <div className="p-2.5 rounded-lg bg-zinc-800/70 border border-zinc-700/60">
+          <div className="flex justify-between text-[11px] mb-1">
+            <span className="font-semibold text-zinc-200">SOC2_Compliance_Master_Policy.pdf</span>
+            <span className="text-emerald-400 font-bold font-mono">98.4% Match</span>
+          </div>
+          <p className="text-[11px] text-zinc-400">All customer logs must be encrypted using AES-256 and purged after 90 days.</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'aiprompt' || panel.widgetType === 'prompt') {
+    return (
+      <div className="space-y-2 text-xs">
+        <div className="p-2 rounded bg-zinc-900 border border-zinc-800 font-mono text-[11px] text-zinc-300">
+          System Prompt: Enterprise Financial Copilot (Temperature: 0.35, Top-P: 0.90)
+        </div>
+        <div className="p-2 rounded bg-emerald-950/20 border border-emerald-500/30 text-emerald-300 text-[11px] font-mono">
+          Benchmark: 215ms latency • 94.2 t/s • $0.0028/call
+        </div>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'aicode' || panel.widgetType === 'code') {
+    return (
+      <div className="font-mono text-[11px] bg-zinc-950 p-2 rounded border border-zinc-800 space-y-1">
+        <div className="text-rose-400 bg-rose-950/30 px-1 rounded">- private hmacSecret = process.env.JWT_SECRET;</div>
+        <div className="text-emerald-400 bg-emerald-950/30 px-1 rounded">+ private publicKeyUrl = process.env.AUTH_JWKS_ENDPOINT;</div>
+        <div className="text-emerald-400 bg-emerald-950/30 px-1 rounded">+ private ecdsaVerifier = new ES256TokenVerifier(this.publicKeyUrl);</div>
+      </div>
+    )
+  }
+
   return (
     <div className="py-8 text-center text-xs text-zinc-500 italic">
       [Live widget container: {panel.title}]

@@ -13,7 +13,12 @@ import {
   Layers,
   Terminal,
   Server,
-  LayoutGrid
+  LayoutGrid,
+  Bot,
+  BrainCircuit,
+  Database,
+  Sliders,
+  FileCode
 } from 'lucide-react'
 
 const WIDGET_ICONS: Record<string, React.FC<{ className?: string }>> = {
@@ -26,7 +31,17 @@ const WIDGET_ICONS: Record<string, React.FC<{ className?: string }>> = {
   embed: Globe,
   terminal: Terminal,
   cluster: Server,
-  empty: LayoutGrid
+  empty: LayoutGrid,
+  aichat: Bot,
+  chat: Bot,
+  aiagent: BrainCircuit,
+  agent: BrainCircuit,
+  airag: Database,
+  rag: Database,
+  aiprompt: Sliders,
+  prompt: Sliders,
+  aicode: FileCode,
+  code: FileCode
 }
 
 interface ClientPanelCardProps {

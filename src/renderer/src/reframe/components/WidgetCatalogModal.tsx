@@ -38,7 +38,12 @@ import {
   Code2,
   Briefcase,
   ClipboardList,
-  Check
+  Check,
+  Bot,
+  BrainCircuit,
+  Sparkles,
+  FileCode,
+  Network
 } from 'lucide-react'
 import { useReframeStore } from '../stores/reframe-store'
 import {
@@ -58,6 +63,11 @@ const ICON_MAP: Record<string, React.FC<{ className?: string }>> = {
   ShoppingCart,
   ShieldCheck,
   Users,
+  Bot,
+  BrainCircuit,
+  Sparkles,
+  FileCode,
+  Network,
   Target,
   DollarSign,
   Server,
@@ -247,7 +257,7 @@ export const WidgetCatalogModal: React.FC = () => {
             <input
               autoFocus
               type="text"
-              placeholder="Search 42+ widgets, metrics, tables, runbooks..."
+              placeholder="Search 48+ widgets, AI copilot, chat, agents, metrics..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-zinc-900 border border-zinc-800 focus:border-indigo-500 text-white text-xs pl-9 pr-8 py-2 rounded-xl focus:outline-none placeholder:text-zinc-500 transition-colors"

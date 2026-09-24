@@ -3,7 +3,7 @@ import type { WidgetType } from '../../types/reframe-types'
 export interface WidgetCatalogItem {
   id: string
   title: string
-  category: 'kpi' | 'analytics' | 'tables' | 'feeds' | 'devops' | 'actions' | 'docs'
+  category: 'ai' | 'kpi' | 'analytics' | 'tables' | 'feeds' | 'devops' | 'actions' | 'docs'
   categoryLabel: string
   description: string
   icon: string
@@ -16,6 +16,7 @@ export interface WidgetCatalogItem {
 
 export const WIDGET_CATEGORIES = [
   { id: 'all', label: 'All Widgets' },
+  { id: 'ai', label: 'AI & Intelligence' },
   { id: 'kpi', label: 'KPIs & Metrics' },
   { id: 'analytics', label: 'Charts & Analytics' },
   { id: 'tables', label: 'Data Tables' },
@@ -26,6 +27,320 @@ export const WIDGET_CATEGORIES = [
 ] as const
 
 export const WIDGET_CATALOG: WidgetCatalogItem[] = [
+  /* ============================================================
+     0. ARTIFICIAL INTELLIGENCE & LLM INTERFACES (6 Widgets)
+     ============================================================ */
+  {
+    id: 'ai-copilot-chat',
+    title: 'Interactive AI Copilot & Chat Assistant',
+    category: 'ai',
+    categoryLabel: 'AI & Intelligence',
+    description:
+      'Conversational assistant with streaming messages, multi-model switcher, quick prompt chips, and token meter.',
+    icon: 'Bot',
+    widgetType: 'aichat',
+    domainBadge: 'LLM & AGENT',
+    tags: [
+      'chat',
+      'ai',
+      'copilot',
+      'assistant',
+      'llm',
+      'gpt',
+      'claude',
+      'deepseek',
+      'conversation',
+      'streaming'
+    ],
+    defaultProps: {
+      title: 'Enterprise AI Copilot',
+      activeModel: 'Claude 3.7 Sonnet',
+      models: ['Claude 3.7 Sonnet', 'GPT-4o', 'DeepSeek R1', 'Gemini 2.0 Flash'],
+      tokenCount: 1420,
+      contextLimit: 128000,
+      quickPrompts: [
+        'Summarize active incident report',
+        'Analyze latency bottle-necks across nodes',
+        'Draft executive compliance brief',
+        'Synthesize SQL query optimization'
+      ],
+      messages: [
+        {
+          id: 'msg-1',
+          sender: 'ai',
+          author: 'Claude 3.7',
+          timestamp: '11:24 AM',
+          content:
+            'I have analyzed telemetry across all 14 active production clusters. Median p95 latency is stable at 14.2ms, but pod `billing-worker-02` shows elevated heap usage (84%). Would you like me to inspect memory allocations or generate a remediation patch?'
+        },
+        {
+          id: 'msg-2',
+          sender: 'user',
+          author: 'You',
+          timestamp: '11:25 AM',
+          content:
+            'Inspect memory allocations and explain if this is related to the recent Redis v7 upgrade.'
+        },
+        {
+          id: 'msg-3',
+          sender: 'ai',
+          author: 'Claude 3.7',
+          timestamp: '11:25 AM',
+          content:
+            'Confirmed correlation: Redis connection pool timeout was reduced to 250ms during the v7 migration, causing socket reconnect loops under peak queue ingestion. I have prepared an automatic pool threshold patch ready for your approval.'
+        }
+      ]
+    },
+    defaultDirection: 'right'
+  },
+  {
+    id: 'ai-agent-reasoning',
+    title: 'Autonomous Agent Workflow & Thought Trace',
+    category: 'ai',
+    categoryLabel: 'AI & Intelligence',
+    description:
+      'Step-by-step chain-of-thought, tool invocation logs, and human-in-the-loop permission approvals.',
+    icon: 'BrainCircuit',
+    widgetType: 'aiagent',
+    domainBadge: 'AUTONOMOUS',
+    tags: [
+      'agent',
+      'ai',
+      'reasoning',
+      'chain-of-thought',
+      'cot',
+      'tools',
+      'autonomous',
+      'swarm',
+      'chat'
+    ],
+    defaultProps: {
+      title: 'Autonomous Sentinel Agent',
+      agentName: 'SRE Infrastructure Agent #04',
+      status: 'Executing Tool',
+      iterations: 3,
+      maxIterations: 8,
+      steps: [
+        {
+          id: 'step-1',
+          title: 'Context Retrieval & Metric Ingest',
+          status: 'completed',
+          time: '120ms',
+          detail: 'Queried Datadog APM API for 14 clusters. Ingested 4,820 metric points.'
+        },
+        {
+          id: 'step-2',
+          title: 'Tool Call: kubernetes_get_pod_status(ns="production")',
+          status: 'completed',
+          time: '340ms',
+          detail: 'Identified 2 unevicted pods in crashLoopBackOff on node worker-us-east-4.'
+        },
+        {
+          id: 'step-3',
+          title: 'CoT Reasoning: Synthesize Rolling Autoscale Mitigation',
+          status: 'running',
+          time: 'Live',
+          detail:
+            'Evaluating whether horizontal pod autoscaler can drain worker-04 without dropping active WebSockets.'
+        }
+      ],
+      pendingApproval: {
+        id: 'approval-01',
+        title: 'Production Cluster Eviction & Rebalance',
+        description:
+          'Agent requests permission to scale replica count from 4 to 8 and drain node worker-us-east-4.',
+        riskLevel: 'Moderate'
+      }
+    },
+    defaultDirection: 'below'
+  },
+  {
+    id: 'ai-rag-retriever',
+    title: 'RAG Vector Knowledge & Document Retriever',
+    category: 'ai',
+    categoryLabel: 'AI & Intelligence',
+    description:
+      'Semantic search across vector embeddings with similarity match percentages and source document citations.',
+    icon: 'Sparkles',
+    widgetType: 'airag',
+    domainBadge: 'RAG & EMBED',
+    tags: [
+      'rag',
+      'ai',
+      'vector',
+      'embeddings',
+      'retrieval',
+      'semantic',
+      'knowledge',
+      'citations',
+      'chat'
+    ],
+    defaultProps: {
+      title: 'Vector Knowledge Retriever',
+      indexName: 'Enterprise Vector Index (text-embedding-3-large)',
+      totalVectors: '142,850 vectors',
+      query: 'SOC2 Type II audit data retention requirements for customer clickstream logs',
+      chunks: [
+        {
+          id: 'chunk-1',
+          document: 'SOC2_Compliance_Master_Policy_2026.pdf',
+          score: 98.4,
+          section: 'Section 4.2: Data Retention & Encryption at Rest',
+          snippet:
+            'All customer clickstream logs and diagnostic telemetry containing PII must be encrypted using AES-256-GCM and purged after 90 days unless subject to legal preservation hold.'
+        },
+        {
+          id: 'chunk-2',
+          document: 'GDPR_Data_Classification_Matrix.docx',
+          score: 94.1,
+          section: 'Article 17: Right to Erasure Execution Protocol',
+          snippet:
+            'Clickstream telemetry must maintain pseudonymized foreign keys referencing the customer master table, allowing instant cascade deletion within 24 hours of erasure request.'
+        },
+        {
+          id: 'chunk-3',
+          document: 'Kafka_Retention_Runbook_v3.md',
+          score: 89.7,
+          section: 'Topic Tiering & Compaction Policies',
+          snippet:
+            'Retention period on topic production.clickstream.raw is configured to 2160h (90 days). Cold archival storage is streamed directly into immutable AWS S3 Glacier Vault.'
+        }
+      ]
+    },
+    defaultDirection: 'right'
+  },
+  {
+    id: 'ai-prompt-eval',
+    title: 'Prompt Studio & Hyperparameter Playground',
+    category: 'ai',
+    categoryLabel: 'AI & Intelligence',
+    description:
+      'System persona prompt editor, temperature & top-p tuning, and token latency benchmarks.',
+    icon: 'Cpu',
+    widgetType: 'aiprompt',
+    domainBadge: 'STUDIO',
+    tags: [
+      'prompt',
+      'ai',
+      'eval',
+      'playground',
+      'temperature',
+      'parameters',
+      'tokens',
+      'benchmark',
+      'chat'
+    ],
+    defaultProps: {
+      title: 'Prompt Studio & Model Eval',
+      systemPrompt:
+        'You are an elite enterprise financial copilot. Analyze portfolio allocation, calculate Sharpe ratios, and format deliverables with executive precision.',
+      userPrompt:
+        'Provide a risk breakdown of a 70/30 equities to treasury bond allocation in a stagflation environment.',
+      temperature: 0.35,
+      topP: 0.9,
+      maxTokens: 4096,
+      benchmark: {
+        latency: '215ms',
+        inputTokens: 142,
+        outputTokens: 520,
+        costEstimate: '$0.0028',
+        throughput: '94.2 t/s'
+      }
+    },
+    defaultDirection: 'below'
+  },
+  {
+    id: 'ai-codegen-diff',
+    title: 'AI Code Generator & Smart Diff Viewer',
+    category: 'ai',
+    categoryLabel: 'AI & Intelligence',
+    description:
+      'Syntax highlighted code preview, Git-style diff additions/removals, and 1-click artifact actions.',
+    icon: 'FileCode',
+    widgetType: 'aicode',
+    domainBadge: 'DEVELOPER',
+    tags: ['code', 'ai', 'diff', 'codegen', 'patch', 'syntax', 'programming', 'git', 'chat'],
+    defaultProps: {
+      title: 'AI Code Diff & Patch Inspector',
+      filename: 'auth-session-manager.service.ts',
+      language: 'typescript',
+      summary:
+        'Migrated symmetric HMAC tokens to ES256 asymmetric ECDSA signatures with in-memory public key cache.',
+      stats: { added: 18, removed: 4 },
+      diffLines: [
+        { type: 'normal', content: 'export class AuthSessionManager {' },
+        { type: 'normal', content: '  private keyStore: KeyVaultCache;' },
+        { type: 'delete', content: '-   private hmacSecret = process.env.JWT_SECRET;' },
+        { type: 'add', content: '+   private publicKeyUrl = process.env.AUTH_JWKS_ENDPOINT;' },
+        {
+          type: 'add',
+          content: '+   private ecdsaVerifier = new ES256TokenVerifier(this.publicKeyUrl);'
+        },
+        { type: 'normal', content: '' },
+        {
+          type: 'normal',
+          content: '  async verifyIncomingSession(token: string): Promise<UserSession> {'
+        },
+        { type: 'delete', content: '-     return jwt.verify(token, this.hmacSecret);' },
+        {
+          type: 'add',
+          content: '+     const cachedKey = await this.keyStore.getOrFetch(token.kid);'
+        },
+        { type: 'add', content: '+     return this.ecdsaVerifier.verify(token, cachedKey);' },
+        { type: 'normal', content: '  }' },
+        { type: 'normal', content: '}' }
+      ]
+    },
+    defaultDirection: 'right'
+  },
+  {
+    id: 'ai-pipeline-swarm',
+    title: 'Multi-Agent Swarm & Orchestration Graph',
+    category: 'ai',
+    categoryLabel: 'AI & Intelligence',
+    description:
+      'Visual DAG showing supervisor, researcher, coder, and reviewer agents with real-time throughput.',
+    icon: 'Network',
+    widgetType: 'aiagent',
+    domainBadge: 'ORCHESTRATION',
+    tags: ['swarm', 'ai', 'pipeline', 'multi-agent', 'orchestration', 'workflow', 'dag', 'chat'],
+    defaultProps: {
+      title: 'Multi-Agent Swarm Pipeline',
+      swarmName: 'Autonomous App Builder Swarm',
+      totalThroughput: '48 tasks/min',
+      agents: [
+        {
+          id: 'supervisor',
+          name: 'Supervisor Agent',
+          role: 'Task Decomposition',
+          status: 'active',
+          load: '65%'
+        },
+        {
+          id: 'researcher',
+          name: 'Research Specialist',
+          role: 'Web & Code Retrieval',
+          status: 'busy',
+          load: '92%'
+        },
+        {
+          id: 'engineer',
+          name: 'Software Synthesizer',
+          role: 'TSX / React Codegen',
+          status: 'active',
+          load: '78%'
+        },
+        {
+          id: 'qa',
+          name: 'Quality & Test Auditor',
+          role: 'Vitest & Typecheck Gates',
+          status: 'idle',
+          load: '14%'
+        }
+      ]
+    },
+    defaultDirection: 'below'
+  },
   /* ============================================================
      1. EXECUTIVE & KPI METRICS (8 Widgets)
      ============================================================ */

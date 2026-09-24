@@ -54,6 +54,16 @@ export type WidgetType =
   | 'terminal'
   | 'cluster'
   | 'empty'
+  | 'aichat'
+  | 'chat'
+  | 'aiagent'
+  | 'agent'
+  | 'aiprompt'
+  | 'prompt'
+  | 'airag'
+  | 'rag'
+  | 'aicode'
+  | 'code'
 
 export type LayoutScaffoldType =
   '1-slot' | '2-columns' | '3-columns' | '2x2-grid' | 'header-2-col' | '3-rows'
