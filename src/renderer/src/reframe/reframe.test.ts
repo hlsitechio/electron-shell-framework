@@ -500,9 +500,9 @@ describe('Reframe Platform & Store', () => {
     expect(state.panels['table-tab2']).toBeDefined()
   })
 
-  it('manages the 63-item Widget Catalog across 10 categories including Meetings & Audio, General, and AI', () => {
-    expect(WIDGET_CATALOG.length).toBe(63)
-    expect(WIDGET_CATEGORIES.length).toBe(11) // 'all' + 10 specific
+  it('manages the 75-item Widget Catalog across 11 categories including Documents & Readers, Meetings, General, and AI', () => {
+    expect(WIDGET_CATALOG.length).toBe(75)
+    expect(WIDGET_CATEGORIES.length).toBe(12) // 'all' + 11 specific
 
     // Every item has valid metadata
     WIDGET_CATALOG.forEach((item) => {
@@ -515,8 +515,9 @@ describe('Reframe Platform & Store', () => {
       expect(item.defaultProps).toBeDefined()
     })
 
-    // Verify all 10 categories are represented
+    // Verify all 11 categories are represented
     const categories = new Set(WIDGET_CATALOG.map((w) => w.category))
+    expect(categories.has('documents')).toBe(true)
     expect(categories.has('meetings')).toBe(true)
     expect(categories.has('ai')).toBe(true)
     expect(categories.has('general')).toBe(true)

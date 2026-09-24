@@ -4,8 +4,9 @@ export interface WidgetCatalogItem {
   id: string
   title: string
   category:
-    | 'ai'
+    | 'documents'
     | 'meetings'
+    | 'ai'
     | 'general'
     | 'kpi'
     | 'analytics'
@@ -26,6 +27,7 @@ export interface WidgetCatalogItem {
 
 export const WIDGET_CATEGORIES = [
   { id: 'all', label: 'All Widgets' },
+  { id: 'documents', label: 'Documents & Readers' },
   { id: 'meetings', label: 'Meetings & Audio' },
   { id: 'ai', label: 'AI & Intelligence' },
   { id: 'general', label: 'General & Productivity' },
@@ -39,6 +41,235 @@ export const WIDGET_CATEGORIES = [
 ] as const
 
 export const WIDGET_CATALOG: WidgetCatalogItem[] = [
+  /* ============================================================
+     0. DOCUMENTS & VIEWERS SUITE (12 Widgets)
+     ============================================================ */
+  {
+    id: 'doc-markdown-reader',
+    title: 'Interactive Markdown Document Reader & TOC',
+    category: 'documents',
+    categoryLabel: 'Documents & Readers',
+    description:
+      'Typographical Markdown reader with interactive table of contents, reading time, and heading anchors.',
+    icon: 'FileText',
+    widgetType: 'doc-markdown',
+    domainBadge: 'MD VIEWER',
+    tags: ['markdown', 'md', 'reader', 'document', 'toc', 'docs', 'typography'],
+    defaultProps: {
+      fileName: 'ARCHITECTURE_RFC_V4.md',
+      readTime: '4 min read',
+      wordCount: 1280,
+      headings: [
+        '1. System Overview',
+        '2. Distributed Consensus',
+        '3. Zero-Copy Serialization',
+        '4. Security & Compliance'
+      ]
+    },
+    defaultDirection: 'right'
+  },
+  {
+    id: 'doc-pdf-viewer',
+    title: 'PDF Multi-Page Canvas Viewer',
+    category: 'documents',
+    categoryLabel: 'Documents & Readers',
+    description:
+      'Multi-page PDF document canvas with thumbnail strip, zoom scaling, page navigation, and night-mode invert.',
+    icon: 'FileCheck',
+    widgetType: 'doc-pdf',
+    domainBadge: 'PDF VIEWER',
+    tags: ['pdf', 'document', 'viewer', 'pages', 'canvas', 'zoom', 'reader'],
+    defaultProps: {
+      fileName: 'Q3_Financial_Audit_Report.pdf',
+      totalPages: 18,
+      currentPage: 3,
+      zoom: 100,
+      fileSize: '4.2 MB'
+    },
+    defaultDirection: 'right'
+  },
+  {
+    id: 'doc-docx-viewer',
+    title: 'DOCX Word Document Reader & Layout',
+    category: 'documents',
+    categoryLabel: 'Documents & Readers',
+    description:
+      'Formatted Word document layout with headers, footnotes, styled tables, and revision comment sidebar.',
+    icon: 'FileSpreadsheet',
+    widgetType: 'doc-docx',
+    domainBadge: 'DOCX VIEWER',
+    tags: ['docx', 'word', 'office', 'document', 'reader', 'revisions', 'comments'],
+    defaultProps: {
+      fileName: 'Master_Services_Agreement_Final.docx',
+      author: 'Legal Department',
+      wordCount: 3420,
+      pages: 8,
+      status: 'Approved with Revisions'
+    },
+    defaultDirection: 'below'
+  },
+  {
+    id: 'doc-txt-reader',
+    title: 'Plain Text File Inspector & Encoding',
+    category: 'documents',
+    categoryLabel: 'Documents & Readers',
+    description:
+      'High-performance plain text reader with line numbers, monospace font, UTF-8 encoding badge, and word count.',
+    icon: 'FileCode',
+    widgetType: 'doc-txt',
+    domainBadge: 'TXT VIEWER',
+    tags: ['txt', 'text', 'plain text', 'raw', 'encoding', 'utf8', 'reader'],
+    defaultProps: {
+      fileName: 'system_environment.env',
+      lines: 42,
+      encoding: 'UTF-8 (CRLF)',
+      fileSize: '14.8 KB'
+    },
+    defaultDirection: 'right'
+  },
+  {
+    id: 'doc-diff-comparator',
+    title: 'Dual Document Diff & Version Comparator',
+    category: 'documents',
+    categoryLabel: 'Documents & Readers',
+    description:
+      'Visual split and unified document comparison tool highlighting additions, deletions, and line-level changes.',
+    icon: 'GitCompare',
+    widgetType: 'doc-diff',
+    domainBadge: 'DIFF ENGINE',
+    tags: ['diff', 'comparator', 'compare', 'versions', 'revisions', 'git', 'changes'],
+    defaultProps: {
+      sourceA: 'policy-v1.4.md',
+      sourceB: 'policy-v2.0.md',
+      additions: 14,
+      deletions: 6
+    },
+    defaultDirection: 'below'
+  },
+  {
+    id: 'doc-code-viewer',
+    title: 'Multi-Language Code & Config Inspector',
+    category: 'documents',
+    categoryLabel: 'Documents & Readers',
+    description:
+      'Tabbed syntax highlighted code reader with line wrap, line numbers, and copy action.',
+    icon: 'Code2',
+    widgetType: 'doc-code',
+    domainBadge: 'SYNTAX VIEWER',
+    tags: ['code', 'syntax', 'typescript', 'json', 'yaml', 'python', 'developer'],
+    defaultProps: {
+      activeTab: 'schema.prisma',
+      language: 'typescript'
+    },
+    defaultDirection: 'right'
+  },
+  {
+    id: 'doc-csv-spreadsheet',
+    title: 'CSV & Spreadsheet Data Table Reader',
+    category: 'documents',
+    categoryLabel: 'Documents & Readers',
+    description:
+      'Tabular dataset reader with sticky headers, column sorting, search filtering, and CSV export.',
+    icon: 'Table',
+    widgetType: 'doc-csv',
+    domainBadge: 'CSV VIEWER',
+    tags: ['csv', 'spreadsheet', 'data', 'table', 'grid', 'excel', 'export'],
+    defaultProps: {
+      fileName: 'customer_churn_q3.csv',
+      rowsCount: 120,
+      colsCount: 6
+    },
+    defaultDirection: 'below'
+  },
+  {
+    id: 'doc-ai-summarizer',
+    title: 'AI Document Summarizer & "Chat with Doc"',
+    category: 'documents',
+    categoryLabel: 'Documents & Readers',
+    description:
+      'Instant executive summaries, key takeaways with citation anchors, and interactive document RAG Q&A.',
+    icon: 'Bot',
+    widgetType: 'doc-summarizer',
+    domainBadge: 'DOC AI RAG',
+    tags: ['ai', 'summarizer', 'rag', 'chat with doc', 'summary', 'citation', 'documents'],
+    defaultProps: {
+      documentName: 'Q3_Security_Audit_RFC.pdf',
+      tldr: 'Audit confirmed zero critical vulnerabilities across core infrastructure. Recommended reducing session TTL to 15m.'
+    },
+    defaultDirection: 'right'
+  },
+  {
+    id: 'doc-metadata-inspector',
+    title: 'File Metadata & Cryptographic Inspector',
+    category: 'documents',
+    categoryLabel: 'Documents & Readers',
+    description:
+      'Document forensics panel displaying MIME type, SHA-256 integrity hash, byte size, and access ACLs.',
+    icon: 'ShieldCheck',
+    widgetType: 'doc-metadata',
+    domainBadge: 'INTEGRITY',
+    tags: ['metadata', 'inspector', 'sha256', 'hash', 'security', 'mime', 'forensics'],
+    defaultProps: {
+      fileName: 'release-build-v4.2.0.tar.gz',
+      sha256: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+      mimeType: 'application/gzip',
+      fileSize: '84.2 MB'
+    },
+    defaultDirection: 'below'
+  },
+  {
+    id: 'doc-focus-reader',
+    title: 'Distraction-Free Long-Form Focus Reader',
+    category: 'documents',
+    categoryLabel: 'Documents & Readers',
+    description:
+      'Minimalist reading environment with font family toggles (Serif/Sans), color themes, and progress tracking.',
+    icon: 'BookOpen',
+    widgetType: 'doc-reader',
+    domainBadge: 'FOCUS READER',
+    tags: ['focus', 'reader', 'book', 'article', 'longform', 'serif', 'distraction free'],
+    defaultProps: {
+      articleTitle: 'The Evolution of High-Density App Shell Architectures',
+      author: 'Engineering Architecture Group',
+      progress: 68
+    },
+    defaultDirection: 'right'
+  },
+  {
+    id: 'doc-api-swagger',
+    title: 'OpenAPI & Swagger Endpoint Explorer',
+    category: 'documents',
+    categoryLabel: 'Documents & Readers',
+    description:
+      'Interactive REST API specification reader with endpoint methods, request schemas, and sample JSON payloads.',
+    icon: 'Network',
+    widgetType: 'doc-swagger',
+    domainBadge: 'OPENAPI',
+    tags: ['openapi', 'swagger', 'api', 'endpoints', 'rest', 'json', 'schema'],
+    defaultProps: {
+      apiTitle: 'Enterprise Fleet API v2.4',
+      baseUrl: 'https://api.cockpit.internal/v2',
+      endpointsCount: 14
+    },
+    defaultDirection: 'below'
+  },
+  {
+    id: 'doc-contract-review',
+    title: 'Contract Review & Legal Redlining Sign-Off',
+    category: 'documents',
+    categoryLabel: 'Documents & Readers',
+    description:
+      'Legal contract inspection viewer with redline annotations, clause risk flags, and stakeholder sign-off approvals.',
+    icon: 'FileCheck2',
+    widgetType: 'doc-contract',
+    domainBadge: 'CONTRACT',
+    tags: ['contract', 'legal', 'redline', 'signoff', 'compliance', 'msa', 'nda'],
+    defaultProps: {
+      contractName: 'Enterprise Master SaaS Agreement (MSA-2026-Q3)',
+      status: 'Under Legal Review'
+    },
+    defaultDirection: 'right'
+  },
   /* ============================================================
      0. AI & MEETINGS AUDIO SUITE (8 Widgets)
      ============================================================ */

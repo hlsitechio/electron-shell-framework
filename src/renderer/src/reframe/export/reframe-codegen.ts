@@ -581,12 +581,166 @@ function WidgetRenderer({ panel }: { panel: WidgetItem }) {
       <div className="space-y-2 text-xs">
         <div className="p-2 rounded bg-indigo-950/20 border border-indigo-500/30 text-zinc-200">
           <span className="text-[10px] font-mono text-indigo-400 block font-semibold">Objective</span>
-          Demonstrate the 63+ client widget kit and confirm Friday release.
+          Demonstrate the 75+ client widget kit and confirm Friday release.
         </div>
         <div className="p-2 rounded bg-zinc-800/60 border border-zinc-700/60 flex justify-between items-center">
           <span className="text-zinc-200 font-medium">Sarah Lin (VP of Engineering)</span>
           <span className="text-[10px] text-zinc-500 font-mono">Acme Corp</span>
         </div>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'doc-markdown' || panel.widgetType === 'markdown' || panel.widgetType === 'md') {
+    return (
+      <div className="space-y-2 text-xs leading-relaxed">
+        <div className="flex justify-between items-center pb-1.5 border-b border-zinc-800 text-[10px] font-mono text-zinc-400">
+          <span className="text-indigo-400 font-semibold">{panel.widgetProps?.fileName || 'DOCUMENT.md'}</span>
+          <span>4 min read • 1,280 words</span>
+        </div>
+        <h3 className="font-bold text-white text-sm">Enterprise Distributed Architecture RFC</h3>
+        <p className="text-zinc-300">
+          This RFC proposes migrating the legacy message bus to an event-driven stream architecture with zero-copy binary serialization.
+        </p>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'doc-pdf' || panel.widgetType === 'pdf') {
+    return (
+      <div className="p-3 bg-zinc-900/60 rounded-lg border border-zinc-800 flex flex-col items-center justify-center text-center space-y-2">
+        <div className="text-xs font-semibold text-zinc-200">{panel.widgetProps?.fileName || 'Document_Report.pdf'}</div>
+        <div className="w-full max-w-[200px] aspect-[3/4] bg-zinc-100 text-zinc-900 rounded shadow-md p-3 text-[9px] flex flex-col justify-between">
+          <div className="font-bold text-left border-b border-zinc-400 pb-1">EXECUTIVE SUMMARY</div>
+          <div className="text-left text-zinc-700 leading-tight">Audit completed with 100% compliance across all data stores.</div>
+          <div className="text-right text-[8px] font-mono text-zinc-500">Page 3 of 18</div>
+        </div>
+        <div className="text-[10px] font-mono text-zinc-400">Scale: 100% • Vector PDF</div>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'doc-docx' || panel.widgetType === 'docx') {
+    return (
+      <div className="p-3 bg-zinc-900/50 rounded-lg border border-zinc-800 space-y-2 text-xs">
+        <div className="flex justify-between text-[10px] font-mono text-blue-400 border-b border-zinc-800 pb-1">
+          <span>{panel.widgetProps?.fileName || 'Contract.docx'}</span>
+          <span>Approved with Revisions</span>
+        </div>
+        <div className="font-bold text-white">MASTER SERVICES & PLATFORM SLA AGREEMENT</div>
+        <p className="text-zinc-300 text-[11px] leading-relaxed">
+          Provider agrees to deploy and maintain the customized Cockpit Application with 99.95% monthly SLA guarantee.
+        </p>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'doc-txt' || panel.widgetType === 'txt') {
+    return (
+      <div className="bg-zinc-950 p-2.5 rounded border border-zinc-800 font-mono text-[11px] space-y-1">
+        <div className="text-zinc-500"># System Configuration Matrix</div>
+        <div className="text-indigo-400">NODE_ENV=<span className="text-emerald-300">production</span></div>
+        <div className="text-indigo-400">PORT=<span className="text-emerald-300">3920</span></div>
+        <div className="text-indigo-400">ENCRYPTION=<span className="text-emerald-300">AES-256-GCM</span></div>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'doc-diff' || panel.widgetType === 'diff') {
+    return (
+      <div className="space-y-1.5 font-mono text-[11px]">
+        <div className="p-1 rounded bg-rose-950/30 border border-rose-500/30 text-rose-300">
+          - Default user session idle expiration: 30 minutes
+        </div>
+        <div className="p-1 rounded bg-emerald-950/30 border border-emerald-500/30 text-emerald-200">
+          + Default user session idle expiration: 15 minutes (SOC2 strict)
+        </div>
+        <div className="p-1 rounded bg-emerald-950/30 border border-emerald-500/30 text-emerald-200">
+          + Mandatory hardware security key (FIDO2) required for admin tiers
+        </div>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'doc-code') {
+    return (
+      <div className="bg-zinc-950 p-2.5 rounded border border-zinc-800 font-mono text-[11px] text-zinc-300 space-y-1">
+        <div className="text-zinc-500">// schema.prisma</div>
+        <div className="text-indigo-300">model Tenant {'{'}</div>
+        <div className="pl-3">id String @id @default(uuid())</div>
+        <div className="pl-3">name String</div>
+        <div className="text-indigo-300">{'}'}</div>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'doc-csv' || panel.widgetType === 'csv') {
+    return (
+      <div className="overflow-x-auto text-[11px] font-mono">
+        <table className="w-full text-left">
+          <thead className="text-[10px] text-zinc-500 uppercase border-b border-zinc-800">
+            <tr><th className="p-1">Client</th><th className="p-1">Tier</th><th className="p-1">MRR</th></tr>
+          </thead>
+          <tbody className="divide-y divide-zinc-800/40 text-zinc-300">
+            <tr><td className="p-1">Acme Global</td><td className="p-1">Enterprise</td><td className="p-1 text-emerald-400">$45,000</td></tr>
+            <tr><td className="p-1">Apex Fintech</td><td className="p-1">Enterprise</td><td className="p-1 text-emerald-400">$78,000</td></tr>
+          </tbody>
+        </table>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'doc-summarizer' || panel.widgetType === 'doc-ai') {
+    return (
+      <div className="p-2.5 bg-indigo-950/20 border border-indigo-500/30 rounded text-xs space-y-1.5">
+        <div className="font-semibold text-indigo-300">AI Document Summary</div>
+        <p className="text-zinc-200 text-[11px]">
+          Audit confirmed zero critical vulnerabilities across core infrastructure. Mandatory FIDO2 hardware tokens enforced.
+        </p>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'doc-metadata') {
+    return (
+      <div className="p-2 bg-zinc-900/60 rounded border border-zinc-800 font-mono text-[11px] space-y-1">
+        <div className="flex justify-between text-zinc-400"><span>File:</span><span className="text-zinc-200">release-build.tar.gz</span></div>
+        <div className="flex justify-between text-zinc-400"><span>SHA-256:</span><span className="text-emerald-400">e3b0c442...b855</span></div>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'doc-reader' || panel.widgetType === 'focus-reader') {
+    return (
+      <div className="p-3 bg-[#1f1d19] text-[#e8dfd1] rounded border border-[#3b342a] text-xs space-y-2 font-serif">
+        <h4 className="font-bold">The Evolution of High-Density App Shell Architectures</h4>
+        <p className="text-[11px] leading-relaxed">
+          Desktop software engineering is undergoing a quiet renaissance toward hyper-optimized standalone cockpits.
+        </p>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'doc-swagger' || panel.widgetType === 'swagger' || panel.widgetType === 'openapi') {
+    return (
+      <div className="p-2.5 bg-zinc-900/60 rounded border border-zinc-800 text-xs font-mono space-y-1.5">
+        <div className="flex items-center gap-2">
+          <span className="bg-blue-500/20 text-blue-300 px-1 rounded text-[10px] font-bold">GET</span>
+          <span className="text-zinc-200">/v2/clusters</span>
+        </div>
+        <div className="text-[10px] text-zinc-400">Response: 200 OK (application/json)</div>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'doc-contract' || panel.widgetType === 'contract') {
+    return (
+      <div className="p-2.5 bg-zinc-900/60 rounded border border-zinc-800 text-xs space-y-1.5">
+        <div className="flex justify-between font-semibold">
+          <span className="text-zinc-200">MSA-2026-Q3</span>
+          <span className="text-emerald-400 font-mono text-[10px]">Signed & Executed</span>
+        </div>
+        <p className="text-zinc-300 text-[11px]">All stakeholder approvals completed and archived.</p>
       </div>
     )
   }

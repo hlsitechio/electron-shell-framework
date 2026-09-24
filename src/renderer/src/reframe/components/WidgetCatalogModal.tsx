@@ -55,7 +55,10 @@ import {
   FileCheck2,
   PieChart,
   CalendarClock,
-  HelpCircle
+  HelpCircle,
+  FileCheck,
+  FileSpreadsheet,
+  GitCompare
 } from 'lucide-react'
 import { useReframeStore } from '../stores/reframe-store'
 import {
@@ -92,6 +95,9 @@ const ICON_MAP: Record<string, React.FC<{ className?: string }>> = {
   PieChart,
   CalendarClock,
   HelpCircle,
+  FileCheck,
+  FileSpreadsheet,
+  GitCompare,
   Target,
   DollarSign,
   Server,
@@ -281,7 +287,7 @@ export const WidgetCatalogModal: React.FC = () => {
             <input
               autoFocus
               type="text"
-              placeholder="Search 63+ widgets, meetings, recorder, transcript, AI, clock..."
+              placeholder="Search 75+ widgets, documents, MD, PDF, DOCX, TXT, meetings, AI..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-zinc-900 border border-zinc-800 focus:border-indigo-500 text-white text-xs pl-9 pr-8 py-2 rounded-xl focus:outline-none placeholder:text-zinc-500 transition-colors"

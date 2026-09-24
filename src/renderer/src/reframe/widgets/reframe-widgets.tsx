@@ -52,7 +52,17 @@ import {
   PieChart,
   CalendarClock,
   HelpCircle,
-  Users
+  Users,
+  FileSpreadsheet,
+  FileCheck,
+  GitCompare,
+  ZoomIn,
+  ZoomOut,
+  Eye,
+  Download,
+  BookOpen,
+  Code2,
+  ShieldCheck
 } from 'lucide-react'
 import { useReframeStore } from '../stores/reframe-store'
 import { WIDGET_CATALOG } from './catalog/widget-catalog'
@@ -3721,7 +3731,1459 @@ export const MeetingBriefingPanelWidget: React.FC<IDockviewPanelProps> = ({ para
 }
 
 /* ============================================================
-   30. EMPTY / WIREFRAME SLOT WIDGET
+   30. MARKDOWN DOCUMENT READER & TOC WIDGET (MD)
+   ============================================================ */
+export const MarkdownDocPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const fileName = params?.fileName || 'ARCHITECTURE_RFC_V4.md'
+  const readTime = params?.readTime || '4 min read'
+  const wordCount = params?.wordCount || 1280
+  const headings = params?.headings || [
+    '1. System Overview',
+    '2. Distributed Consensus',
+    '3. Zero-Copy Serialization',
+    '4. Security & Compliance'
+  ]
+  const [fontSize, setFontSize] = useState<number>(13)
+  const [viewMode, setViewMode] = useState<'preview' | 'raw'>('preview')
+  const [copied, setCopied] = useState(false)
+  const [activeHeading, setActiveHeading] = useState('1. System Overview')
+
+  const rawMarkdown = `# Enterprise Distributed Architecture RFC
+
+## 1. System Overview
+This RFC proposes migrating the legacy message bus to an event-driven stream architecture with zero-copy binary serialization. All edge gateways will forward verified telemetry chunks directly to Kafka cluster workers with end-to-end TLS 1.3 encryption.
+
+## 2. Distributed Consensus
+Raft consensus algorithm will be deployed across three isolated availability zones:
+- us-east-1a: Leader node with hot standby
+- us-east-1b: Follower replica with continuous WAL sync
+- us-east-1c: Arbitrator node for quorum preservation
+
+## 3. Zero-Copy Serialization
+Protobuf v3 schemas will replace JSON payloads on high-frequency streams:
+message TelemetryEvent {
+  string tenant_id = 1;
+  int64 timestamp_epoch = 2;
+  double p99_latency_ms = 3;
+}
+
+## 4. Security & Compliance
+All client secrets are rotated every 90 days. Hardware security module (HSM) tokens are mandatory for all production deployments.`
+
+  const handleCopy = () => {
+    navigator.clipboard?.writeText(rawMarkdown)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className="reframe-panel-body p-3 bg-zinc-950/70 text-zinc-100 flex flex-col h-full select-none overflow-hidden">
+      {/* Top Header */}
+      <div className="flex items-center justify-between pb-2 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <FileText className="w-3.5 h-3.5 text-indigo-400" />
+          <span className="font-semibold text-zinc-200">{fileName}</span>
+          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-indigo-500/10 text-indigo-300 border border-indigo-500/30">
+            MD
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="flex items-center bg-zinc-900 border border-zinc-800 rounded px-1.5 py-0.5 text-[10px] font-mono text-zinc-400 gap-1">
+            <button
+              onClick={() => setFontSize((s) => Math.max(11, s - 1))}
+              className="hover:text-white px-1"
+              title="Decrease font size"
+            >
+              A-
+            </button>
+            <span>{fontSize}px</span>
+            <button
+              onClick={() => setFontSize((s) => Math.min(18, s + 1))}
+              className="hover:text-white px-1"
+              title="Increase font size"
+            >
+              A+
+            </button>
+          </div>
+          <div className="flex bg-zinc-900 border border-zinc-800 rounded p-0.5 text-[10px]">
+            <button
+              onClick={() => setViewMode('preview')}
+              className={`px-2 py-0.5 rounded ${viewMode === 'preview' ? 'bg-zinc-800 text-white font-medium' : 'text-zinc-400 hover:text-zinc-200'}`}
+            >
+              Preview
+            </button>
+            <button
+              onClick={() => setViewMode('raw')}
+              className={`px-2 py-0.5 rounded ${viewMode === 'raw' ? 'bg-zinc-800 text-white font-medium' : 'text-zinc-400 hover:text-zinc-200'}`}
+            >
+              Raw
+            </button>
+          </div>
+          <button
+            onClick={handleCopy}
+            className="p-1 rounded bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-zinc-400 hover:text-white"
+            title="Copy markdown content"
+          >
+            {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Dynamic TOC navigation bar */}
+      <div className="flex items-center gap-1.5 py-1.5 border-b border-zinc-850 overflow-x-auto text-[11px] shrink-0 no-scrollbar">
+        <span className="text-[10px] uppercase font-mono text-zinc-500 font-semibold px-1">
+          TOC:
+        </span>
+        {headings.map((h: string) => (
+          <button
+            key={h}
+            onClick={() => setActiveHeading(h)}
+            className={`px-2 py-0.5 rounded text-[10px] whitespace-nowrap transition-colors ${
+              activeHeading === h
+                ? 'bg-indigo-600/30 text-indigo-300 border border-indigo-500/40'
+                : 'bg-zinc-900/60 text-zinc-400 hover:text-zinc-200 border border-zinc-800/80'
+            }`}
+          >
+            {h}
+          </button>
+        ))}
+      </div>
+
+      {/* Main Content Area */}
+      <div className="flex-1 overflow-y-auto py-2.5 pr-1" style={{ fontSize: `${fontSize}px` }}>
+        {viewMode === 'raw' ? (
+          <pre className="font-mono text-zinc-300 whitespace-pre-wrap leading-relaxed bg-zinc-900/40 p-3 rounded-lg border border-zinc-800 text-xs">
+            {rawMarkdown}
+          </pre>
+        ) : (
+          <div className="space-y-3.5 leading-relaxed text-zinc-300">
+            <div>
+              <h1 className="text-base font-bold text-white tracking-tight border-b border-zinc-800 pb-1.5">
+                Enterprise Distributed Architecture RFC
+              </h1>
+            </div>
+
+            <div className="p-3 rounded-lg bg-zinc-900/40 border border-zinc-800/80 space-y-1.5">
+              <h2 className="text-xs font-semibold text-indigo-300">1. System Overview</h2>
+              <p className="text-zinc-300 text-xs leading-normal">
+                This RFC proposes migrating the legacy message bus to an event-driven stream
+                architecture with zero-copy binary serialization. All edge gateways will forward
+                verified telemetry chunks directly to Kafka cluster workers with end-to-end TLS 1.3
+                encryption.
+              </p>
+            </div>
+
+            <div className="p-3 rounded-lg bg-zinc-900/40 border border-zinc-800/80 space-y-1.5">
+              <h2 className="text-xs font-semibold text-emerald-300">2. Distributed Consensus</h2>
+              <ul className="text-xs list-disc list-inside space-y-1 text-zinc-300">
+                <li>
+                  <span className="font-mono text-zinc-200">us-east-1a</span>: Leader node with hot
+                  standby
+                </li>
+                <li>
+                  <span className="font-mono text-zinc-200">us-east-1b</span>: Follower replica with
+                  continuous WAL sync
+                </li>
+                <li>
+                  <span className="font-mono text-zinc-200">us-east-1c</span>: Arbitrator node for
+                  quorum preservation
+                </li>
+              </ul>
+            </div>
+
+            <div className="p-3 rounded-lg bg-zinc-900/40 border border-zinc-800/80 space-y-1.5">
+              <h2 className="text-xs font-semibold text-amber-300">3. Zero-Copy Serialization</h2>
+              <pre className="font-mono text-[11px] bg-zinc-950 p-2 rounded border border-zinc-800 text-zinc-300">
+                {`message TelemetryEvent {
+  string tenant_id = 1;
+  int64 timestamp_epoch = 2;
+  double p99_latency_ms = 3;
+}`}
+              </pre>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Footer Info */}
+      <div className="pt-2 border-t border-zinc-800 flex items-center justify-between text-[10px] font-mono text-zinc-500 shrink-0">
+        <div className="flex items-center gap-2">
+          <span>{wordCount} words</span>
+          <span>•</span>
+          <span>{readTime}</span>
+        </div>
+        <span className="text-emerald-400">Rendered with Markdown Engine</span>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   31. PDF MULTI-PAGE CANVAS VIEWER WIDGET (PDF)
+   ============================================================ */
+export const PdfViewerPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const fileName = params?.fileName || 'Q3_Financial_Audit_Report.pdf'
+  const totalPages = params?.totalPages || 18
+  const [currentPage, setCurrentPage] = useState<number>(params?.currentPage || 3)
+  const [zoom, setZoom] = useState<number>(params?.zoom || 100)
+  const [isDarkInvert, setIsDarkInvert] = useState<boolean>(false)
+  const [showThumbs, setShowThumbs] = useState<boolean>(false)
+
+  return (
+    <div className="reframe-panel-body p-3 bg-zinc-950/70 text-zinc-100 flex flex-col h-full select-none overflow-hidden">
+      {/* Top PDF Controls Header */}
+      <div className="flex items-center justify-between pb-2 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <FileCheck className="w-3.5 h-3.5 text-rose-400" />
+          <span className="font-semibold text-zinc-200">{fileName}</span>
+          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-rose-500/10 text-rose-300 border border-rose-500/30">
+            PDF
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          {/* Page Selector */}
+          <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 rounded px-1.5 py-0.5 text-[10px] font-mono text-zinc-300">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage <= 1}
+              className="hover:text-white disabled:opacity-40"
+            >
+              <ChevronLeft className="w-3 h-3" />
+            </button>
+            <span>
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage >= totalPages}
+              className="hover:text-white disabled:opacity-40"
+            >
+              <ChevronRight className="w-3 h-3" />
+            </button>
+          </div>
+
+          {/* Zoom controls */}
+          <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 rounded px-1.5 py-0.5 text-[10px] font-mono text-zinc-300">
+            <button
+              onClick={() => setZoom((z) => Math.max(50, z - 25))}
+              className="hover:text-white"
+              title="Zoom Out"
+            >
+              <ZoomOut className="w-3 h-3" />
+            </button>
+            <span>{zoom}%</span>
+            <button
+              onClick={() => setZoom((z) => Math.min(200, z + 25))}
+              className="hover:text-white"
+              title="Zoom In"
+            >
+              <ZoomIn className="w-3 h-3" />
+            </button>
+          </div>
+
+          {/* Invert Dark Mode Button */}
+          <button
+            onClick={() => setIsDarkInvert(!isDarkInvert)}
+            className={`p-1 rounded border transition-colors ${isDarkInvert ? 'bg-indigo-600/30 text-indigo-300 border-indigo-500/40' : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-white'}`}
+            title="Invert PDF Background"
+          >
+            <Eye className="w-3 h-3" />
+          </button>
+
+          {/* Toggle Thumbnails */}
+          <button
+            onClick={() => setShowThumbs(!showThumbs)}
+            className={`px-2 py-0.5 rounded text-[10px] border transition-colors ${showThumbs ? 'bg-zinc-800 text-white border-zinc-700' : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-zinc-200'}`}
+          >
+            Thumbs
+          </button>
+        </div>
+      </div>
+
+      {/* PDF Viewport Body */}
+      <div className="flex-1 flex overflow-hidden my-2 gap-2">
+        {/* Thumbnails Sidebar */}
+        {showThumbs && (
+          <div className="w-20 border-r border-zinc-800/80 pr-2 space-y-2 overflow-y-auto shrink-0 no-scrollbar">
+            {[1, 2, 3, 4, 5].map((pNum) => (
+              <button
+                key={pNum}
+                onClick={() => setCurrentPage(pNum)}
+                className={`w-full aspect-[3/4] rounded p-1 flex flex-col justify-between text-left transition-all ${
+                  currentPage === pNum
+                    ? 'border-2 border-indigo-500 bg-zinc-900 shadow-sm'
+                    : 'border border-zinc-800 bg-zinc-900/40 opacity-70 hover:opacity-100'
+                }`}
+              >
+                <div className="w-full h-1 bg-zinc-700 rounded mb-1" />
+                <div className="space-y-0.5">
+                  <div className="w-3/4 h-0.5 bg-zinc-800 rounded" />
+                  <div className="w-full h-0.5 bg-zinc-800 rounded" />
+                </div>
+                <span className="text-[9px] font-mono text-zinc-400">p.{pNum}</span>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Center Simulated High-Res Canvas Sheet */}
+        <div className="flex-1 overflow-auto flex items-center justify-center p-3 bg-zinc-950/80 rounded-lg border border-zinc-850">
+          <div
+            className={`w-full max-w-lg aspect-[1/1.3] rounded-lg shadow-xl p-6 flex flex-col justify-between transition-all duration-200 ${
+              isDarkInvert
+                ? 'bg-zinc-900 text-zinc-200 border border-zinc-800'
+                : 'bg-zinc-100 text-zinc-900 border border-zinc-300'
+            }`}
+            style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center' }}
+          >
+            {/* Sheet Header */}
+            <div className="border-b pb-2 flex justify-between items-center text-xs opacity-80 border-current">
+              <span className="font-bold tracking-tight">APEX CAPITAL AUDIT MEMORANDUM</span>
+              <span className="font-mono text-[10px]">SECTION III • P.{currentPage}</span>
+            </div>
+
+            {/* Sheet Mock Content */}
+            <div className="space-y-3 my-auto text-xs leading-relaxed">
+              <div className="font-semibold text-sm">
+                Executive Capital Deployment & Yield Breakdown
+              </div>
+              <p className="text-[11px] opacity-80">
+                During the trailing financial quarter ending September 2026, liquidity pools
+                maintained an average risk-adjusted annualized yield of 14.8%. All institutional
+                vaults operated under strict multi-party computation protocols.
+              </p>
+              <div className="p-2.5 rounded border border-current/20 bg-current/5 space-y-1">
+                <div className="font-mono text-[10px] font-bold">KEY AUDIT FINDINGS:</div>
+                <div className="text-[10px] opacity-90">
+                  • 100% Reserve proof verified via decentralized oracle
+                </div>
+                <div className="text-[10px] opacity-90">
+                  • Zero discrepancy in client ledger reconciliations
+                </div>
+              </div>
+            </div>
+
+            {/* Sheet Footer */}
+            <div className="border-t pt-2 flex justify-between text-[9px] font-mono opacity-60 border-current">
+              <span>CONFIDENTIAL • FOR INTERNAL DISTRIBUTION ONLY</span>
+              <span>
+                Page {currentPage} of {totalPages}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer Info */}
+      <div className="pt-2 border-t border-zinc-800 flex items-center justify-between text-[10px] font-mono text-zinc-500 shrink-0">
+        <span>File size: {params?.fileSize || '4.2 MB'} • Vector PDF</span>
+        <button className="text-indigo-400 hover:underline flex items-center gap-1">
+          <Download className="w-3 h-3" />
+          <span>Export Document</span>
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   32. DOCX WORD DOCUMENT READER & LAYOUT WIDGET (DOCX)
+   ============================================================ */
+export const DocxViewerPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const fileName = params?.fileName || 'Master_Services_Agreement_Final.docx'
+  const author = params?.author || 'Legal Department'
+  const wordCount = params?.wordCount || 3420
+  const status = params?.status || 'Approved with Revisions'
+  const [activeTab, setActiveTab] = useState<'doc' | 'revisions'>('doc')
+
+  return (
+    <div className="reframe-panel-body p-3 bg-zinc-950/70 text-zinc-100 flex flex-col h-full select-none overflow-hidden">
+      {/* Top Header */}
+      <div className="flex items-center justify-between pb-2 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <FileSpreadsheet className="w-3.5 h-3.5 text-blue-400" />
+          <span className="font-semibold text-zinc-200">{fileName}</span>
+          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-blue-500/10 text-blue-300 border border-blue-500/30">
+            DOCX
+          </span>
+        </div>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => setActiveTab('doc')}
+            className={`px-2.5 py-0.5 rounded text-[10px] font-medium transition-colors ${
+              activeTab === 'doc'
+                ? 'bg-blue-600 text-white'
+                : 'bg-zinc-900 text-zinc-400 hover:text-zinc-200 border border-zinc-800'
+            }`}
+          >
+            Document
+          </button>
+          <button
+            onClick={() => setActiveTab('revisions')}
+            className={`px-2.5 py-0.5 rounded text-[10px] font-medium transition-colors ${
+              activeTab === 'revisions'
+                ? 'bg-blue-600 text-white'
+                : 'bg-zinc-900 text-zinc-400 hover:text-zinc-200 border border-zinc-800'
+            }`}
+          >
+            Revisions (2)
+          </button>
+        </div>
+      </div>
+
+      {/* Main View Area */}
+      <div className="flex-1 overflow-y-auto py-2.5 pr-1">
+        {activeTab === 'doc' ? (
+          <div className="p-4 rounded-lg bg-zinc-900/40 border border-zinc-800 space-y-3.5 text-xs text-zinc-300 leading-relaxed font-sans">
+            <div className="border-b border-zinc-800/80 pb-2">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-blue-400 font-semibold block mb-0.5">
+                Contract Agreement
+              </span>
+              <h1 className="text-sm font-bold text-white">
+                MASTER SERVICES & PLATFORM SLA AGREEMENT
+              </h1>
+            </div>
+
+            <div className="space-y-1">
+              <h2 className="text-xs font-semibold text-zinc-200">
+                1. Scope of Enterprise Deliverable
+              </h2>
+              <p className="text-zinc-400 leading-normal">
+                Provider agrees to deploy and maintain the customized, standalone desktop Cockpit
+                Application for Client, containing zero external vendor tracking and pure offline
+                execution capability.
+              </p>
+            </div>
+
+            <div className="space-y-1">
+              <h2 className="text-xs font-semibold text-zinc-200">
+                2. Service Level Guarantees (SLA)
+              </h2>
+              <p className="text-zinc-400 leading-normal">
+                Platform uptime is guaranteed at 99.95% monthly calculation. Any verified service
+                interruption exceeding 15 consecutive minutes triggers a 10% credit towards the
+                subsequent billing cycle.
+              </p>
+            </div>
+
+            <div className="p-2.5 rounded bg-blue-950/20 border border-blue-500/30 text-[11px] text-blue-200">
+              <span className="font-semibold block mb-0.5">Section 8.4 Amendment:</span>
+              Limitation of liability is capped at 100% of fees paid during the prior 12-month
+              period.
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2 text-xs">
+            <div className="p-2.5 rounded-lg bg-zinc-900/60 border border-zinc-800 space-y-1">
+              <div className="flex justify-between text-[10px] font-mono">
+                <span className="text-blue-400 font-semibold">Legal Counsel (Reviewer)</span>
+                <span className="text-zinc-500">Yesterday 4:15 PM</span>
+              </div>
+              <p className="text-zinc-300">
+                Added limitation of liability cap to Section 8.4 in accordance with enterprise
+                procurement terms.
+              </p>
+              <span className="text-[9px] font-mono text-emerald-400 block pt-0.5">
+                Status: Accepted
+              </span>
+            </div>
+
+            <div className="p-2.5 rounded-lg bg-zinc-900/60 border border-zinc-800 space-y-1">
+              <div className="flex justify-between text-[10px] font-mono">
+                <span className="text-amber-400 font-semibold">David Ross (Product)</span>
+                <span className="text-zinc-500">Today 10:20 AM</span>
+              </div>
+              <p className="text-zinc-300">
+                Confirmed Friday delivery schedule matches master milestone commitments.
+              </p>
+              <span className="text-[9px] font-mono text-emerald-400 block pt-0.5">
+                Status: Verified
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Footer Info */}
+      <div className="pt-2 border-t border-zinc-800 flex items-center justify-between text-[10px] font-mono text-zinc-500 shrink-0">
+        <span>
+          Author: {author} • {wordCount} words
+        </span>
+        <span className="text-blue-400">{status}</span>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   33. PLAIN TEXT FILE INSPECTOR WIDGET (TXT)
+   ============================================================ */
+export const TxtReaderPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const fileName = params?.fileName || 'system_environment.env'
+  const encoding = params?.encoding || 'UTF-8 (CRLF)'
+  const linesCount = params?.lines || 42
+  const fileSize = params?.fileSize || '14.8 KB'
+  const [wrap, setWrap] = useState(false)
+  const [search, setSearch] = useState('')
+
+  const sampleLines = [
+    '# Production Environment Configuration Matrix',
+    'APP_NAME=ApexEnterpriseCockpit',
+    'NODE_ENV=production',
+    'PORT=3920',
+    'AUTH_ISSUER=https://auth.internal.corp',
+    'DATABASE_MAX_CONNECTIONS=100',
+    'DATABASE_IDLE_TIMEOUT_MS=10000',
+    'REDIS_CLUSTER_URL=redis://10.0.4.12:6379',
+    'REDIS_FAILOVER_TIMEOUT_MS=2500',
+    'ENCRYPTION_ALGORITHM=AES-256-GCM',
+    'TELEMETRY_SAMPLE_RATE=1.0',
+    'RATE_LIMIT_MAX_PER_MINUTE=10000',
+    'AUDIT_LOG_RETENTION_DAYS=90'
+  ]
+
+  const filtered = sampleLines.filter((l) =>
+    search ? l.toLowerCase().includes(search.toLowerCase()) : true
+  )
+
+  return (
+    <div className="reframe-panel-body p-3 bg-zinc-950/70 text-zinc-100 flex flex-col h-full select-none overflow-hidden">
+      {/* Top Header */}
+      <div className="flex items-center justify-between pb-2 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <FileCode className="w-3.5 h-3.5 text-zinc-400" />
+          <span className="font-semibold text-zinc-200">{fileName}</span>
+          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-zinc-800 text-zinc-300 border border-zinc-700">
+            TXT
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search className="w-3 h-3 text-zinc-500 absolute left-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Find in text..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="bg-zinc-900 border border-zinc-800 rounded pl-6 pr-2 py-0.5 text-[11px] text-zinc-300 placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
+            />
+          </div>
+          <button
+            onClick={() => setWrap(!wrap)}
+            className={`px-2 py-0.5 rounded text-[10px] font-mono border transition-colors ${
+              wrap
+                ? 'bg-zinc-800 text-white border-zinc-700'
+                : 'bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-zinc-200'
+            }`}
+          >
+            Wrap: {wrap ? 'ON' : 'OFF'}
+          </button>
+        </div>
+      </div>
+
+      {/* Editor Content Area with Gutter */}
+      <div className="flex-1 overflow-auto py-2 font-mono text-[11px] flex gap-2">
+        <div className="select-none text-zinc-600 text-right pr-2 border-r border-zinc-800/80 space-y-0.5 shrink-0">
+          {filtered.map((_, idx) => (
+            <div key={idx}>{String(idx + 1).padStart(2, '0')}</div>
+          ))}
+        </div>
+        <div
+          className={`space-y-0.5 text-zinc-300 ${wrap ? 'whitespace-pre-wrap' : 'whitespace-pre'}`}
+        >
+          {filtered.map((line, idx) => (
+            <div
+              key={idx}
+              className={`px-1 rounded ${search && line.toLowerCase().includes(search.toLowerCase()) ? 'bg-indigo-950/60 text-indigo-200' : ''}`}
+            >
+              {line.startsWith('#') ? (
+                <span className="text-zinc-500 italic">{line}</span>
+              ) : line.includes('=') ? (
+                <>
+                  <span className="text-indigo-400 font-semibold">{line.split('=')[0]}</span>=
+                  <span className="text-emerald-300">{line.slice(line.indexOf('=') + 1)}</span>
+                </>
+              ) : (
+                line
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Bottom Status Info */}
+      <div className="pt-2 border-t border-zinc-800 flex items-center justify-between text-[10px] font-mono text-zinc-500 shrink-0">
+        <span>
+          {linesCount} lines • {fileSize}
+        </span>
+        <span className="text-zinc-400">{encoding}</span>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   34. DUAL DOCUMENT DIFF & VERSION COMPARATOR WIDGET
+   ============================================================ */
+export const DocDiffPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const sourceA = params?.sourceA || 'policy-v1.4.md'
+  const sourceB = params?.sourceB || 'policy-v2.0.md'
+  const additions = params?.additions || 14
+  const deletions = params?.deletions || 6
+  const [viewMode, setViewMode] = useState<'split' | 'unified'>('unified')
+
+  const diffChunks = [
+    {
+      type: 'normal',
+      lineA: 10,
+      lineB: 10,
+      text: '### Authentication & Session Lifecycle Protocol'
+    },
+    {
+      type: 'delete',
+      lineA: 11,
+      lineB: null,
+      text: '- Default user session idle expiration: 30 minutes'
+    },
+    {
+      type: 'add',
+      lineA: null,
+      lineB: 11,
+      text: '+ Default user session idle expiration: 15 minutes (SOC2 Type II strict)'
+    },
+    { type: 'delete', lineA: 12, lineB: null, text: '- Password rotation interval: 180 days' },
+    {
+      type: 'add',
+      lineA: null,
+      lineB: 12,
+      text: '+ Password rotation interval: 90 days with automated notification'
+    },
+    {
+      type: 'add',
+      lineA: null,
+      lineB: 13,
+      text: '+ Mandatory hardware security key (FIDO2) required for admin tiers'
+    },
+    {
+      type: 'normal',
+      lineA: 13,
+      lineB: 14,
+      text: 'All login attempts are logged with geo-IP and device fingerprint.'
+    }
+  ]
+
+  return (
+    <div className="reframe-panel-body p-3 bg-zinc-950/70 text-zinc-100 flex flex-col h-full select-none overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-2 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <GitCompare className="w-3.5 h-3.5 text-amber-400" />
+          <span className="font-semibold text-zinc-200">Version Diff Comparator</span>
+        </div>
+        <div className="flex items-center gap-2 font-mono text-[10px]">
+          <span className="text-emerald-400 bg-emerald-950/30 px-1.5 py-0.5 rounded border border-emerald-500/30">
+            +{additions} additions
+          </span>
+          <span className="text-rose-400 bg-rose-950/30 px-1.5 py-0.5 rounded border border-rose-500/30">
+            -{deletions} deletions
+          </span>
+          <div className="flex bg-zinc-900 border border-zinc-800 rounded p-0.5">
+            <button
+              onClick={() => setViewMode('unified')}
+              className={`px-2 py-0.5 rounded ${viewMode === 'unified' ? 'bg-zinc-800 text-white' : 'text-zinc-400'}`}
+            >
+              Unified
+            </button>
+            <button
+              onClick={() => setViewMode('split')}
+              className={`px-2 py-0.5 rounded ${viewMode === 'split' ? 'bg-zinc-800 text-white' : 'text-zinc-400'}`}
+            >
+              Split
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Target Files Strip */}
+      <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400 py-1.5 border-b border-zinc-850 shrink-0">
+        <span className="text-rose-400/90">A: {sourceA} (Base)</span>
+        <span className="text-emerald-400/90">B: {sourceB} (Target)</span>
+      </div>
+
+      {/* Diff Lines Table */}
+      <div className="flex-1 overflow-y-auto py-2 font-mono text-[11px] space-y-1">
+        {diffChunks.map((chunk, idx) => (
+          <div
+            key={idx}
+            className={`p-1.5 rounded flex items-start gap-2 ${
+              chunk.type === 'add'
+                ? 'bg-emerald-950/30 border border-emerald-500/30 text-emerald-200'
+                : chunk.type === 'delete'
+                  ? 'bg-rose-950/30 border border-rose-500/30 text-rose-300'
+                  : 'text-zinc-400 hover:bg-zinc-900/40'
+            }`}
+          >
+            <span className="w-6 text-zinc-500 select-none text-right">
+              {chunk.lineB || chunk.lineA}
+            </span>
+            <span className="flex-1 leading-snug">{chunk.text}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Bottom Navigation */}
+      <div className="pt-2 border-t border-zinc-800 flex items-center justify-between text-[10px] font-mono text-zinc-500 shrink-0">
+        <span>3 changed chunks identified</span>
+        <span className="text-amber-400">Ready to merge</span>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   35. MULTI-LANGUAGE CODE & CONFIG INSPECTOR WIDGET
+   ============================================================ */
+export const CodeViewerPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const [selectedFile, setSelectedFile] = useState(params?.activeTab || 'schema.prisma')
+  const [copied, setCopied] = useState(false)
+
+  const codeSnippets: Record<string, string> = {
+    'schema.prisma': `datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id        String   @id @default(uuid())
+  name      String
+  plan      String   @default("ENTERPRISE")
+  createdAt DateTime @default(now())
+  users     User[]
+}`,
+    'docker-compose.yml': `version: '3.8'
+services:
+  app:
+    image: cockpit-runtime:latest
+    ports:
+      - "3920:3920"
+    environment:
+      - NODE_ENV=production
+    restart: always`,
+    'server.ts': `import { createServer } from 'http'
+
+const server = createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'application/json' })
+  res.end(JSON.stringify({ status: 'ok', uptime: process.uptime() }))
+})
+
+server.listen(3920)`
+  }
+
+  const handleCopy = () => {
+    navigator.clipboard?.writeText(codeSnippets[selectedFile] || '')
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className="reframe-panel-body p-3 bg-zinc-950/70 text-zinc-100 flex flex-col h-full select-none overflow-hidden">
+      {/* File Tabs & Actions */}
+      <div className="flex items-center justify-between pb-2 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-1.5">
+          <Code2 className="w-3.5 h-3.5 text-indigo-400" />
+          {Object.keys(codeSnippets).map((f) => (
+            <button
+              key={f}
+              onClick={() => setSelectedFile(f)}
+              className={`px-2 py-0.5 rounded text-[11px] font-mono transition-colors ${
+                selectedFile === f
+                  ? 'bg-indigo-600 text-white font-medium shadow-sm'
+                  : 'bg-zinc-900 text-zinc-400 hover:text-zinc-200 border border-zinc-800'
+              }`}
+            >
+              {f}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={handleCopy}
+          className="p-1 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white"
+          title="Copy snippet"
+        >
+          {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+        </button>
+      </div>
+
+      {/* Code Area */}
+      <div className="flex-1 overflow-auto py-2 font-mono text-xs bg-zinc-950 p-3 rounded-lg border border-zinc-800 my-1">
+        <pre className="text-zinc-200 leading-relaxed whitespace-pre">
+          {codeSnippets[selectedFile]}
+        </pre>
+      </div>
+
+      {/* Footer */}
+      <div className="pt-2 border-t border-zinc-800 flex items-center justify-between text-[10px] font-mono text-zinc-500 shrink-0">
+        <span>File: {selectedFile}</span>
+        <span className="text-emerald-400">TypeScript / Schema Syntax</span>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   36. CSV & SPREADSHEET TABULAR DATA READER WIDGET
+   ============================================================ */
+export const CsvSpreadsheetPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const fileName = params?.fileName || 'customer_churn_q3.csv'
+  const [search, setSearch] = useState('')
+  const [copied, setCopied] = useState(false)
+
+  const rows = [
+    {
+      id: '101',
+      client: 'Acme Global Corp',
+      tier: 'Tier 1 Enterprise',
+      mrr: '$45,000',
+      risk: 'Low',
+      region: 'NA'
+    },
+    {
+      id: '102',
+      client: 'Nexus Data Labs',
+      tier: 'Growth',
+      mrr: '$12,500',
+      risk: 'Medium',
+      region: 'EMEA'
+    },
+    {
+      id: '103',
+      client: 'Apex Fintech Solutions',
+      tier: 'Tier 1 Enterprise',
+      mrr: '$78,000',
+      risk: 'Low',
+      region: 'APAC'
+    },
+    {
+      id: '104',
+      client: 'SaaS Metrics Hub',
+      tier: 'Startup',
+      mrr: '$4,200',
+      risk: 'High',
+      region: 'LATAM'
+    },
+    {
+      id: '105',
+      client: 'Omni Cloud Systems',
+      tier: 'Growth',
+      mrr: '$22,000',
+      risk: 'Low',
+      region: 'NA'
+    }
+  ]
+
+  const filtered = rows.filter((r) =>
+    search ? Object.values(r).some((v) => v.toLowerCase().includes(search.toLowerCase())) : true
+  )
+
+  const handleExport = () => {
+    const csvContent = [
+      'ID,Client,Tier,MRR,Risk,Region',
+      ...filtered.map((r) => `${r.id},"${r.client}","${r.tier}",${r.mrr},${r.risk},${r.region}`)
+    ].join('\n')
+    navigator.clipboard?.writeText(csvContent)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className="reframe-panel-body p-3 bg-zinc-950/70 text-zinc-100 flex flex-col h-full select-none overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-2 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="font-semibold text-zinc-200">{fileName}</span>
+          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
+            CSV
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <input
+            type="text"
+            placeholder="Filter cells..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="bg-zinc-900 border border-zinc-800 rounded px-2 py-0.5 text-[11px] text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
+          />
+          <button
+            onClick={handleExport}
+            className="px-2 py-0.5 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 text-[10px] font-mono flex items-center gap-1"
+          >
+            {copied ? (
+              <Check className="w-3 h-3 text-emerald-400" />
+            ) : (
+              <Download className="w-3 h-3" />
+            )}
+            <span>Export</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Grid Table */}
+      <div className="flex-1 overflow-auto my-1 rounded border border-zinc-800 text-xs">
+        <table className="w-full text-left font-mono">
+          <thead className="bg-zinc-900/80 text-[10px] text-zinc-400 uppercase sticky top-0 border-b border-zinc-800">
+            <tr>
+              <th className="p-2">ID</th>
+              <th className="p-2">Client</th>
+              <th className="p-2">Tier</th>
+              <th className="p-2">MRR</th>
+              <th className="p-2">Risk</th>
+              <th className="p-2">Region</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-zinc-800/60 text-zinc-300 text-[11px]">
+            {filtered.map((r) => (
+              <tr key={r.id} className="hover:bg-zinc-900/40">
+                <td className="p-2 text-zinc-500">{r.id}</td>
+                <td className="p-2 font-medium text-white">{r.client}</td>
+                <td className="p-2">{r.tier}</td>
+                <td className="p-2 text-emerald-400 font-bold">{r.mrr}</td>
+                <td className="p-2">
+                  <span
+                    className={`px-1.5 py-0.2 rounded text-[10px] ${
+                      r.risk === 'Low'
+                        ? 'text-emerald-400 bg-emerald-950/30'
+                        : r.risk === 'Medium'
+                          ? 'text-amber-400 bg-amber-950/30'
+                          : 'text-rose-400 bg-rose-950/30'
+                    }`}
+                  >
+                    {r.risk}
+                  </span>
+                </td>
+                <td className="p-2 text-zinc-400">{r.region}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Footer */}
+      <div className="pt-2 border-t border-zinc-800 flex items-center justify-between text-[10px] font-mono text-zinc-500 shrink-0">
+        <span>
+          Showing {filtered.length} of {rows.length} rows
+        </span>
+        <span className="text-zinc-400">Comma-Separated Grid</span>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   37. AI DOCUMENT SUMMARIZER & "CHAT WITH DOC" WIDGET
+   ============================================================ */
+let docAiQaIdCounter = 100
+const getNextDocQaId = () => `doc-qa-${++docAiQaIdCounter}`
+
+export const DocAiSummarizerPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const documentName = params?.documentName || 'Q3_Security_Audit_RFC.pdf'
+  const tldr =
+    params?.tldr ||
+    'Audit confirmed zero critical vulnerabilities across core infrastructure. Recommended reducing session TTL to 15m and mandatory FIDO2 hardware tokens.'
+  const [query, setQuery] = useState('')
+  const [qaHistory, setQaHistory] = useState([
+    {
+      id: 'doc-qa-1',
+      question: 'What is the required MFA policy change?',
+      answer:
+        'Section 4.1 mandates FIDO2 hardware security keys for all production and admin operations, replacing SMS OTP entirely.',
+      citation: 'Section 4.1 • Page 7'
+    }
+  ])
+  const [isSearching, setIsSearching] = useState(false)
+
+  const handleAsk = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!query.trim()) return
+    setIsSearching(true)
+    const q = query.trim()
+    setQuery('')
+    setTimeout(() => {
+      let a = 'Based on the document text, all systems conform to SOC2 Type II audit benchmarks.'
+      let c = 'Section 2.3 • Page 4'
+      if (q.toLowerCase().includes('session') || q.toLowerCase().includes('ttl')) {
+        a =
+          'The session idle timeout is reduced from 30 minutes to 15 minutes to satisfy strict compliance.'
+        c = 'Section 3.2 • Page 5'
+      } else if (
+        q.toLowerCase().includes('vulnerability') ||
+        q.toLowerCase().includes('critical')
+      ) {
+        a =
+          'Zero critical or high CVEs were discovered in the penetration test conducted on August 15.'
+        c = 'Appendix B • Page 14'
+      }
+      setQaHistory((prev) => [
+        ...prev,
+        { id: getNextDocQaId(), question: q, answer: a, citation: c }
+      ])
+      setIsSearching(false)
+    }, 600)
+  }
+
+  return (
+    <div className="reframe-panel-body p-3 bg-zinc-950/70 text-zinc-100 flex flex-col h-full select-none overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-2 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <Bot className="w-3.5 h-3.5 text-indigo-400" />
+          <span className="font-semibold text-zinc-200">AI Document Intelligence</span>
+        </div>
+        <span className="text-[10px] font-mono text-zinc-400">{documentName}</span>
+      </div>
+
+      {/* TL;DR Highlight Card */}
+      <div className="my-2 p-2.5 rounded-lg bg-indigo-950/20 border border-indigo-500/30 text-xs shrink-0 space-y-1">
+        <span className="text-[10px] font-mono uppercase text-indigo-400 font-semibold block">
+          Executive TL;DR
+        </span>
+        <p className="text-zinc-200 leading-relaxed text-[11px]">{tldr}</p>
+      </div>
+
+      {/* QA Stream */}
+      <div className="flex-1 overflow-y-auto space-y-2 py-1 pr-1 text-xs">
+        {qaHistory.map((qa) => (
+          <div
+            key={qa.id}
+            className="p-2.5 rounded bg-zinc-900/50 border border-zinc-800 space-y-1"
+          >
+            <div className="font-semibold text-zinc-200 flex items-center gap-1.5">
+              <span className="text-indigo-400 font-bold">Q:</span>
+              <span>{qa.question}</span>
+            </div>
+            <p className="text-zinc-300 text-[11px] leading-relaxed pl-3 border-l-2 border-indigo-500/40">
+              {qa.answer}
+            </p>
+            <div className="text-[10px] font-mono text-emerald-400 pt-0.5">
+              Citation: {qa.citation}
+            </div>
+          </div>
+        ))}
+        {isSearching && (
+          <div className="p-2 rounded bg-zinc-900/30 text-xs text-zinc-400 font-mono animate-pulse">
+            Analyzing document embeddings...
+          </div>
+        )}
+      </div>
+
+      {/* Query Form */}
+      <form onSubmit={handleAsk} className="pt-2 border-t border-zinc-800 flex gap-2 shrink-0">
+        <input
+          type="text"
+          placeholder="Ask anything about this document..."
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="flex-1 bg-zinc-900 border border-zinc-800 rounded px-2.5 py-1 text-xs text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-zinc-700"
+        />
+        <button
+          type="submit"
+          className="px-3 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold"
+        >
+          Ask
+        </button>
+      </form>
+    </div>
+  )
+}
+
+/* ============================================================
+   38. FILE METADATA & CRYPTOGRAPHIC INSPECTOR WIDGET
+   ============================================================ */
+export const DocMetadataPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const fileName = params?.fileName || 'release-build-v4.2.0.tar.gz'
+  const sha256 =
+    params?.sha256 || 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+  const mimeType = params?.mimeType || 'application/gzip'
+  const fileSize = params?.fileSize || '84.2 MB'
+  const [copied, setCopied] = useState(false)
+
+  const handleCopyHash = () => {
+    navigator.clipboard?.writeText(sha256)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className="reframe-panel-body p-3.5 bg-zinc-950/70 text-zinc-100 flex flex-col justify-between h-full select-none overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-2 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="font-semibold text-zinc-200">File Forensics & Metadata</span>
+        </div>
+        <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/30 px-2 py-0.5 rounded border border-emerald-500/30">
+          SHA-256 Verified
+        </span>
+      </div>
+
+      {/* Metadata Attributes Grid */}
+      <div className="space-y-2.5 my-auto py-2 text-xs font-mono">
+        <div className="p-2 rounded bg-zinc-900/50 border border-zinc-800 flex justify-between">
+          <span className="text-zinc-500">FILENAME:</span>
+          <span className="text-zinc-200 font-bold">{fileName}</span>
+        </div>
+        <div className="p-2 rounded bg-zinc-900/50 border border-zinc-800 flex justify-between">
+          <span className="text-zinc-500">MIME TYPE:</span>
+          <span className="text-indigo-300">{mimeType}</span>
+        </div>
+        <div className="p-2 rounded bg-zinc-900/50 border border-zinc-800 flex justify-between">
+          <span className="text-zinc-500">SIZE:</span>
+          <span className="text-zinc-200">{fileSize}</span>
+        </div>
+        <div className="p-2 rounded bg-zinc-900/50 border border-zinc-800 flex justify-between">
+          <span className="text-zinc-500">PERMISSIONS:</span>
+          <span className="text-emerald-400">-rw-r--r-- (0644)</span>
+        </div>
+
+        {/* SHA-256 Box with Copy */}
+        <div className="p-2 rounded bg-zinc-900/80 border border-zinc-700/80 space-y-1">
+          <div className="flex justify-between items-center text-[10px]">
+            <span className="text-zinc-400">SHA-256 CHECKSUM HASH:</span>
+            <button
+              onClick={handleCopyHash}
+              className="text-indigo-400 hover:text-indigo-300 flex items-center gap-1 cursor-pointer"
+            >
+              {copied ? (
+                <Check className="w-3 h-3 text-emerald-400" />
+              ) : (
+                <Copy className="w-3 h-3" />
+              )}
+              <span>{copied ? 'Copied' : 'Copy'}</span>
+            </button>
+          </div>
+          <div className="text-[10px] text-zinc-300 break-all leading-tight">{sha256}</div>
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="pt-2 border-t border-zinc-800 flex items-center justify-between text-[10px] font-mono text-zinc-500 shrink-0">
+        <span>Integrity: Zero bit rot</span>
+        <span className="text-emerald-400">Signature Valid</span>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   39. DISTRACTION-FREE LONG-FORM FOCUS READER WIDGET
+   ============================================================ */
+export const DocFocusReaderPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const articleTitle =
+    params?.articleTitle || 'The Evolution of High-Density App Shell Architectures'
+  const author = params?.author || 'Engineering Architecture Group'
+  const [fontFamily, setFontFamily] = useState<'serif' | 'sans' | 'mono'>('serif')
+  const [theme, setTheme] = useState<'paper' | 'dark' | 'sepia'>('sepia')
+  const [progress, setProgress] = useState<number>(params?.progress || 68)
+
+  return (
+    <div className="reframe-panel-body p-3 bg-zinc-950/70 text-zinc-100 flex flex-col h-full select-none overflow-hidden">
+      {/* Top Reading Toolbar */}
+      <div className="flex items-center justify-between pb-2 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+          <span className="font-semibold text-zinc-200">Focus E-Reader</span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* Font switcher */}
+          <div className="flex bg-zinc-900 border border-zinc-800 rounded p-0.5 text-[10px]">
+            {(['serif', 'sans', 'mono'] as const).map((f) => (
+              <button
+                key={f}
+                onClick={() => setFontFamily(f)}
+                className={`px-2 py-0.5 rounded capitalize ${fontFamily === f ? 'bg-zinc-800 text-white font-medium' : 'text-zinc-400'}`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+
+          {/* Theme switcher */}
+          <div className="flex bg-zinc-900 border border-zinc-800 rounded p-0.5 text-[10px]">
+            {(['sepia', 'dark', 'paper'] as const).map((th) => (
+              <button
+                key={th}
+                onClick={() => setTheme(th)}
+                className={`px-2 py-0.5 rounded capitalize ${theme === th ? 'bg-zinc-800 text-white font-medium' : 'text-zinc-400'}`}
+              >
+                {th}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Reader Paper Sheet */}
+      <div
+        className={`flex-1 overflow-y-auto p-5 my-2 rounded-lg leading-relaxed text-xs transition-colors ${
+          theme === 'sepia'
+            ? 'bg-[#1f1d19] text-[#e8dfd1] border border-[#3b342a]'
+            : theme === 'paper'
+              ? 'bg-[#f8f6f0] text-zinc-900 border border-zinc-300'
+              : 'bg-zinc-900 text-zinc-200 border border-zinc-800'
+        }`}
+        style={{
+          fontFamily:
+            fontFamily === 'serif'
+              ? 'Georgia, serif'
+              : fontFamily === 'mono'
+                ? 'monospace'
+                : 'sans-serif'
+        }}
+      >
+        <div className="max-w-md mx-auto space-y-3.5">
+          <h1 className="text-base font-bold tracking-tight">{articleTitle}</h1>
+          <div className="text-[10px] opacity-70 font-mono">By {author} • 8 min read</div>
+          <p>
+            Desktop software engineering is undergoing a quiet renaissance. The paradigm is shifting
+            away from bloated web browsers wrapped in memory-hungry containers toward
+            hyper-optimized, standalone app cockpits designed for maximum data density.
+          </p>
+          <p>
+            When layout engines preserve pixel boundaries and client modes bake out intermediate
+            abstractions, users experience true zero-latency interactions. Workspaces become
+            instruments of focus rather than friction.
+          </p>
+        </div>
+      </div>
+
+      {/* Reading Progress Footer */}
+      <div className="pt-2 border-t border-zinc-800 flex items-center justify-between text-[10px] font-mono text-zinc-500 shrink-0">
+        <div className="flex items-center gap-2">
+          <span>Progress: {progress}%</span>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={progress}
+            onChange={(e) => setProgress(Number(e.target.value))}
+            className="w-24 accent-amber-500 cursor-pointer"
+          />
+        </div>
+        <span>~3 min remaining</span>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   40. OPENAPI & SWAGGER ENDPOINT EXPLORER WIDGET
+   ============================================================ */
+export const DocSwaggerPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const apiTitle = params?.apiTitle || 'Enterprise Fleet API v2.4'
+  const [selectedEndpoint, setSelectedEndpoint] = useState('GET /v2/clusters')
+  const [activeTab, setActiveTab] = useState<'200' | '400'>('200')
+
+  const endpoints = [
+    { method: 'GET', path: '/v2/clusters', desc: 'List active Kubernetes clusters' },
+    { method: 'POST', path: '/v2/deploy', desc: 'Trigger canary deploy workflow' },
+    { method: 'DELETE', path: '/v2/keys/:id', desc: 'Revoke compromised access key' }
+  ]
+
+  return (
+    <div className="reframe-panel-body p-3 bg-zinc-950/70 text-zinc-100 flex flex-col h-full select-none overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-2 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <Network className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="font-semibold text-zinc-200">{apiTitle}</span>
+        </div>
+        <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-zinc-800 text-zinc-400">
+          OpenAPI 3.1
+        </span>
+      </div>
+
+      {/* Endpoints Quick Selector */}
+      <div className="flex gap-1.5 py-2 border-b border-zinc-850 overflow-x-auto shrink-0 no-scrollbar">
+        {endpoints.map((ep) => {
+          const key = `${ep.method} ${ep.path}`
+          const isSelected = selectedEndpoint === key
+          const methodColor =
+            ep.method === 'GET'
+              ? 'bg-blue-500/20 text-blue-300'
+              : ep.method === 'POST'
+                ? 'bg-emerald-500/20 text-emerald-300'
+                : 'bg-rose-500/20 text-rose-300'
+
+          return (
+            <button
+              key={key}
+              onClick={() => setSelectedEndpoint(key)}
+              className={`px-2 py-1 rounded text-[10px] font-mono whitespace-nowrap flex items-center gap-1.5 border transition-colors ${
+                isSelected
+                  ? 'border-indigo-500 bg-zinc-900 text-white'
+                  : 'border-zinc-800 bg-zinc-900/50 text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              <span className={`px-1 rounded text-[9px] font-bold ${methodColor}`}>
+                {ep.method}
+              </span>
+              <span>{ep.path}</span>
+            </button>
+          )
+        })}
+      </div>
+
+      {/* Schema / Response Payload Display */}
+      <div className="flex-1 overflow-y-auto py-2 space-y-2 text-xs font-mono">
+        <div className="flex justify-between items-center text-[10px]">
+          <span className="text-zinc-400">RESPONSE SCHEMA SAMPLE</span>
+          <div className="flex gap-1">
+            <button
+              onClick={() => setActiveTab('200')}
+              className={`px-2 py-0.5 rounded ${activeTab === '200' ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/40' : 'text-zinc-500'}`}
+            >
+              200 OK
+            </button>
+            <button
+              onClick={() => setActiveTab('400')}
+              className={`px-2 py-0.5 rounded ${activeTab === '400' ? 'bg-rose-950 text-rose-400 border border-rose-500/40' : 'text-zinc-500'}`}
+            >
+              400 Bad Request
+            </button>
+          </div>
+        </div>
+
+        <pre className="bg-zinc-950 p-2.5 rounded border border-zinc-800 text-[11px] text-zinc-300 leading-relaxed overflow-x-auto">
+          {activeTab === '200'
+            ? `{\n  "status": "success",\n  "endpoint": "${selectedEndpoint}",\n  "data": [\n    {\n      "id": "cls-902",\n      "region": "us-east-1",\n      "health": "healthy",\n      "nodes": 12\n    }\n  ]\n}`
+            : `{\n  "error": "BAD_REQUEST",\n  "code": 400,\n  "message": "Missing required header: X-Client-ID"\n}`}
+        </pre>
+      </div>
+
+      {/* Footer */}
+      <div className="pt-2 border-t border-zinc-800 flex items-center justify-between text-[10px] font-mono text-zinc-500 shrink-0">
+        <span>Base URL: https://api.cockpit.internal/v2</span>
+        <span className="text-emerald-400">Contract Synchronized</span>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   41. CONTRACT REVIEW & LEGAL REDLINING SIGN-OFF WIDGET
+   ============================================================ */
+export const DocContractReviewPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const contractName = params?.contractName || 'Enterprise Master SaaS Agreement (MSA-2026-Q3)'
+  const [status, setStatus] = useState(params?.status || 'Under Legal Review')
+  const [signees, setSignees] = useState([
+    { name: 'Sarah Lin', role: 'VP Eng', status: 'Signed', date: 'Sep 24, 2026' },
+    { name: 'David Ross', role: 'Head of Product', status: 'Approved', date: 'Sep 24, 2026' },
+    { name: 'External Counsel', role: 'General Counsel', status: 'Pending Review', date: '-' }
+  ])
+
+  const handleSign = () => {
+    setSignees((prev) =>
+      prev.map((s) =>
+        s.status === 'Pending Review' ? { ...s, status: 'Signed', date: 'Just now' } : s
+      )
+    )
+    setStatus('Countersigned & Executed')
+  }
+
+  return (
+    <div className="reframe-panel-body p-3.5 bg-zinc-950/70 text-zinc-100 flex flex-col justify-between h-full select-none overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-2 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <FileCheck2 className="w-3.5 h-3.5 text-indigo-400" />
+          <span className="font-semibold text-zinc-200">{contractName}</span>
+        </div>
+        <span
+          className={`text-[10px] font-mono px-2 py-0.5 rounded border ${
+            status.includes('Executed')
+              ? 'bg-emerald-950/30 text-emerald-300 border-emerald-500/30'
+              : 'bg-amber-950/30 text-amber-300 border-amber-500/30'
+          }`}
+        >
+          {status}
+        </span>
+      </div>
+
+      {/* Contract Clauses with Redline */}
+      <div className="space-y-2.5 my-auto py-2 text-xs">
+        <div className="p-2.5 rounded-lg bg-zinc-900/50 border border-zinc-800 space-y-1">
+          <div className="flex justify-between items-center text-[10px] font-mono">
+            <span className="text-zinc-400 font-bold">CLAUSE 4.2 • INDEMNIFICATION</span>
+            <span className="text-emerald-400 bg-emerald-950/30 px-1 rounded">Low Risk</span>
+          </div>
+          <p className="text-zinc-300 text-[11px] leading-snug">
+            Standard bilateral intellectual property indemnification capped to aggregate contract
+            value.
+          </p>
+        </div>
+
+        <div className="p-2.5 rounded-lg bg-zinc-900/50 border border-zinc-800 space-y-1">
+          <div className="flex justify-between items-center text-[10px] font-mono">
+            <span className="text-zinc-400 font-bold">CLAUSE 8.1 • TERMINATION FOR CAUSE</span>
+            <span className="text-amber-400 bg-amber-950/30 px-1 rounded">Redlined</span>
+          </div>
+          <p className="text-zinc-300 text-[11px] leading-snug">
+            Either party may terminate upon{' '}
+            <span className="line-through text-rose-400">60 days</span>{' '}
+            <span className="text-emerald-400 font-semibold underline">30 days</span> written cure
+            period.
+          </p>
+        </div>
+
+        {/* Signees Checklist */}
+        <div className="pt-1 space-y-1">
+          <span className="text-[10px] font-mono uppercase text-zinc-500 block">
+            Stakeholder Sign-Offs:
+          </span>
+          {signees.map((s) => (
+            <div
+              key={s.name}
+              className="flex items-center justify-between text-[11px] font-mono text-zinc-400"
+            >
+              <span>
+                {s.name} ({s.role})
+              </span>
+              <span
+                className={
+                  s.status === 'Signed' || s.status === 'Approved'
+                    ? 'text-emerald-400'
+                    : 'text-amber-400'
+                }
+              >
+                {s.status}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Footer & Sign Action */}
+      <div className="pt-2 border-t border-zinc-800 flex items-center justify-between shrink-0">
+        <div className="text-[10px] font-mono text-zinc-500">Doc ID: MSA-2026-Q3</div>
+        <button
+          onClick={handleSign}
+          disabled={status.includes('Executed')}
+          className="px-3 py-1 rounded bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
+        >
+          <CheckCircle2 className="w-3.5 h-3.5" />
+          <span>{status.includes('Executed') ? 'Sign-Off Complete' : 'Sign & Approve'}</span>
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   42. EMPTY / WIREFRAME SLOT WIDGET
    ============================================================ */
 export const EmptySlotWidget: React.FC<IDockviewPanelProps> = ({ api }) => {
   const panelId = api.id
@@ -3794,11 +5256,41 @@ export const EmptySlotWidget: React.FC<IDockviewPanelProps> = ({ api }) => {
           className="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
         >
           <Plus className="w-3.5 h-3.5" />
-          <span>Choose Widget (63+)</span>
+          <span>Choose Widget (75+)</span>
         </button>
 
         {/* Quick 1-click pills */}
         <div className="flex flex-wrap items-center justify-center gap-1.5 mt-3 pt-3 border-t border-zinc-800/60 max-w-sm">
+          <button
+            onClick={() => handleQuickFill('doc-markdown')}
+            className="px-2 py-0.5 rounded text-[10px] bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 hover:text-indigo-200 border border-indigo-500/30 transition-colors"
+          >
+            + MD
+          </button>
+          <button
+            onClick={() => handleQuickFill('doc-pdf')}
+            className="px-2 py-0.5 rounded text-[10px] bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 hover:text-rose-200 border border-rose-500/30 transition-colors"
+          >
+            + PDF
+          </button>
+          <button
+            onClick={() => handleQuickFill('doc-docx')}
+            className="px-2 py-0.5 rounded text-[10px] bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 hover:text-blue-200 border border-blue-500/30 transition-colors"
+          >
+            + DOCX
+          </button>
+          <button
+            onClick={() => handleQuickFill('doc-txt')}
+            className="px-2 py-0.5 rounded text-[10px] bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700 transition-colors"
+          >
+            + TXT
+          </button>
+          <button
+            onClick={() => handleQuickFill('doc-diff')}
+            className="px-2 py-0.5 rounded text-[10px] bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 hover:text-amber-200 border border-amber-500/30 transition-colors"
+          >
+            + Diff
+          </button>
           <button
             onClick={() => handleQuickFill('recorder')}
             className="px-2 py-0.5 rounded text-[10px] bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 hover:text-rose-200 border border-rose-500/30 transition-colors"
@@ -3810,18 +5302,6 @@ export const EmptySlotWidget: React.FC<IDockviewPanelProps> = ({ api }) => {
             className="px-2 py-0.5 rounded text-[10px] bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 hover:text-indigo-200 border border-indigo-500/30 transition-colors"
           >
             + Transcript
-          </button>
-          <button
-            onClick={() => handleQuickFill('summary')}
-            className="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 hover:text-emerald-200 border border-emerald-500/30 transition-colors"
-          >
-            + Minutes
-          </button>
-          <button
-            onClick={() => handleQuickFill('meeting-actions')}
-            className="px-2 py-0.5 rounded text-[10px] bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 hover:text-amber-200 border border-amber-500/30 transition-colors"
-          >
-            + Actions
           </button>
           <button
             onClick={() => handleQuickFill('clock')}
@@ -3842,34 +5322,10 @@ export const EmptySlotWidget: React.FC<IDockviewPanelProps> = ({ api }) => {
             + Pomodoro
           </button>
           <button
-            onClick={() => handleQuickFill('calendar')}
-            className="px-2 py-0.5 rounded text-[10px] bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 hover:text-blue-200 border border-blue-500/30 transition-colors"
-          >
-            + Calendar
-          </button>
-          <button
-            onClick={() => handleQuickFill('calculator')}
-            className="px-2 py-0.5 rounded text-[10px] bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 hover:text-amber-200 border border-amber-500/30 transition-colors"
-          >
-            + Calc
-          </button>
-          <button
-            onClick={() => handleQuickFill('weather')}
-            className="px-2 py-0.5 rounded text-[10px] bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 hover:text-teal-200 border border-teal-500/30 transition-colors"
-          >
-            + Weather
-          </button>
-          <button
             onClick={() => handleQuickFill('aichat')}
             className="px-2 py-0.5 rounded text-[10px] bg-zinc-850 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 transition-colors"
           >
             + AI Chat
-          </button>
-          <button
-            onClick={() => handleQuickFill('kpi')}
-            className="px-2 py-0.5 rounded text-[10px] bg-zinc-850 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 transition-colors"
-          >
-            + KPI
           </button>
         </div>
       </div>
@@ -3929,5 +5385,29 @@ export const REFRAME_WIDGET_COMPONENTS: Record<string, React.FC<IDockviewPanelPr
   'talk-time': MeetingTalkTimePanelWidget,
   'agenda-timer': MeetingAgendaTimerPanelWidget,
   'meeting-qa': MeetingQaPanelWidget,
-  briefing: MeetingBriefingPanelWidget
+  briefing: MeetingBriefingPanelWidget,
+  'doc-markdown': MarkdownDocPanelWidget,
+  markdown: MarkdownDocPanelWidget,
+  md: MarkdownDocPanelWidget,
+  'doc-pdf': PdfViewerPanelWidget,
+  pdf: PdfViewerPanelWidget,
+  'doc-docx': DocxViewerPanelWidget,
+  docx: DocxViewerPanelWidget,
+  'doc-txt': TxtReaderPanelWidget,
+  txt: TxtReaderPanelWidget,
+  'doc-diff': DocDiffPanelWidget,
+  diff: DocDiffPanelWidget,
+  'doc-code': CodeViewerPanelWidget,
+  'doc-csv': CsvSpreadsheetPanelWidget,
+  csv: CsvSpreadsheetPanelWidget,
+  'doc-summarizer': DocAiSummarizerPanelWidget,
+  'doc-ai': DocAiSummarizerPanelWidget,
+  'doc-metadata': DocMetadataPanelWidget,
+  'doc-reader': DocFocusReaderPanelWidget,
+  'focus-reader': DocFocusReaderPanelWidget,
+  'doc-swagger': DocSwaggerPanelWidget,
+  swagger: DocSwaggerPanelWidget,
+  openapi: DocSwaggerPanelWidget,
+  'doc-contract': DocContractReviewPanelWidget,
+  contract: DocContractReviewPanelWidget
 }

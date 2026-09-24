@@ -34,7 +34,13 @@ import {
   PieChart,
   CalendarClock,
   HelpCircle,
-  Users
+  Users,
+  FileSpreadsheet,
+  FileCheck,
+  GitCompare,
+  BookOpen,
+  ShieldCheck,
+  Network
 } from 'lucide-react'
 
 const WIDGET_ICONS: Record<string, React.FC<{ className?: string }>> = {
@@ -81,7 +87,31 @@ const WIDGET_ICONS: Record<string, React.FC<{ className?: string }>> = {
   'talk-time': PieChart,
   'agenda-timer': CalendarClock,
   'meeting-qa': HelpCircle,
-  briefing: Users
+  briefing: Users,
+  'doc-markdown': FileText,
+  markdown: FileText,
+  md: FileText,
+  'doc-pdf': FileCheck,
+  pdf: FileCheck,
+  'doc-docx': FileSpreadsheet,
+  docx: FileSpreadsheet,
+  'doc-txt': FileCode,
+  txt: FileCode,
+  'doc-diff': GitCompare,
+  diff: GitCompare,
+  'doc-code': FileCode,
+  'doc-csv': TableIcon,
+  csv: TableIcon,
+  'doc-summarizer': Bot,
+  'doc-ai': Bot,
+  'doc-metadata': ShieldCheck,
+  'doc-reader': BookOpen,
+  'focus-reader': BookOpen,
+  'doc-swagger': Network,
+  swagger: Network,
+  openapi: Network,
+  'doc-contract': FileCheck2,
+  contract: FileCheck2
 }
 
 interface ClientPanelCardProps {
