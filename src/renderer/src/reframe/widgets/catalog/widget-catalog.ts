@@ -3,7 +3,8 @@ import type { WidgetType } from '../../types/reframe-types'
 export interface WidgetCatalogItem {
   id: string
   title: string
-  category: 'ai' | 'kpi' | 'analytics' | 'tables' | 'feeds' | 'devops' | 'actions' | 'docs'
+  category:
+    'ai' | 'general' | 'kpi' | 'analytics' | 'tables' | 'feeds' | 'devops' | 'actions' | 'docs'
   categoryLabel: string
   description: string
   icon: string
@@ -17,6 +18,7 @@ export interface WidgetCatalogItem {
 export const WIDGET_CATEGORIES = [
   { id: 'all', label: 'All Widgets' },
   { id: 'ai', label: 'AI & Intelligence' },
+  { id: 'general', label: 'General & Productivity' },
   { id: 'kpi', label: 'KPIs & Metrics' },
   { id: 'analytics', label: 'Charts & Analytics' },
   { id: 'tables', label: 'Data Tables' },
@@ -28,7 +30,241 @@ export const WIDGET_CATEGORIES = [
 
 export const WIDGET_CATALOG: WidgetCatalogItem[] = [
   /* ============================================================
-     0. ARTIFICIAL INTELLIGENCE & LLM INTERFACES (6 Widgets)
+     0. GENERAL UTILITIES & PRODUCTIVITY (7 Widgets)
+     ============================================================ */
+  {
+    id: 'util-digital-clock',
+    title: 'Digital Clock & World Time',
+    category: 'general',
+    categoryLabel: 'General & Productivity',
+    description:
+      'Live digital chronometer with seconds toggle, active timezone, and multi-region world clocks.',
+    icon: 'Clock',
+    widgetType: 'clock',
+    domainBadge: 'TIME & WORLD',
+    tags: ['clock', 'time', 'digital', 'world', 'timezone', 'timer', 'date', 'general'],
+    defaultProps: {
+      title: 'Digital Chronometer & World Clocks',
+      showSeconds: true,
+      use24Hour: false,
+      worldClocks: [
+        { city: 'London', tz: 'Europe/London', label: 'BST / UTC+1' },
+        { city: 'Tokyo', tz: 'Asia/Tokyo', label: 'JST / UTC+9' },
+        { city: 'San Francisco', tz: 'America/Los_Angeles', label: 'PDT / UTC-7' }
+      ]
+    },
+    defaultDirection: 'below'
+  },
+  {
+    id: 'util-calendar-agenda',
+    title: 'Interactive Calendar & Agenda Planner',
+    category: 'general',
+    categoryLabel: 'General & Productivity',
+    description:
+      'Monthly calendar matrix with day highlights, scheduled event dots, and upcoming daily agenda timeline.',
+    icon: 'Calendar',
+    widgetType: 'calendar',
+    domainBadge: 'SCHEDULE',
+    tags: ['calendar', 'agenda', 'schedule', 'planner', 'events', 'meetings', 'general'],
+    defaultProps: {
+      title: 'Monthly Calendar & Daily Agenda',
+      events: [
+        {
+          id: 'ev-1',
+          day: 24,
+          time: '10:00 AM',
+          title: 'Sprint Review & Architecture Sync',
+          type: 'primary'
+        },
+        {
+          id: 'ev-2',
+          day: 24,
+          time: '02:30 PM',
+          title: 'Client Deliverable Demo',
+          type: 'success'
+        },
+        {
+          id: 'ev-3',
+          day: 24,
+          time: '04:15 PM',
+          title: 'Kubernetes Mesh Patch Window',
+          type: 'warning'
+        },
+        {
+          id: 'ev-4',
+          day: 25,
+          time: '11:00 AM',
+          title: 'Executive Budget Allocation Meeting',
+          type: 'primary'
+        },
+        {
+          id: 'ev-5',
+          day: 28,
+          time: '09:30 AM',
+          title: 'Q3 Retrospective & Roadmap Kickoff',
+          type: 'info'
+        }
+      ]
+    },
+    defaultDirection: 'right'
+  },
+  {
+    id: 'util-pomodoro-timer',
+    title: 'Pomodoro Focus & Break Timer',
+    category: 'general',
+    categoryLabel: 'General & Productivity',
+    description:
+      'High-productivity focus sprint interval timer with 25m Focus, 5m Short Break, 15m Long Break, and session tracker.',
+    icon: 'Timer',
+    widgetType: 'pomodoro',
+    domainBadge: 'DEEP WORK',
+    tags: [
+      'pomodoro',
+      'timer',
+      'focus',
+      'deep work',
+      'productivity',
+      'breaks',
+      'stopwatch',
+      'general'
+    ],
+    defaultProps: {
+      title: 'Pomodoro Focus Timer',
+      focusMinutes: 25,
+      shortBreakMinutes: 5,
+      longBreakMinutes: 15,
+      currentTask: 'High-density client widget architecture & review',
+      totalSessions: 4,
+      completedSessions: 2
+    },
+    defaultDirection: 'below'
+  },
+  {
+    id: 'util-task-checklist',
+    title: 'Task Tracker & To-Do Checklist',
+    category: 'general',
+    categoryLabel: 'General & Productivity',
+    description:
+      'Interactive checklist with priority indicators, completion progress, filter tabs, and rapid task addition.',
+    icon: 'ListTodo',
+    widgetType: 'tasks',
+    domainBadge: 'TASKS',
+    tags: ['task', 'todo', 'tasks', 'checklist', 'kanban', 'productivity', 'tracking', 'general'],
+    defaultProps: {
+      title: 'Action Item Tracker',
+      tasks: [
+        {
+          id: 'tsk-1',
+          title: 'Review production cluster telemetry & APM logs',
+          priority: 'high',
+          completed: true,
+          tag: 'Infra'
+        },
+        {
+          id: 'tsk-2',
+          title: 'Deploy automated SOC2 compliance retention policy',
+          priority: 'high',
+          completed: true,
+          tag: 'Security'
+        },
+        {
+          id: 'tsk-3',
+          title: 'Finalize enterprise client dashboard presentation',
+          priority: 'medium',
+          completed: false,
+          tag: 'Client'
+        },
+        {
+          id: 'tsk-4',
+          title: 'Tune prompt temperature and benchmark throughput',
+          priority: 'medium',
+          completed: false,
+          tag: 'AI'
+        },
+        {
+          id: 'tsk-5',
+          title: 'Validate zero-dependency standalone code export',
+          priority: 'low',
+          completed: false,
+          tag: 'Build'
+        }
+      ]
+    },
+    defaultDirection: 'below'
+  },
+  {
+    id: 'util-quick-notes',
+    title: 'Quick Scratchpad & Draft Memo',
+    category: 'general',
+    categoryLabel: 'General & Productivity',
+    description:
+      'Distraction-free auto-saving text pad with word/character counter, priority tag pills, and 1-click clipboard copy.',
+    icon: 'StickyNote',
+    widgetType: 'notes',
+    domainBadge: 'SCRATCHPAD',
+    tags: ['notes', 'memo', 'scratchpad', 'draft', 'writing', 'copy', 'general'],
+    defaultProps: {
+      title: 'Desktop Scratchpad',
+      content: `## Quick Scratchpad & Architecture Notes
+• Client requested full dark mode with translucent glassmorphic tiles.
+• Keep all bundle footprints zero-server: files run purely from file://.
+• Verify keyboard shortcuts (Ctrl+K palette, drag handles, live resize).
+
+> "Simplicity and high data density create enterprise cockpit confidence."`
+    },
+    defaultDirection: 'right'
+  },
+  {
+    id: 'util-calculator',
+    title: 'Desktop Math Calculator & Tape',
+    category: 'general',
+    categoryLabel: 'General & Productivity',
+    description:
+      'Interactive numpad calculator with operations history tape, percentage calculations, and clear actions.',
+    icon: 'Calculator',
+    widgetType: 'calculator',
+    domainBadge: 'UTILITY',
+    tags: ['calculator', 'calc', 'math', 'converter', 'numbers', 'finance', 'general'],
+    defaultProps: {
+      title: 'Desktop Calculator',
+      history: ['1,250 × 1.2 = 1,500', '48,000 ÷ 12 = 4,000']
+    },
+    defaultDirection: 'below'
+  },
+  {
+    id: 'util-weather-cockpit',
+    title: 'Weather & Environmental Cockpit',
+    category: 'general',
+    categoryLabel: 'General & Productivity',
+    description:
+      'Live atmospheric conditions, temperature gauges, humidity, air quality index, and multi-day forecast.',
+    icon: 'Cloud',
+    widgetType: 'weather',
+    domainBadge: 'ENVIRONMENT',
+    tags: ['weather', 'temperature', 'forecast', 'climate', 'humidity', 'aqi', 'general'],
+    defaultProps: {
+      title: 'Atmospheric Conditions & Forecast',
+      city: 'New York, US',
+      temperature: 22,
+      condition: 'Partly Cloudy',
+      high: 25,
+      low: 17,
+      humidity: '48%',
+      windSpeed: '14 km/h',
+      aqi: 28,
+      forecast: [
+        { day: 'Mon', temp: 24, condition: 'Sunny', icon: 'Sun' },
+        { day: 'Tue', temp: 22, condition: 'Partly Cloudy', icon: 'Cloud' },
+        { day: 'Wed', temp: 19, condition: 'Rain Showers', icon: 'CloudRain' },
+        { day: 'Thu', temp: 21, condition: 'Partly Cloudy', icon: 'Cloud' },
+        { day: 'Fri', temp: 26, condition: 'Sunny', icon: 'Sun' }
+      ]
+    },
+    defaultDirection: 'right'
+  },
+
+  /* ============================================================
+     1. ARTIFICIAL INTELLIGENCE & LLM INTERFACES (6 Widgets)
      ============================================================ */
   {
     id: 'ai-copilot-chat',

@@ -29,7 +29,22 @@ import {
   Copy,
   FileText,
   Database,
-  Network
+  Network,
+  Clock,
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  Timer,
+  Pause,
+  RotateCcw,
+  Flame,
+  ListTodo,
+  CheckSquare,
+  Square,
+  Cloud,
+  Sun,
+  CloudRain,
+  CloudSun
 } from 'lucide-react'
 import { useReframeStore } from '../stores/reframe-store'
 import { WIDGET_CATALOG } from './catalog/widget-catalog'
@@ -785,6 +800,8 @@ const getChatTimestamp = (): string => {
   const d = new Date()
   return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`
 }
+let taskCounter = 100
+const makeTaskId = (): string => `tsk-${++taskCounter}`
 
 /* ============================================================
    10. AI COPILOT & CHAT WIDGET
@@ -1670,7 +1687,1014 @@ export const AiCodeGenPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) 
 }
 
 /* ============================================================
-   15. EMPTY / WIREFRAME SLOT WIDGET
+   15. DIGITAL CLOCK & WORLD TIME WIDGET
+   ============================================================ */
+export const DigitalClockPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const [time, setTime] = useState<Date>(() => new Date())
+  const [use24h, setUse24h] = useState<boolean>(params?.use24Hour ?? false)
+  const [showSeconds, setShowSeconds] = useState<boolean>(params?.showSeconds ?? true)
+  const [colonVisible, setColonVisible] = useState(true)
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTime(new Date())
+      setColonVisible((prev) => !prev)
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
+
+  const worldClocks = params?.worldClocks || [
+    { city: 'London', tz: 'Europe/London', label: 'BST / UTC+1' },
+    { city: 'Tokyo', tz: 'Asia/Tokyo', label: 'JST / UTC+9' },
+    { city: 'San Francisco', tz: 'America/Los_Angeles', label: 'PDT / UTC-7' }
+  ]
+
+  const hours = time.getHours()
+  const displayHours = use24h
+    ? hours.toString().padStart(2, '0')
+    : (hours % 12 || 12).toString().padStart(2, '0')
+  const minutes = time.getMinutes().toString().padStart(2, '0')
+  const seconds = time.getSeconds().toString().padStart(2, '0')
+  const ampm = hours >= 12 ? 'PM' : 'AM'
+
+  const dateString = time.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  })
+
+  return (
+    <div className="reframe-panel-body p-4 bg-zinc-950/70 text-zinc-100 flex flex-col justify-between h-full select-none overflow-hidden">
+      {/* Top Header Toolbar */}
+      <div className="flex items-center justify-between pb-2 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <Clock className="w-3.5 h-3.5 text-indigo-400" />
+          <span className="font-semibold text-zinc-300">
+            {params?.title || 'Digital Chronometer'}
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5 text-[10px] font-mono">
+          <button
+            onClick={() => setUse24h((prev) => !prev)}
+            className="px-2 py-0.5 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white transition-colors"
+          >
+            {use24h ? '24H' : '12H'}
+          </button>
+          <button
+            onClick={() => setShowSeconds((prev) => !prev)}
+            className="px-2 py-0.5 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white transition-colors"
+          >
+            {showSeconds ? 'SEC ON' : 'SEC OFF'}
+          </button>
+        </div>
+      </div>
+
+      {/* Main Digital Clock Display */}
+      <div className="flex-1 flex flex-col items-center justify-center py-2">
+        <div className="flex items-baseline gap-1 font-mono tracking-tighter">
+          <span className="text-4xl sm:text-5xl font-extrabold text-white drop-shadow-sm">
+            {displayHours}
+          </span>
+          <span
+            className={`text-4xl sm:text-5xl font-extrabold text-indigo-400 transition-opacity duration-200 ${
+              colonVisible ? 'opacity-100' : 'opacity-20'
+            }`}
+          >
+            :
+          </span>
+          <span className="text-4xl sm:text-5xl font-extrabold text-white drop-shadow-sm">
+            {minutes}
+          </span>
+          {showSeconds && (
+            <>
+              <span
+                className={`text-4xl sm:text-5xl font-extrabold text-indigo-400 transition-opacity duration-200 ${
+                  colonVisible ? 'opacity-100' : 'opacity-20'
+                }`}
+              >
+                :
+              </span>
+              <span className="text-3xl sm:text-4xl font-semibold text-zinc-400">{seconds}</span>
+            </>
+          )}
+          {!use24h && (
+            <span className="ml-2 text-sm font-bold text-indigo-400 font-sans tracking-normal uppercase">
+              {ampm}
+            </span>
+          )}
+        </div>
+
+        <div className="mt-2 text-xs sm:text-sm font-medium text-zinc-400 tracking-wide">
+          {dateString}
+        </div>
+      </div>
+
+      {/* World Clocks Footer Strip */}
+      <div className="grid grid-cols-3 gap-2 pt-2 border-t border-zinc-800/80 shrink-0">
+        {worldClocks.map((wc: any, idx: number) => {
+          let wcTime: string
+          try {
+            wcTime = time.toLocaleTimeString('en-US', {
+              timeZone: wc.tz,
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: !use24h
+            })
+          } catch {
+            wcTime = '--:--'
+          }
+          return (
+            <div
+              key={idx}
+              className="p-1.5 rounded-lg bg-zinc-900/60 border border-zinc-800 flex flex-col text-center"
+            >
+              <span className="text-[10px] font-semibold text-zinc-300 truncate">{wc.city}</span>
+              <span className="text-xs font-mono font-bold text-indigo-300">{wcTime}</span>
+              <span className="text-[9px] text-zinc-500 font-mono truncate">{wc.label}</span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   16. CALENDAR & AGENDA WIDGET
+   ============================================================ */
+export const CalendarAgendaPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const [currentDate, setCurrentDate] = useState(() => new Date(2026, 8, 24))
+  const [selectedDay, setSelectedDay] = useState<number>(24)
+  const events = params?.events || [
+    {
+      id: 'ev-1',
+      day: 24,
+      time: '10:00 AM',
+      title: 'Sprint Review & Architecture Sync',
+      type: 'primary'
+    },
+    { id: 'ev-2', day: 24, time: '02:30 PM', title: 'Client Deliverable Demo', type: 'success' },
+    {
+      id: 'ev-3',
+      day: 24,
+      time: '04:15 PM',
+      title: 'Kubernetes Mesh Patch Window',
+      type: 'warning'
+    },
+    {
+      id: 'ev-4',
+      day: 25,
+      time: '11:00 AM',
+      title: 'Executive Budget Allocation Meeting',
+      type: 'primary'
+    },
+    {
+      id: 'ev-5',
+      day: 28,
+      time: '09:30 AM',
+      title: 'Q3 Retrospective & Roadmap Kickoff',
+      type: 'info'
+    }
+  ]
+
+  const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+  const year = currentDate.getFullYear()
+  const month = currentDate.getMonth()
+
+  const firstDayIndex = new Date(year, month, 1).getDay()
+  const totalDaysInMonth = new Date(year, month + 1, 0).getDate()
+
+  const handlePrevMonth = () => {
+    setCurrentDate(new Date(year, month - 1, 1))
+  }
+
+  const handleNextMonth = () => {
+    setCurrentDate(new Date(year, month + 1, 1))
+  }
+
+  const daysArray: Array<number | null> = []
+  for (let i = 0; i < firstDayIndex; i++) {
+    daysArray.push(null)
+  }
+  for (let d = 1; d <= totalDaysInMonth; d++) {
+    daysArray.push(d)
+  }
+
+  const filteredEvents = events.filter((ev: any) => ev.day === selectedDay)
+
+  return (
+    <div className="reframe-panel-body p-3 bg-zinc-950/70 text-zinc-100 flex flex-col h-full overflow-hidden select-none">
+      {/* Month Navigator */}
+      <div className="flex items-center justify-between pb-2 mb-2 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-1.5">
+          <CalendarDays className="w-3.5 h-3.5 text-indigo-400" />
+          <span className="font-semibold text-zinc-200">{monthName}</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => {
+              setCurrentDate(new Date(2026, 8, 24))
+              setSelectedDay(24)
+            }}
+            className="px-2 py-0.5 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-[10px] text-zinc-300 transition-colors"
+          >
+            Today
+          </button>
+          <button
+            onClick={handlePrevMonth}
+            className="p-1 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
+          >
+            <ChevronLeft className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={handleNextMonth}
+            className="p-1 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors"
+          >
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1 overflow-hidden min-h-0">
+        {/* Calendar Matrix */}
+        <div className="flex flex-col min-w-0">
+          <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-semibold text-zinc-500 mb-1">
+            {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((d) => (
+              <span key={d}>{d}</span>
+            ))}
+          </div>
+          <div className="grid grid-cols-7 gap-1 flex-1">
+            {daysArray.map((day, idx) => {
+              if (day === null) {
+                return <div key={`empty-${idx}`} className="p-1" />
+              }
+              const isToday = day === 24 && month === 8 && year === 2026
+              const isSelected = day === selectedDay
+              const hasEvents = events.some((ev: any) => ev.day === day)
+              return (
+                <button
+                  key={`day-${day}`}
+                  onClick={() => setSelectedDay(day)}
+                  className={`p-1 rounded-md text-xs font-mono relative flex flex-col items-center justify-center transition-all ${
+                    isSelected
+                      ? 'bg-indigo-600 text-white font-bold shadow-sm'
+                      : isToday
+                        ? 'bg-indigo-950/40 text-indigo-300 font-bold border border-indigo-500/40'
+                        : 'hover:bg-zinc-800 text-zinc-300'
+                  }`}
+                >
+                  <span>{day}</span>
+                  {hasEvents && (
+                    <span
+                      className={`w-1 h-1 rounded-full mt-0.5 ${
+                        isSelected ? 'bg-white' : 'bg-indigo-400'
+                      }`}
+                    />
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Agenda Events Pane */}
+        <div className="border-t md:border-t-0 md:border-l border-zinc-800 pt-2 md:pt-0 md:pl-3 flex flex-col min-w-0 overflow-hidden">
+          <div className="text-[11px] font-semibold text-zinc-300 mb-2 flex items-center justify-between">
+            <span>
+              Agenda: Sep {selectedDay}, {year}
+            </span>
+            <span className="text-[10px] text-zinc-500 font-mono">
+              {filteredEvents.length} {filteredEvents.length === 1 ? 'event' : 'events'}
+            </span>
+          </div>
+
+          <div className="flex-1 overflow-y-auto space-y-2 pr-1">
+            {filteredEvents.length === 0 ? (
+              <div className="p-4 text-center text-xs text-zinc-500 italic border border-dashed border-zinc-800 rounded-lg">
+                No events scheduled for day {selectedDay}.
+              </div>
+            ) : (
+              filteredEvents.map((ev: any) => (
+                <div
+                  key={ev.id}
+                  className="p-2 rounded-lg bg-zinc-900/80 border border-zinc-800 hover:border-zinc-700 transition-colors text-xs"
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] font-mono font-semibold text-indigo-400">
+                      {ev.time}
+                    </span>
+                    <span
+                      className={`w-2 h-2 rounded-full ${
+                        ev.type === 'success'
+                          ? 'bg-emerald-400'
+                          : ev.type === 'warning'
+                            ? 'bg-amber-400'
+                            : 'bg-indigo-400'
+                      }`}
+                    />
+                  </div>
+                  <div className="font-medium text-zinc-200 text-[11px] leading-snug">
+                    {ev.title}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   17. POMODORO FOCUS TIMER WIDGET
+   ============================================================ */
+export const PomodoroPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const [mode, setMode] = useState<'focus' | 'shortBreak' | 'longBreak'>('focus')
+  const [secondsLeft, setSecondsLeft] = useState<number>(25 * 60)
+  const [isRunning, setIsRunning] = useState<boolean>(false)
+  const [completedSessions, setCompletedSessions] = useState<number>(params?.completedSessions ?? 2)
+  const totalSessions = params?.totalSessions ?? 4
+
+  const modeDurations = {
+    focus: (params?.focusMinutes ?? 25) * 60,
+    shortBreak: (params?.shortBreakMinutes ?? 5) * 60,
+    longBreak: (params?.longBreakMinutes ?? 15) * 60
+  }
+
+  useEffect(() => {
+    let interval: any = null
+    if (isRunning && secondsLeft > 0) {
+      interval = setInterval(() => {
+        setSecondsLeft((prev) => prev - 1)
+      }, 1000)
+    } else if (secondsLeft === 0 && isRunning) {
+      setIsRunning(false)
+      if (mode === 'focus') {
+        setCompletedSessions((prev) => prev + 1)
+        setMode('shortBreak')
+        setSecondsLeft(modeDurations.shortBreak)
+      } else {
+        setMode('focus')
+        setSecondsLeft(modeDurations.focus)
+      }
+    }
+    return () => clearInterval(interval)
+  }, [isRunning, secondsLeft, mode, modeDurations.focus, modeDurations.shortBreak])
+
+  const handleSwitchMode = (newMode: 'focus' | 'shortBreak' | 'longBreak') => {
+    setMode(newMode)
+    setIsRunning(false)
+    setSecondsLeft(modeDurations[newMode])
+  }
+
+  const handleToggleTimer = () => {
+    setIsRunning((prev) => !prev)
+  }
+
+  const handleReset = () => {
+    setIsRunning(false)
+    setSecondsLeft(modeDurations[mode])
+  }
+
+  const mins = Math.floor(secondsLeft / 60)
+    .toString()
+    .padStart(2, '0')
+  const secs = (secondsLeft % 60).toString().padStart(2, '0')
+  const progressPercent = Math.round(
+    ((modeDurations[mode] - secondsLeft) / modeDurations[mode]) * 100
+  )
+
+  return (
+    <div className="reframe-panel-body p-4 bg-zinc-950/70 text-zinc-100 flex flex-col justify-between h-full select-none overflow-hidden">
+      {/* Top Header */}
+      <div className="flex items-center justify-between pb-2 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <Timer className="w-3.5 h-3.5 text-rose-400" />
+          <span className="font-semibold text-zinc-300">{params?.title || 'Pomodoro Timer'}</span>
+        </div>
+        <div className="flex items-center gap-1 font-mono text-[10px] text-zinc-400">
+          <span>
+            Session {completedSessions} of {totalSessions}
+          </span>
+          <div className="flex gap-1 ml-1.5">
+            {Array.from({ length: totalSessions }).map((_, i) => (
+              <span
+                key={i}
+                className={`w-1.5 h-1.5 rounded-full ${
+                  i < completedSessions ? 'bg-rose-400' : 'bg-zinc-800'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Mode Switcher Tabs */}
+      <div className="flex items-center justify-center gap-1.5 my-2 shrink-0">
+        <button
+          onClick={() => handleSwitchMode('focus')}
+          className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+            mode === 'focus'
+              ? 'bg-rose-600 text-white shadow-sm'
+              : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200'
+          }`}
+        >
+          Focus (25m)
+        </button>
+        <button
+          onClick={() => handleSwitchMode('shortBreak')}
+          className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+            mode === 'shortBreak'
+              ? 'bg-emerald-600 text-white shadow-sm'
+              : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200'
+          }`}
+        >
+          Short Break (5m)
+        </button>
+        <button
+          onClick={() => handleSwitchMode('longBreak')}
+          className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
+            mode === 'longBreak'
+              ? 'bg-blue-600 text-white shadow-sm'
+              : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200'
+          }`}
+        >
+          Long Break (15m)
+        </button>
+      </div>
+
+      {/* Main Countdown Timer */}
+      <div className="flex-1 flex flex-col items-center justify-center my-2">
+        <div className="text-5xl sm:text-6xl font-extrabold font-mono text-white tracking-tighter drop-shadow-sm">
+          {mins}:{secs}
+        </div>
+        <div className="text-[11px] text-zinc-400 mt-2 font-mono flex items-center gap-1.5">
+          <Flame className="w-3.5 h-3.5 text-rose-400" />
+          <span className="truncate max-w-xs">
+            {params?.currentTask || 'Focusing on high-density architecture'}
+          </span>
+        </div>
+        <div className="w-48 bg-zinc-800 h-1.5 rounded-full overflow-hidden mt-3">
+          <div
+            className={`h-full transition-all duration-500 ${
+              mode === 'focus'
+                ? 'bg-rose-500'
+                : mode === 'shortBreak'
+                  ? 'bg-emerald-500'
+                  : 'bg-blue-500'
+            }`}
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Action Controls */}
+      <div className="flex items-center justify-center gap-2 pt-2 border-t border-zinc-800 shrink-0">
+        <button
+          onClick={handleToggleTimer}
+          className={`px-5 py-2 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all hover:scale-105 active:scale-95 ${
+            isRunning
+              ? 'bg-amber-600 hover:bg-amber-500 text-white'
+              : mode === 'focus'
+                ? 'bg-rose-600 hover:bg-rose-500 text-white'
+                : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+          }`}
+        >
+          {isRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+          <span>{isRunning ? 'Pause' : 'Start Focus'}</span>
+        </button>
+        <button
+          onClick={handleReset}
+          className="p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white transition-colors"
+          title="Reset timer"
+        >
+          <RotateCcw className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   18. TASK CHECKLIST & TO-DO TRACKER WIDGET
+   ============================================================ */
+export const TaskChecklistPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const [tasks, setTasks] = useState(
+    params?.tasks || [
+      {
+        id: 'tsk-1',
+        title: 'Review production cluster telemetry & APM logs',
+        priority: 'high',
+        completed: true,
+        tag: 'Infra'
+      },
+      {
+        id: 'tsk-2',
+        title: 'Deploy automated SOC2 compliance retention policy',
+        priority: 'high',
+        completed: true,
+        tag: 'Security'
+      },
+      {
+        id: 'tsk-3',
+        title: 'Finalize enterprise client dashboard presentation',
+        priority: 'medium',
+        completed: false,
+        tag: 'Client'
+      },
+      {
+        id: 'tsk-4',
+        title: 'Tune prompt temperature and benchmark throughput',
+        priority: 'medium',
+        completed: false,
+        tag: 'AI'
+      },
+      {
+        id: 'tsk-5',
+        title: 'Validate zero-dependency standalone code export',
+        priority: 'low',
+        completed: false,
+        tag: 'Build'
+      }
+    ]
+  )
+  const [filter, setFilter] = useState<'all' | 'active' | 'completed'>('all')
+  const [newTaskTitle, setNewTaskTitle] = useState('')
+
+  const handleToggleTask = (id: string) => {
+    setTasks((prev: any[]) =>
+      prev.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t))
+    )
+  }
+
+  const handleDeleteTask = (id: string) => {
+    setTasks((prev: any[]) => prev.filter((t) => t.id !== id))
+  }
+
+  const handleAddTask = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!newTaskTitle.trim()) return
+    const newTask = {
+      id: makeTaskId(),
+      title: newTaskTitle.trim(),
+      priority: 'medium',
+      completed: false,
+      tag: 'General'
+    }
+    setTasks((prev: any[]) => [...prev, newTask])
+    setNewTaskTitle('')
+  }
+
+  const completedCount = tasks.filter((t: any) => t.completed).length
+  const totalCount = tasks.length
+  const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
+
+  const filteredTasks = tasks.filter((t: any) => {
+    if (filter === 'active') return !t.completed
+    if (filter === 'completed') return t.completed
+    return true
+  })
+
+  return (
+    <div className="reframe-panel-body p-3.5 bg-zinc-950/70 text-zinc-100 flex flex-col h-full overflow-hidden select-none">
+      {/* Header */}
+      <div className="flex items-center justify-between pb-2 mb-2 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <ListTodo className="w-3.5 h-3.5 text-indigo-400" />
+          <span className="font-semibold text-zinc-200">
+            {params?.title || 'Action Item Tracker'}
+          </span>
+        </div>
+        <span className="text-[10px] font-mono text-zinc-400">
+          {completedCount}/{totalCount} Completed ({progressPercent}%)
+        </span>
+      </div>
+
+      {/* Progress Bar & Filter Tabs */}
+      <div className="space-y-2 mb-2.5 shrink-0">
+        <div className="w-full bg-zinc-850 h-1.5 rounded-full overflow-hidden">
+          <div
+            className="bg-emerald-500 h-full transition-all duration-300"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+        <div className="flex items-center gap-1 text-[10px] font-medium">
+          <button
+            onClick={() => setFilter('all')}
+            className={`px-2 py-0.5 rounded transition-colors ${
+              filter === 'all'
+                ? 'bg-zinc-800 text-white font-semibold'
+                : 'text-zinc-500 hover:text-zinc-300'
+            }`}
+          >
+            All ({totalCount})
+          </button>
+          <button
+            onClick={() => setFilter('active')}
+            className={`px-2 py-0.5 rounded transition-colors ${
+              filter === 'active'
+                ? 'bg-zinc-800 text-white font-semibold'
+                : 'text-zinc-500 hover:text-zinc-300'
+            }`}
+          >
+            Active ({totalCount - completedCount})
+          </button>
+          <button
+            onClick={() => setFilter('completed')}
+            className={`px-2 py-0.5 rounded transition-colors ${
+              filter === 'completed'
+                ? 'bg-zinc-800 text-white font-semibold'
+                : 'text-zinc-500 hover:text-zinc-300'
+            }`}
+          >
+            Completed ({completedCount})
+          </button>
+        </div>
+      </div>
+
+      {/* Task List */}
+      <div className="flex-1 overflow-y-auto space-y-1.5 pr-1">
+        {filteredTasks.map((t: any) => (
+          <div
+            key={t.id}
+            className={`group p-2 rounded-lg border flex items-center justify-between gap-2 text-xs transition-all ${
+              t.completed
+                ? 'bg-zinc-900/40 border-zinc-850/60 text-zinc-500'
+                : 'bg-zinc-850/80 border-zinc-750 text-zinc-200 hover:border-zinc-650'
+            }`}
+          >
+            <div
+              onClick={() => handleToggleTask(t.id)}
+              className="flex items-center gap-2.5 flex-1 min-w-0 cursor-pointer"
+            >
+              {t.completed ? (
+                <CheckSquare className="w-4 h-4 text-emerald-400 shrink-0" />
+              ) : (
+                <Square className="w-4 h-4 text-zinc-500 hover:text-zinc-300 shrink-0" />
+              )}
+              <span
+                className={`truncate text-xs ${t.completed ? 'line-through text-zinc-500' : ''}`}
+              >
+                {t.title}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1.5 shrink-0">
+              {t.tag && (
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-zinc-800 text-zinc-400 border border-zinc-700/60">
+                  {t.tag}
+                </span>
+              )}
+              <span
+                className={`px-1.5 py-0.5 rounded text-[9px] font-mono uppercase font-semibold ${
+                  t.priority === 'high'
+                    ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
+                    : t.priority === 'medium'
+                      ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                      : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                }`}
+              >
+                {t.priority}
+              </span>
+              <button
+                onClick={() => handleDeleteTask(t.id)}
+                className="opacity-0 group-hover:opacity-100 p-1 text-zinc-500 hover:text-rose-400 transition-opacity"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Rapid Add Bar */}
+      <form onSubmit={handleAddTask} className="pt-2 border-t border-zinc-800 flex gap-2 shrink-0">
+        <input
+          type="text"
+          value={newTaskTitle}
+          onChange={(e) => setNewTaskTitle(e.target.value)}
+          placeholder="+ Add a new task..."
+          className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-500"
+        />
+        <button
+          type="submit"
+          disabled={!newTaskTitle.trim()}
+          className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white text-xs font-semibold flex items-center gap-1 transition-all"
+        >
+          <Plus className="w-3 h-3" />
+          <span>Add</span>
+        </button>
+      </form>
+    </div>
+  )
+}
+
+/* ============================================================
+   19. CALCULATOR & CONVERTER WIDGET
+   ============================================================ */
+export const CalculatorPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const [display, setDisplay] = useState('0')
+  const [prevVal, setPrevVal] = useState<number | null>(null)
+  const [operation, setOperation] = useState<string | null>(null)
+  const [overwrite, setOverwrite] = useState(false)
+  const [history, setHistory] = useState<string[]>(
+    params?.history || ['1,250 × 1.2 = 1,500', '48,000 ÷ 12 = 4,000']
+  )
+
+  const compute = (a: number, b: number, op: string): number => {
+    switch (op) {
+      case '+':
+        return a + b
+      case '-':
+        return a - b
+      case '×':
+        return a * b
+      case '÷':
+        return b !== 0 ? a / b : 0
+      default:
+        return b
+    }
+  }
+
+  const handleDigit = (d: string) => {
+    if (overwrite || display === '0') {
+      setDisplay(d)
+      setOverwrite(false)
+    } else {
+      setDisplay((prev) => (prev.length < 12 ? prev + d : prev))
+    }
+  }
+
+  const handleDot = () => {
+    if (overwrite) {
+      setDisplay('0.')
+      setOverwrite(false)
+    } else if (!display.includes('.')) {
+      setDisplay((prev) => prev + '.')
+    }
+  }
+
+  const handleOp = (op: string) => {
+    const cur = parseFloat(display)
+    if (prevVal !== null && operation && !overwrite) {
+      const res = compute(prevVal, cur, operation)
+      setDisplay(String(res))
+      setPrevVal(res)
+    } else {
+      setPrevVal(cur)
+    }
+    setOperation(op)
+    setOverwrite(true)
+  }
+
+  const handleEquals = () => {
+    if (prevVal === null || !operation) return
+    const cur = parseFloat(display)
+    const res = compute(prevVal, cur, operation)
+    const entry = `${prevVal} ${operation} ${cur} = ${res}`
+    setHistory((prev) => [entry, ...prev.slice(0, 4)])
+    setDisplay(String(res))
+    setPrevVal(null)
+    setOperation(null)
+    setOverwrite(true)
+  }
+
+  const handleClear = () => {
+    setDisplay('0')
+    setPrevVal(null)
+    setOperation(null)
+    setOverwrite(false)
+  }
+
+  const handlePercent = () => {
+    const cur = parseFloat(display)
+    setDisplay(String(cur / 100))
+  }
+
+  return (
+    <div className="reframe-panel-body p-3 bg-zinc-950/70 text-zinc-100 flex flex-col justify-between h-full select-none overflow-hidden">
+      {/* Display with tape */}
+      <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 mb-2 flex flex-col justify-between min-h-[60px] shrink-0">
+        <div className="text-[10px] font-mono text-zinc-500 text-right truncate">
+          {history[0] || (operation && prevVal !== null ? `${prevVal} ${operation}` : '')}
+        </div>
+        <div className="text-2xl font-mono font-bold text-white text-right tracking-tight overflow-x-auto scrollbar-none">
+          {display}
+        </div>
+      </div>
+
+      {/* Button Matrix */}
+      <div className="grid grid-cols-4 gap-1.5 flex-1">
+        <button
+          onClick={handleClear}
+          className="p-2 rounded bg-zinc-850 hover:bg-zinc-800 text-rose-400 font-semibold text-xs transition-colors"
+        >
+          AC
+        </button>
+        <button
+          onClick={handlePercent}
+          className="p-2 rounded bg-zinc-850 hover:bg-zinc-800 text-zinc-300 font-semibold text-xs transition-colors"
+        >
+          %
+        </button>
+        <button
+          onClick={() => setDisplay((prev) => (prev.length > 1 ? prev.slice(0, -1) : '0'))}
+          className="p-2 rounded bg-zinc-850 hover:bg-zinc-800 text-zinc-300 font-semibold text-xs transition-colors"
+        >
+          ⌫
+        </button>
+        <button
+          onClick={() => handleOp('÷')}
+          className="p-2 rounded bg-indigo-600/30 hover:bg-indigo-600/40 text-indigo-300 font-bold text-sm transition-colors"
+        >
+          ÷
+        </button>
+
+        <button
+          onClick={() => handleDigit('7')}
+          className="p-2 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-medium text-xs transition-colors"
+        >
+          7
+        </button>
+        <button
+          onClick={() => handleDigit('8')}
+          className="p-2 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-medium text-xs transition-colors"
+        >
+          8
+        </button>
+        <button
+          onClick={() => handleDigit('9')}
+          className="p-2 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-medium text-xs transition-colors"
+        >
+          9
+        </button>
+        <button
+          onClick={() => handleOp('×')}
+          className="p-2 rounded bg-indigo-600/30 hover:bg-indigo-600/40 text-indigo-300 font-bold text-sm transition-colors"
+        >
+          ×
+        </button>
+
+        <button
+          onClick={() => handleDigit('4')}
+          className="p-2 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-medium text-xs transition-colors"
+        >
+          4
+        </button>
+        <button
+          onClick={() => handleDigit('5')}
+          className="p-2 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-medium text-xs transition-colors"
+        >
+          5
+        </button>
+        <button
+          onClick={() => handleDigit('6')}
+          className="p-2 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-medium text-xs transition-colors"
+        >
+          6
+        </button>
+        <button
+          onClick={() => handleOp('-')}
+          className="p-2 rounded bg-indigo-600/30 hover:bg-indigo-600/40 text-indigo-300 font-bold text-sm transition-colors"
+        >
+          -
+        </button>
+
+        <button
+          onClick={() => handleDigit('1')}
+          className="p-2 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-medium text-xs transition-colors"
+        >
+          1
+        </button>
+        <button
+          onClick={() => handleDigit('2')}
+          className="p-2 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-medium text-xs transition-colors"
+        >
+          2
+        </button>
+        <button
+          onClick={() => handleDigit('3')}
+          className="p-2 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-medium text-xs transition-colors"
+        >
+          3
+        </button>
+        <button
+          onClick={() => handleOp('+')}
+          className="p-2 rounded bg-indigo-600/30 hover:bg-indigo-600/40 text-indigo-300 font-bold text-sm transition-colors"
+        >
+          +
+        </button>
+
+        <button
+          onClick={() => handleDigit('0')}
+          className="col-span-2 p-2 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-medium text-xs transition-colors"
+        >
+          0
+        </button>
+        <button
+          onClick={handleDot}
+          className="p-2 rounded bg-zinc-900 hover:bg-zinc-800 text-zinc-100 font-medium text-xs transition-colors"
+        >
+          .
+        </button>
+        <button
+          onClick={handleEquals}
+          className="p-2 rounded bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition-colors"
+        >
+          =
+        </button>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   20. WEATHER & ENVIRONMENTAL COCKPIT WIDGET
+   ============================================================ */
+export const WeatherPanelWidget: React.FC<IDockviewPanelProps> = ({ params }) => {
+  const [city] = useState(params?.city || 'New York, US')
+  const [isFahrenheit, setIsFahrenheit] = useState(false)
+
+  const rawTemp = params?.temperature ?? 22
+  const temp = isFahrenheit ? Math.round((rawTemp * 9) / 5 + 32) : rawTemp
+  const unit = isFahrenheit ? '°F' : '°C'
+
+  const forecast = params?.forecast || [
+    { day: 'Mon', temp: 24, condition: 'Sunny' },
+    { day: 'Tue', temp: 22, condition: 'Partly Cloudy' },
+    { day: 'Wed', temp: 19, condition: 'Rain' },
+    { day: 'Thu', temp: 21, condition: 'Partly Cloudy' },
+    { day: 'Fri', temp: 26, condition: 'Sunny' }
+  ]
+
+  return (
+    <div className="reframe-panel-body p-3.5 bg-zinc-950/70 text-zinc-100 flex flex-col justify-between h-full select-none overflow-hidden">
+      {/* Top Header */}
+      <div className="flex items-center justify-between pb-2 border-b border-zinc-800 text-xs shrink-0">
+        <div className="flex items-center gap-2">
+          <CloudSun className="w-3.5 h-3.5 text-amber-400" />
+          <span className="font-semibold text-zinc-200">{city}</span>
+        </div>
+        <button
+          onClick={() => setIsFahrenheit((prev) => !prev)}
+          className="px-2 py-0.5 rounded bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-[10px] font-mono text-zinc-300"
+        >
+          {isFahrenheit ? '°F' : '°C'}
+        </button>
+      </div>
+
+      {/* Main Temperature Hero */}
+      <div className="flex items-center justify-between my-2">
+        <div>
+          <div className="text-4xl font-extrabold text-white font-mono tracking-tight">
+            {temp}
+            {unit}
+          </div>
+          <div className="text-xs text-zinc-400 font-medium mt-0.5">
+            {params?.condition || 'Partly Cloudy'}
+          </div>
+        </div>
+        <div className="text-right text-[11px] font-mono text-zinc-400 space-y-0.5">
+          <div>
+            High: {isFahrenheit ? 77 : 25}
+            {unit} • Low: {isFahrenheit ? 62 : 17}
+            {unit}
+          </div>
+          <div>Humidity: {params?.humidity || '48%'}</div>
+          <div>Wind: {params?.windSpeed || '14 km/h'}</div>
+        </div>
+      </div>
+
+      {/* 5-Day Forecast Strip */}
+      <div className="grid grid-cols-5 gap-1.5 pt-2 border-t border-zinc-800/80 shrink-0">
+        {forecast.map((f: any, idx: number) => {
+          const fTemp = isFahrenheit ? Math.round((f.temp * 9) / 5 + 32) : f.temp
+          return (
+            <div
+              key={idx}
+              className="p-1.5 rounded-lg bg-zinc-900/60 border border-zinc-800 flex flex-col items-center text-center"
+            >
+              <span className="text-[10px] text-zinc-400 font-semibold">{f.day}</span>
+              {f.condition.includes('Sun') ? (
+                <Sun className="w-3.5 h-3.5 text-amber-400 my-1" />
+              ) : f.condition.includes('Rain') ? (
+                <CloudRain className="w-3.5 h-3.5 text-blue-400 my-1" />
+              ) : (
+                <Cloud className="w-3.5 h-3.5 text-zinc-400 my-1" />
+              )}
+              <span className="text-[11px] font-mono font-bold text-zinc-200">{fTemp}°</span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================
+   21. EMPTY / WIREFRAME SLOT WIDGET
    ============================================================ */
 export const EmptySlotWidget: React.FC<IDockviewPanelProps> = ({ api }) => {
   const panelId = api.id
@@ -1743,46 +2767,58 @@ export const EmptySlotWidget: React.FC<IDockviewPanelProps> = ({ api }) => {
           className="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-all hover:scale-[1.02] active:scale-[0.98]"
         >
           <Plus className="w-3.5 h-3.5" />
-          <span>Choose Widget (48+)</span>
+          <span>Choose Widget (55+)</span>
         </button>
 
         {/* Quick 1-click pills */}
-        <div className="flex flex-wrap items-center justify-center gap-1.5 mt-3 pt-3 border-t border-zinc-800/60 max-w-xs">
+        <div className="flex flex-wrap items-center justify-center gap-1.5 mt-3 pt-3 border-t border-zinc-800/60 max-w-sm">
           <button
-            onClick={() => handleQuickFill('aichat')}
+            onClick={() => handleQuickFill('clock')}
             className="px-2 py-0.5 rounded text-[10px] bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 hover:text-indigo-200 border border-indigo-500/30 transition-colors"
           >
-            + AI Chat
+            + Clock
           </button>
           <button
-            onClick={() => handleQuickFill('aiagent')}
-            className="px-2 py-0.5 rounded text-[10px] bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 hover:text-purple-200 border border-purple-500/30 transition-colors"
+            onClick={() => handleQuickFill('tasks')}
+            className="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 hover:text-emerald-200 border border-emerald-500/30 transition-colors"
           >
-            + Agent
+            + Tasks
+          </button>
+          <button
+            onClick={() => handleQuickFill('pomodoro')}
+            className="px-2 py-0.5 rounded text-[10px] bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 hover:text-rose-200 border border-rose-500/30 transition-colors"
+          >
+            + Pomodoro
+          </button>
+          <button
+            onClick={() => handleQuickFill('calendar')}
+            className="px-2 py-0.5 rounded text-[10px] bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 hover:text-blue-200 border border-blue-500/30 transition-colors"
+          >
+            + Calendar
+          </button>
+          <button
+            onClick={() => handleQuickFill('calculator')}
+            className="px-2 py-0.5 rounded text-[10px] bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 hover:text-amber-200 border border-amber-500/30 transition-colors"
+          >
+            + Calc
+          </button>
+          <button
+            onClick={() => handleQuickFill('weather')}
+            className="px-2 py-0.5 rounded text-[10px] bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 hover:text-teal-200 border border-teal-500/30 transition-colors"
+          >
+            + Weather
+          </button>
+          <button
+            onClick={() => handleQuickFill('aichat')}
+            className="px-2 py-0.5 rounded text-[10px] bg-zinc-850 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 transition-colors"
+          >
+            + AI Chat
           </button>
           <button
             onClick={() => handleQuickFill('kpi')}
             className="px-2 py-0.5 rounded text-[10px] bg-zinc-850 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 transition-colors"
           >
             + KPI
-          </button>
-          <button
-            onClick={() => handleQuickFill('chart')}
-            className="px-2 py-0.5 rounded text-[10px] bg-zinc-850 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 transition-colors"
-          >
-            + Chart
-          </button>
-          <button
-            onClick={() => handleQuickFill('table')}
-            className="px-2 py-0.5 rounded text-[10px] bg-zinc-850 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 transition-colors"
-          >
-            + Table
-          </button>
-          <button
-            onClick={() => handleQuickFill('terminal')}
-            className="px-2 py-0.5 rounded text-[10px] bg-zinc-850 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 transition-colors"
-          >
-            + Terminal
           </button>
         </div>
       </div>
@@ -1818,5 +2854,17 @@ export const REFRAME_WIDGET_COMPONENTS: Record<string, React.FC<IDockviewPanelPr
   aiprompt: AiPromptPanelWidget,
   prompt: AiPromptPanelWidget,
   aicode: AiCodeGenPanelWidget,
-  code: AiCodeGenPanelWidget
+  code: AiCodeGenPanelWidget,
+  clock: DigitalClockPanelWidget,
+  digitalclock: DigitalClockPanelWidget,
+  worldclock: DigitalClockPanelWidget,
+  calendar: CalendarAgendaPanelWidget,
+  agenda: CalendarAgendaPanelWidget,
+  pomodoro: PomodoroPanelWidget,
+  timer: PomodoroPanelWidget,
+  tasks: TaskChecklistPanelWidget,
+  todo: TaskChecklistPanelWidget,
+  calculator: CalculatorPanelWidget,
+  calc: CalculatorPanelWidget,
+  weather: WeatherPanelWidget
 }

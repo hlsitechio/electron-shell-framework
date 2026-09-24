@@ -43,7 +43,13 @@ import {
   BrainCircuit,
   Sparkles,
   FileCode,
-  Network
+  Network,
+  Calendar,
+  Timer,
+  ListTodo,
+  StickyNote,
+  Calculator,
+  Cloud
 } from 'lucide-react'
 import { useReframeStore } from '../stores/reframe-store'
 import {
@@ -68,6 +74,12 @@ const ICON_MAP: Record<string, React.FC<{ className?: string }>> = {
   Sparkles,
   FileCode,
   Network,
+  Calendar,
+  Timer,
+  ListTodo,
+  StickyNote,
+  Calculator,
+  Cloud,
   Target,
   DollarSign,
   Server,
@@ -257,7 +269,7 @@ export const WidgetCatalogModal: React.FC = () => {
             <input
               autoFocus
               type="text"
-              placeholder="Search 48+ widgets, AI copilot, chat, agents, metrics..."
+              placeholder="Search 55+ widgets, clock, calendar, pomodoro, tasks, AI..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-zinc-900 border border-zinc-800 focus:border-indigo-500 text-white text-xs pl-9 pr-8 py-2 rounded-xl focus:outline-none placeholder:text-zinc-500 transition-colors"

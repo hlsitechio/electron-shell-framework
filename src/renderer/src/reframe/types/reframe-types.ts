@@ -64,6 +64,18 @@ export type WidgetType =
   | 'rag'
   | 'aicode'
   | 'code'
+  | 'clock'
+  | 'digitalclock'
+  | 'worldclock'
+  | 'calendar'
+  | 'agenda'
+  | 'pomodoro'
+  | 'timer'
+  | 'tasks'
+  | 'todo'
+  | 'calculator'
+  | 'calc'
+  | 'weather'
 
 export type LayoutScaffoldType =
   '1-slot' | '2-columns' | '3-columns' | '2x2-grid' | 'header-2-col' | '3-rows'

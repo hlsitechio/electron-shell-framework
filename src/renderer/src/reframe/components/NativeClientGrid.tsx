@@ -18,7 +18,15 @@ import {
   BrainCircuit,
   Database,
   Sliders,
-  FileCode
+  FileCode,
+  Clock,
+  Calendar,
+  CalendarDays,
+  Timer,
+  ListTodo,
+  CheckSquare,
+  Calculator,
+  Cloud
 } from 'lucide-react'
 
 const WIDGET_ICONS: Record<string, React.FC<{ className?: string }>> = {
@@ -41,7 +49,19 @@ const WIDGET_ICONS: Record<string, React.FC<{ className?: string }>> = {
   aiprompt: Sliders,
   prompt: Sliders,
   aicode: FileCode,
-  code: FileCode
+  code: FileCode,
+  clock: Clock,
+  digitalclock: Clock,
+  worldclock: Clock,
+  calendar: CalendarDays,
+  agenda: Calendar,
+  pomodoro: Timer,
+  timer: Timer,
+  tasks: ListTodo,
+  todo: CheckSquare,
+  calculator: Calculator,
+  calc: Calculator,
+  weather: Cloud
 }
 
 interface ClientPanelCardProps {

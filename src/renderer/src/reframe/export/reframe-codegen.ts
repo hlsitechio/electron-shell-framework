@@ -355,6 +355,109 @@ function WidgetRenderer({ panel }: { panel: WidgetItem }) {
     )
   }
 
+  if (panel.widgetType === 'clock' || panel.widgetType === 'digitalclock' || panel.widgetType === 'worldclock') {
+    return (
+      <div className="flex flex-col items-center justify-center py-6 text-center">
+        <div className="text-4xl font-extrabold font-mono text-white tracking-tight">13:58:25 PM</div>
+        <div className="text-xs text-zinc-400 mt-1">Thursday, September 24, 2026 • EDT (UTC-4)</div>
+        <div className="grid grid-cols-3 gap-2 mt-4 w-full">
+          <div className="p-2 rounded bg-zinc-800/60 border border-zinc-700/60 text-center">
+            <span className="text-[10px] text-zinc-400 block">London</span>
+            <span className="text-xs font-mono font-bold text-indigo-300">18:58</span>
+          </div>
+          <div className="p-2 rounded bg-zinc-800/60 border border-zinc-700/60 text-center">
+            <span className="text-[10px] text-zinc-400 block">Tokyo</span>
+            <span className="text-xs font-mono font-bold text-indigo-300">02:58</span>
+          </div>
+          <div className="p-2 rounded bg-zinc-800/60 border border-zinc-700/60 text-center">
+            <span className="text-[10px] text-zinc-400 block">San Francisco</span>
+            <span className="text-xs font-mono font-bold text-indigo-300">10:58</span>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'calendar' || panel.widgetType === 'agenda') {
+    return (
+      <div className="space-y-2 text-xs">
+        <div className="font-semibold text-zinc-200 mb-1">September 2026 • Daily Agenda</div>
+        <div className="p-2 rounded-lg bg-zinc-800/60 border border-zinc-700/60 flex items-center justify-between">
+          <span className="font-medium text-zinc-200">10:00 AM • Sprint Review & Architecture Sync</span>
+          <span className="w-2 h-2 rounded-full bg-indigo-400" />
+        </div>
+        <div className="p-2 rounded-lg bg-zinc-800/60 border border-zinc-700/60 flex items-center justify-between">
+          <span className="font-medium text-zinc-200">02:30 PM • Client Deliverable Demo</span>
+          <span className="w-2 h-2 rounded-full bg-emerald-400" />
+        </div>
+        <div className="p-2 rounded-lg bg-zinc-800/60 border border-zinc-700/60 flex items-center justify-between">
+          <span className="font-medium text-zinc-200">04:15 PM • Kubernetes Mesh Patch Window</span>
+          <span className="w-2 h-2 rounded-full bg-amber-400" />
+        </div>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'pomodoro' || panel.widgetType === 'timer') {
+    return (
+      <div className="flex flex-col items-center justify-center py-4 text-center">
+        <div className="text-4xl font-extrabold font-mono text-white tracking-tight">25:00</div>
+        <div className="text-xs text-rose-400 font-medium mt-1">Focus Sprint (Session 2 of 4)</div>
+        <div className="text-[11px] text-zinc-400 mt-2">Focusing on high-density architecture</div>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'tasks' || panel.widgetType === 'todo') {
+    return (
+      <div className="space-y-1.5 text-xs">
+        <div className="p-2 rounded bg-zinc-800/60 border border-zinc-700/60 flex items-center justify-between">
+          <span className="line-through text-zinc-500">✓ Review production cluster telemetry & APM logs</span>
+          <span className="text-[9px] uppercase font-mono px-1 rounded bg-rose-500/20 text-rose-300">High</span>
+        </div>
+        <div className="p-2 rounded bg-zinc-800/60 border border-zinc-700/60 flex items-center justify-between">
+          <span className="line-through text-zinc-500">✓ Deploy automated SOC2 compliance retention policy</span>
+          <span className="text-[9px] uppercase font-mono px-1 rounded bg-rose-500/20 text-rose-300">High</span>
+        </div>
+        <div className="p-2 rounded bg-zinc-800/60 border border-zinc-700/60 flex items-center justify-between text-zinc-200">
+          <span>□ Finalize enterprise client dashboard presentation</span>
+          <span className="text-[9px] uppercase font-mono px-1 rounded bg-amber-500/20 text-amber-300">Medium</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'calculator' || panel.widgetType === 'calc') {
+    return (
+      <div className="p-3 bg-zinc-900 rounded-lg border border-zinc-800 text-center font-mono">
+        <div className="text-xs text-zinc-500 text-right">1,250 × 1.2 = 1,500</div>
+        <div className="text-2xl font-bold text-white text-right my-2">1,500</div>
+        <div className="grid grid-cols-4 gap-1 text-xs">
+          {['7', '8', '9', '÷', '4', '5', '6', '×', '1', '2', '3', '-', '0', '.', '=', '+'].map((k) => (
+            <div key={k} className="p-1.5 rounded bg-zinc-800/60 text-zinc-200">{k}</div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'weather') {
+    return (
+      <div className="space-y-3 text-xs">
+        <div className="flex justify-between items-center">
+          <div>
+            <div className="text-3xl font-extrabold font-mono text-white">22°C</div>
+            <div className="text-zinc-400">New York, US • Partly Cloudy</div>
+          </div>
+          <div className="text-right text-[11px] font-mono text-zinc-400">
+            <div>High: 25°C • Low: 17°C</div>
+            <div>Humidity: 48% • Wind: 14 km/h</div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="py-8 text-center text-xs text-zinc-500 italic">
       [Live widget container: {panel.title}]
