@@ -72,7 +72,7 @@ import {
 interface WidgetItem {
   id: string
   title: string
-  widgetType: 'kpi' | 'chart' | 'table' | 'notes' | 'activity' | 'actionpad' | 'embed' | 'terminal' | 'cluster'
+  widgetType: 'kpi' | 'chart' | 'table' | 'notes' | 'activity' | 'actionpad' | 'embed' | 'terminal' | 'cluster' | 'empty'
   widgetProps: Record<string, any>
 }
 
@@ -227,6 +227,15 @@ export const ClientDashboard: React.FC = () => {
 }
 
 function WidgetRenderer({ panel }: { panel: WidgetItem }) {
+  if (panel.widgetType === 'empty') {
+    return (
+      <div className="w-full h-full min-h-[160px] rounded-xl border border-dashed border-zinc-800 bg-zinc-900/30 flex flex-col items-center justify-center p-6 text-center space-y-1">
+        <span className="text-xs font-medium text-zinc-400">Empty Wireframe Slot</span>
+        <span className="text-[11px] text-zinc-600 font-mono">Unassigned position in layout</span>
+      </div>
+    )
+  }
+
   if (panel.widgetType === 'notes') {
     return (
       <div className="text-xs text-zinc-300 leading-relaxed whitespace-pre-line">

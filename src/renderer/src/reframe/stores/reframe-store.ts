@@ -9,7 +9,8 @@ import type {
   HeaderTabItem,
   LeftTabItem,
   RightTabItem,
-  FooterTabItem
+  FooterTabItem,
+  LayoutScaffoldType
 } from '../types/reframe-types'
 import type { WidgetCatalogItem } from '../widgets/catalog/widget-catalog'
 
@@ -143,6 +144,16 @@ export interface ReframeStoreState {
   ) => void
   removePanel: (id: string) => void
   updatePanel: (id: string, updates: Partial<PanelConfig>) => void
+
+  // Wireframe & Layout Mapping
+  targetSlotId: string | null
+  setTargetSlotId: (slotId: string | null) => void
+  addEmptySlot: (
+    direction?: 'right' | 'below' | 'left' | 'above',
+    referencePanelId?: string
+  ) => void
+  scaffoldBlankLayout: (scaffold: LayoutScaffoldType) => void
+  fillEmptySlot: (slotId: string, item: WidgetCatalogItem) => void
 
   // Catalog Modal & Actions
   setIsCatalogModalOpen: (open: boolean) => void
@@ -868,6 +879,7 @@ export const useReframeStore = create<ReframeStoreState>((set, get) => ({
   isBakeModalOpen: false,
   isCatalogModalOpen: false,
   catalogPlacementDirection: 'right',
+  targetSlotId: null,
   activeTab: 'theme',
   deviceMode: 'desktop',
   selectedThemeKey: 'dockview-theme-abyss',
@@ -1337,8 +1349,372 @@ export const useReframeStore = create<ReframeStoreState>((set, get) => ({
     }
   },
 
+  setTargetSlotId: (slotId) => set({ targetSlotId: slotId }),
+
+  addEmptySlot: (direction = 'right', referencePanelId) => {
+    const { panels, addPanel } = get()
+    const id = `slot-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`
+    const isColumn = direction === 'right' || direction === 'left'
+    const title = isColumn ? 'Empty Column' : 'Empty Row'
+
+    const panelList = Object.keys(panels)
+    let refId = referencePanelId
+    if (!refId && panelList.length > 0) {
+      refId = panelList[panelList.length - 1]
+    }
+
+    addPanel(
+      {
+        id,
+        title,
+        widgetType: 'empty',
+        widgetProps: {},
+        closable: true
+      },
+      refId ? { referencePanel: refId, direction } : undefined
+    )
+  },
+
+  scaffoldBlankLayout: (scaffold) => {
+    const { dockviewApi, activeHeaderTabId, tabWorkspaces } = get()
+
+    let newPanels: Record<string, PanelConfig> = {}
+
+    if (scaffold === '1-slot') {
+      newPanels = {
+        'slot-1': {
+          id: 'slot-1',
+          title: 'Empty Slot',
+          widgetType: 'empty',
+          widgetProps: {},
+          closable: true
+        }
+      }
+    } else if (scaffold === '2-columns') {
+      newPanels = {
+        'slot-1': {
+          id: 'slot-1',
+          title: 'Empty Column 1',
+          widgetType: 'empty',
+          widgetProps: {},
+          closable: true
+        },
+        'slot-2': {
+          id: 'slot-2',
+          title: 'Empty Column 2',
+          widgetType: 'empty',
+          widgetProps: {},
+          closable: true
+        }
+      }
+    } else if (scaffold === '3-columns') {
+      newPanels = {
+        'slot-1': {
+          id: 'slot-1',
+          title: 'Empty Column 1',
+          widgetType: 'empty',
+          widgetProps: {},
+          closable: true
+        },
+        'slot-2': {
+          id: 'slot-2',
+          title: 'Empty Column 2',
+          widgetType: 'empty',
+          widgetProps: {},
+          closable: true
+        },
+        'slot-3': {
+          id: 'slot-3',
+          title: 'Empty Column 3',
+          widgetType: 'empty',
+          widgetProps: {},
+          closable: true
+        }
+      }
+    } else if (scaffold === '2x2-grid') {
+      newPanels = {
+        'slot-1': {
+          id: 'slot-1',
+          title: 'Quadrant 1',
+          widgetType: 'empty',
+          widgetProps: {},
+          closable: true
+        },
+        'slot-2': {
+          id: 'slot-2',
+          title: 'Quadrant 2',
+          widgetType: 'empty',
+          widgetProps: {},
+          closable: true
+        },
+        'slot-3': {
+          id: 'slot-3',
+          title: 'Quadrant 3',
+          widgetType: 'empty',
+          widgetProps: {},
+          closable: true
+        },
+        'slot-4': {
+          id: 'slot-4',
+          title: 'Quadrant 4',
+          widgetType: 'empty',
+          widgetProps: {},
+          closable: true
+        }
+      }
+    } else if (scaffold === 'header-2-col') {
+      newPanels = {
+        'slot-top': {
+          id: 'slot-top',
+          title: 'Top Banner Slot',
+          widgetType: 'empty',
+          widgetProps: {},
+          closable: true
+        },
+        'slot-left': {
+          id: 'slot-left',
+          title: 'Left Column Slot',
+          widgetType: 'empty',
+          widgetProps: {},
+          closable: true
+        },
+        'slot-right': {
+          id: 'slot-right',
+          title: 'Right Column Slot',
+          widgetType: 'empty',
+          widgetProps: {},
+          closable: true
+        }
+      }
+    } else if (scaffold === '3-rows') {
+      newPanels = {
+        'slot-row1': {
+          id: 'slot-row1',
+          title: 'Empty Row 1',
+          widgetType: 'empty',
+          widgetProps: {},
+          closable: true
+        },
+        'slot-row2': {
+          id: 'slot-row2',
+          title: 'Empty Row 2',
+          widgetType: 'empty',
+          widgetProps: {},
+          closable: true
+        },
+        'slot-row3': {
+          id: 'slot-row3',
+          title: 'Empty Row 3',
+          widgetType: 'empty',
+          widgetProps: {},
+          closable: true
+        }
+      }
+    }
+
+    const updatedWorkspaces = { ...tabWorkspaces }
+    if (activeHeaderTabId) {
+      updatedWorkspaces[activeHeaderTabId] = {
+        ...(updatedWorkspaces[activeHeaderTabId] || {}),
+        panels: newPanels,
+        layoutJson: undefined
+      }
+    }
+
+    set({
+      panels: newPanels,
+      tabWorkspaces: updatedWorkspaces,
+      isRestoringLayout: true
+    })
+
+    if (dockviewApi) {
+      try {
+        dockviewApi.clear()
+        if (scaffold === '1-slot') {
+          dockviewApi.addPanel({
+            id: 'slot-1',
+            component: 'empty',
+            title: 'Empty Slot',
+            params: {}
+          })
+        } else if (scaffold === '2-columns') {
+          dockviewApi.addPanel({
+            id: 'slot-1',
+            component: 'empty',
+            title: 'Empty Column 1',
+            params: {}
+          })
+          dockviewApi.addPanel({
+            id: 'slot-2',
+            component: 'empty',
+            title: 'Empty Column 2',
+            params: {},
+            position: { referencePanel: 'slot-1', direction: 'right' }
+          })
+        } else if (scaffold === '3-columns') {
+          dockviewApi.addPanel({
+            id: 'slot-1',
+            component: 'empty',
+            title: 'Empty Column 1',
+            params: {}
+          })
+          dockviewApi.addPanel({
+            id: 'slot-2',
+            component: 'empty',
+            title: 'Empty Column 2',
+            params: {},
+            position: { referencePanel: 'slot-1', direction: 'right' }
+          })
+          dockviewApi.addPanel({
+            id: 'slot-3',
+            component: 'empty',
+            title: 'Empty Column 3',
+            params: {},
+            position: { referencePanel: 'slot-2', direction: 'right' }
+          })
+        } else if (scaffold === '2x2-grid') {
+          dockviewApi.addPanel({
+            id: 'slot-1',
+            component: 'empty',
+            title: 'Quadrant 1',
+            params: {}
+          })
+          dockviewApi.addPanel({
+            id: 'slot-2',
+            component: 'empty',
+            title: 'Quadrant 2',
+            params: {},
+            position: { referencePanel: 'slot-1', direction: 'right' }
+          })
+          dockviewApi.addPanel({
+            id: 'slot-3',
+            component: 'empty',
+            title: 'Quadrant 3',
+            params: {},
+            position: { referencePanel: 'slot-1', direction: 'below' }
+          })
+          dockviewApi.addPanel({
+            id: 'slot-4',
+            component: 'empty',
+            title: 'Quadrant 4',
+            params: {},
+            position: { referencePanel: 'slot-2', direction: 'below' }
+          })
+        } else if (scaffold === 'header-2-col') {
+          dockviewApi.addPanel({
+            id: 'slot-top',
+            component: 'empty',
+            title: 'Top Banner Slot',
+            params: {}
+          })
+          dockviewApi.addPanel({
+            id: 'slot-left',
+            component: 'empty',
+            title: 'Left Column Slot',
+            params: {},
+            position: { referencePanel: 'slot-top', direction: 'below' }
+          })
+          dockviewApi.addPanel({
+            id: 'slot-right',
+            component: 'empty',
+            title: 'Right Column Slot',
+            params: {},
+            position: { referencePanel: 'slot-left', direction: 'right' }
+          })
+        } else if (scaffold === '3-rows') {
+          dockviewApi.addPanel({
+            id: 'slot-row1',
+            component: 'empty',
+            title: 'Empty Row 1',
+            params: {}
+          })
+          dockviewApi.addPanel({
+            id: 'slot-row2',
+            component: 'empty',
+            title: 'Empty Row 2',
+            params: {},
+            position: { referencePanel: 'slot-row1', direction: 'below' }
+          })
+          dockviewApi.addPanel({
+            id: 'slot-row3',
+            component: 'empty',
+            title: 'Empty Row 3',
+            params: {},
+            position: { referencePanel: 'slot-row2', direction: 'below' }
+          })
+        }
+      } catch (err) {
+        console.warn('Failed to scaffold layout in dockview', err)
+      } finally {
+        set({ isRestoringLayout: false })
+      }
+    } else {
+      set({ isRestoringLayout: false })
+    }
+  },
+
+  fillEmptySlot: (slotId, item) => {
+    const { dockviewApi, panels, activeHeaderTabId, tabWorkspaces } = get()
+    if (!panels[slotId]) return
+
+    const newId = `${item.widgetType}-${Date.now().toString(36)}`
+    const newPanelConfig: PanelConfig = {
+      id: newId,
+      title: item.title,
+      widgetType: item.widgetType,
+      widgetProps: { ...item.defaultProps },
+      closable: true
+    }
+
+    const nextPanels = { ...panels }
+    delete nextPanels[slotId]
+    nextPanels[newId] = newPanelConfig
+
+    const updatedWorkspaces = { ...tabWorkspaces }
+    if (activeHeaderTabId) {
+      updatedWorkspaces[activeHeaderTabId] = {
+        ...(updatedWorkspaces[activeHeaderTabId] || {}),
+        panels: nextPanels
+      }
+    }
+
+    set({
+      panels: nextPanels,
+      tabWorkspaces: updatedWorkspaces,
+      targetSlotId: null,
+      isRestoringLayout: true
+    })
+
+    if (dockviewApi) {
+      try {
+        const oldPanel = dockviewApi.getPanel(slotId)
+        dockviewApi.addPanel({
+          id: newId,
+          component: item.widgetType,
+          title: item.title,
+          params: item.defaultProps,
+          position: { referencePanel: slotId, direction: 'within' }
+        })
+        if (oldPanel) {
+          dockviewApi.removePanel(oldPanel)
+        }
+      } catch (err) {
+        console.warn('Failed to replace empty slot in dockview', err)
+      } finally {
+        set({ isRestoringLayout: false })
+      }
+    } else {
+      set({ isRestoringLayout: false })
+    }
+  },
+
   insertCatalogWidget: (item, direction) => {
-    const { addPanel, catalogPlacementDirection } = get()
+    const { targetSlotId, fillEmptySlot, addPanel, catalogPlacementDirection } = get()
+    if (targetSlotId) {
+      fillEmptySlot(targetSlotId, item)
+      return
+    }
+
     const targetDir = direction || item.defaultDirection || catalogPlacementDirection || 'right'
     const id = `${item.widgetType}-${Date.now()}`
     const panelConfig: PanelConfig = {

@@ -91,7 +91,10 @@ export const WidgetCatalogModal: React.FC = () => {
     setIsCatalogModalOpen,
     catalogPlacementDirection,
     setCatalogPlacementDirection,
-    insertCatalogWidget
+    insertCatalogWidget,
+    targetSlotId,
+    setTargetSlotId,
+    panels
   } = useReframeStore()
 
   const [searchQuery, setSearchQuery] = useState('')
@@ -165,6 +168,21 @@ export const WidgetCatalogModal: React.FC = () => {
                 <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-zinc-800 text-zinc-300 border border-zinc-700">
                   {WIDGET_CATALOG.length} Pre-made
                 </span>
+                {targetSlotId && panels[targetSlotId] && (
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 flex items-center gap-1.5 shadow-sm">
+                    <span>Filling: {panels[targetSlotId].title}</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setTargetSlotId(null)
+                      }}
+                      className="hover:text-white"
+                      title="Cancel targeting slot"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                )}
               </div>
               <p className="text-xs text-zinc-400">
                 Client-ready Dockview components with zero external dependencies.
@@ -174,30 +192,32 @@ export const WidgetCatalogModal: React.FC = () => {
 
           {/* Placement selector & Close button */}
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 text-xs text-zinc-300 bg-zinc-950 px-2.5 py-1.5 rounded-lg border border-zinc-800">
-              <span className="text-zinc-500 font-medium">Placement:</span>
-              <select
-                value={catalogPlacementDirection}
-                onChange={(e) => setCatalogPlacementDirection(e.target.value as any)}
-                className="bg-transparent text-white focus:outline-none cursor-pointer font-medium"
-              >
-                <option value="right" className="bg-zinc-900 text-white">
-                  + Right
-                </option>
-                <option value="below" className="bg-zinc-900 text-white">
-                  + Below
-                </option>
-                <option value="left" className="bg-zinc-900 text-white">
-                  + Left
-                </option>
-                <option value="above" className="bg-zinc-900 text-white">
-                  + Above
-                </option>
-                <option value="stack" className="bg-zinc-900 text-white">
-                  Tab Stack
-                </option>
-              </select>
-            </div>
+            {!targetSlotId ? (
+              <div className="flex items-center gap-1.5 text-xs text-zinc-300 bg-zinc-950 px-2.5 py-1.5 rounded-lg border border-zinc-800">
+                <span className="text-zinc-500 font-medium">Placement:</span>
+                <select
+                  value={catalogPlacementDirection}
+                  onChange={(e) => setCatalogPlacementDirection(e.target.value as any)}
+                  className="bg-transparent text-white focus:outline-none cursor-pointer font-medium"
+                >
+                  <option value="right" className="bg-zinc-900 text-white">
+                    + Right
+                  </option>
+                  <option value="below" className="bg-zinc-900 text-white">
+                    + Below
+                  </option>
+                  <option value="left" className="bg-zinc-900 text-white">
+                    + Left
+                  </option>
+                  <option value="above" className="bg-zinc-900 text-white">
+                    + Above
+                  </option>
+                  <option value="stack" className="bg-zinc-900 text-white">
+                    Tab Stack
+                  </option>
+                </select>
+              </div>
+            ) : null}
 
             <label className="flex items-center gap-1.5 text-xs text-zinc-300 cursor-pointer hover:text-white">
               <input

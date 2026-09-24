@@ -654,4 +654,85 @@ describe('Reframe Platform & Store', () => {
     expect(tsx).not.toContain('dockview-react')
     expect(tsx).not.toContain('dockview.css')
   })
+
+  it('creates blank columns and rows without widgets to map custom layout', () => {
+    const { loadTemplate, addEmptySlot } = useReframeStore.getState()
+    loadTemplate('blank')
+
+    expect(Object.keys(useReframeStore.getState().panels).length).toBe(0)
+
+    // Add first empty column slot
+    addEmptySlot('right')
+    let state = useReframeStore.getState()
+    expect(Object.keys(state.panels).length).toBe(1)
+    const slot1 = Object.values(state.panels)[0]
+    expect(slot1.widgetType).toBe('empty')
+    expect(slot1.title).toBe('Empty Column')
+
+    // Add second empty row slot
+    addEmptySlot('below')
+    state = useReframeStore.getState()
+    expect(Object.keys(state.panels).length).toBe(2)
+    const slot2 = Object.values(state.panels)[1]
+    expect(slot2.widgetType).toBe('empty')
+    expect(slot2.title).toBe('Empty Row')
+  })
+
+  it('scaffolds wireframe layout grids (2-columns, 3-columns, 2x2-grid, 3-rows)', () => {
+    const { scaffoldBlankLayout } = useReframeStore.getState()
+
+    // 2 Columns scaffold
+    scaffoldBlankLayout('2-columns')
+    let state = useReframeStore.getState()
+    expect(Object.keys(state.panels).length).toBe(2)
+    expect(state.panels['slot-1']?.widgetType).toBe('empty')
+    expect(state.panels['slot-2']?.widgetType).toBe('empty')
+
+    // 3 Columns scaffold
+    scaffoldBlankLayout('3-columns')
+    state = useReframeStore.getState()
+    expect(Object.keys(state.panels).length).toBe(3)
+    expect(state.panels['slot-3']?.widgetType).toBe('empty')
+
+    // 2x2 Grid scaffold
+    scaffoldBlankLayout('2x2-grid')
+    state = useReframeStore.getState()
+    expect(Object.keys(state.panels).length).toBe(4)
+    expect(state.panels['slot-4']?.widgetType).toBe('empty')
+
+    // 3 Rows scaffold
+    scaffoldBlankLayout('3-rows')
+    state = useReframeStore.getState()
+    expect(Object.keys(state.panels).length).toBe(3)
+    expect(state.panels['slot-row1']?.widgetType).toBe('empty')
+  })
+
+  it('replaces an empty wireframe slot in-place when choosing a widget', () => {
+    const { scaffoldBlankLayout, setTargetSlotId, insertCatalogWidget } = useReframeStore.getState()
+
+    // Scaffold 2 columns
+    scaffoldBlankLayout('2-columns')
+    expect(useReframeStore.getState().panels['slot-1']).toBeDefined()
+    expect(useReframeStore.getState().panels['slot-1'].widgetType).toBe('empty')
+
+    // Target slot-1 and insert a catalog widget
+    setTargetSlotId('slot-1')
+    expect(useReframeStore.getState().targetSlotId).toBe('slot-1')
+
+    const catalogItem = WIDGET_CATALOG.find((w) => w.id === 'chart-revenue-trajectory')!
+    expect(catalogItem).toBeDefined()
+
+    insertCatalogWidget(catalogItem)
+    const state = useReframeStore.getState()
+
+    // slot-1 was replaced in place
+    expect(state.panels['slot-1']).toBeUndefined()
+    expect(state.targetSlotId).toBeNull()
+
+    const replacedPanel = Object.values(state.panels).find((p) => p.title === catalogItem.title)
+    expect(replacedPanel).toBeDefined()
+    expect(replacedPanel?.widgetType).toBe('chart')
+    // slot-2 remains an empty wireframe slot
+    expect(state.panels['slot-2']?.widgetType).toBe('empty')
+  })
 })

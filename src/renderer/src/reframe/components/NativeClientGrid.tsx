@@ -12,7 +12,8 @@ import {
   Globe,
   Layers,
   Terminal,
-  Server
+  Server,
+  LayoutGrid
 } from 'lucide-react'
 
 const WIDGET_ICONS: Record<string, React.FC<{ className?: string }>> = {
@@ -24,7 +25,8 @@ const WIDGET_ICONS: Record<string, React.FC<{ className?: string }>> = {
   actionpad: Zap,
   embed: Globe,
   terminal: Terminal,
-  cluster: Server
+  cluster: Server,
+  empty: LayoutGrid
 }
 
 interface ClientPanelCardProps {
@@ -44,6 +46,16 @@ const ClientPanelCard: React.FC<ClientPanelCardProps> = ({ groupData, panels }) 
     return (
       <div className="w-full h-full rounded-xl bg-zinc-900/30 border border-zinc-800/50 flex items-center justify-center p-4">
         <span className="text-xs text-zinc-500">Panel not found</span>
+      </div>
+    )
+  }
+
+  if (panel.widgetType === 'empty') {
+    return (
+      <div className="w-full h-full min-h-[180px] rounded-xl bg-zinc-900/30 border border-dashed border-zinc-800/80 p-6 flex flex-col items-center justify-center text-center space-y-2 select-none">
+        <LayoutGrid className="w-7 h-7 text-zinc-600" />
+        <span className="text-xs font-medium text-zinc-400">Empty Wireframe Slot</span>
+        <span className="text-[11px] text-zinc-600">Reserved position in client layout</span>
       </div>
     )
   }

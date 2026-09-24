@@ -44,7 +44,19 @@ export interface ReframeThemeConfig {
 }
 
 export type WidgetType =
-  'kpi' | 'chart' | 'table' | 'notes' | 'activity' | 'embed' | 'actionpad' | 'terminal' | 'cluster'
+  | 'kpi'
+  | 'chart'
+  | 'table'
+  | 'notes'
+  | 'activity'
+  | 'embed'
+  | 'actionpad'
+  | 'terminal'
+  | 'cluster'
+  | 'empty'
+
+export type LayoutScaffoldType =
+  '1-slot' | '2-columns' | '3-columns' | '2x2-grid' | 'header-2-col' | '3-rows'
 
 export interface KpiWidgetProps {
   label: string
