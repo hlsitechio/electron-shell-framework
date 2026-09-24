@@ -188,6 +188,11 @@ export interface ReframeConfig {
   theme: ReframeThemeConfig
   panels: Record<string, PanelConfig>
   dockviewLayout?: any
+  headerTabs?: HeaderTabItem[]
+  activeHeaderTabId?: string
+  tabWorkspaces?: Record<string, any>
+  leftTabs?: LeftTabItem[]
+  footerTabs?: FooterTabItem[]
 }
 
 export const FONT_MAP: Record<FontFamilyKey, string> = {

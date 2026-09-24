@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   ArrowRight,
   Check,
@@ -48,7 +48,7 @@ export function BranchSwitchboardDialog({
   const [confirmClean, setConfirmClean] = useState(false)
   const [statusMessage, setStatusMessage] = useState<{ text: string; ok: boolean } | null>(null)
 
-  const loadBranches = async () => {
+  const loadBranches = useCallback(async () => {
     if (!repo) return
     setLoading(true)
     try {
@@ -59,7 +59,7 @@ export function BranchSwitchboardDialog({
     } finally {
       setLoading(false)
     }
-  }
+  }, [repo])
 
   useEffect(() => {
     if (open && repo) {
@@ -69,7 +69,7 @@ export function BranchSwitchboardDialog({
       setNewBranchName('')
       setFilter('')
     }
-  }, [open, repo?.id])
+  }, [open, repo, loadBranches])
 
   // Real-time watcher notification
   useEffect(() => {
@@ -84,7 +84,7 @@ export function BranchSwitchboardDialog({
     })
 
     return unsub
-  }, [open, repo?.id])
+  }, [open, repo, loadBranches])
 
   const filteredBranches = useMemo(() => {
     const q = filter.trim().toLowerCase()

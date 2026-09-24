@@ -379,15 +379,53 @@ export const useReframeStore = create<ReframeStoreState>((set, get) => ({
       try {
         dockviewApi.clear()
         if (Object.keys(newPanels).length > 0) {
-          Object.values(newPanels).forEach((p, idx) => {
+          const panelEntries = Object.values(newPanels)
+          if (panelEntries.length === 5) {
             dockviewApi.addPanel({
-              id: p.id,
-              component: p.widgetType,
-              title: p.title,
-              params: p.widgetProps,
-              position: idx === 0 ? undefined : { direction: idx % 2 === 0 ? 'below' : 'right' }
+              id: panelEntries[0].id,
+              component: panelEntries[0].widgetType,
+              title: panelEntries[0].title,
+              params: panelEntries[0].widgetProps
             })
-          })
+            dockviewApi.addPanel({
+              id: panelEntries[1].id,
+              component: panelEntries[1].widgetType,
+              title: panelEntries[1].title,
+              params: panelEntries[1].widgetProps,
+              position: { referencePanel: panelEntries[0].id, direction: 'right' }
+            })
+            dockviewApi.addPanel({
+              id: panelEntries[2].id,
+              component: panelEntries[2].widgetType,
+              title: panelEntries[2].title,
+              params: panelEntries[2].widgetProps,
+              position: { referencePanel: panelEntries[0].id, direction: 'below' }
+            })
+            dockviewApi.addPanel({
+              id: panelEntries[3].id,
+              component: panelEntries[3].widgetType,
+              title: panelEntries[3].title,
+              params: panelEntries[3].widgetProps,
+              position: { referencePanel: panelEntries[1].id, direction: 'below' }
+            })
+            dockviewApi.addPanel({
+              id: panelEntries[4].id,
+              component: panelEntries[4].widgetType,
+              title: panelEntries[4].title,
+              params: panelEntries[4].widgetProps,
+              position: { referencePanel: panelEntries[1].id, direction: 'right' }
+            })
+          } else {
+            panelEntries.forEach((p, idx) => {
+              dockviewApi.addPanel({
+                id: p.id,
+                component: p.widgetType,
+                title: p.title,
+                params: p.widgetProps,
+                position: idx === 0 ? undefined : { direction: idx % 2 === 0 ? 'below' : 'right' }
+              })
+            })
+          }
         }
       } catch {
         // ignore
@@ -1338,7 +1376,7 @@ export const useReframeStore = create<ReframeStoreState>((set, get) => ({
 
     const config: ReframeConfig = {
       id: `reframe-${Date.now()}`,
-      version: '1.0.0',
+      version: '1.1.0',
       meta: {
         name: TEMPLATES[state.currentTemplateId]?.name || 'Custom Reframe Template',
         description:
@@ -1357,7 +1395,12 @@ export const useReframeStore = create<ReframeStoreState>((set, get) => ({
         density: 'comfortable'
       },
       panels: state.panels,
-      dockviewLayout: serializedLayout
+      dockviewLayout: serializedLayout,
+      headerTabs: state.headerTabs,
+      activeHeaderTabId: state.activeHeaderTabId,
+      tabWorkspaces: state.tabWorkspaces,
+      leftTabs: state.leftTabs,
+      footerTabs: state.footerTabs
     }
 
     return JSON.stringify(config, null, 2)
@@ -1368,27 +1411,77 @@ export const useReframeStore = create<ReframeStoreState>((set, get) => ({
       const config = JSON.parse(jsonStr) as ReframeConfig
       if (!config.framing || !config.panels) return false
 
-      set({
+      const updates: Partial<ReframeStoreState> = {
         headerConfig: config.framing.header,
         footerConfig: config.framing.footer,
         panels: config.panels
-      })
+      }
+
+      if (config.headerTabs) updates.headerTabs = config.headerTabs
+      if (config.activeHeaderTabId) updates.activeHeaderTabId = config.activeHeaderTabId
+      if (config.tabWorkspaces) updates.tabWorkspaces = config.tabWorkspaces
+      if (config.leftTabs) updates.leftTabs = config.leftTabs
+      if (config.footerTabs) updates.footerTabs = config.footerTabs
+
+      set(updates)
 
       const { dockviewApi } = get()
       if (dockviewApi) {
         if (config.dockviewLayout) {
-          dockviewApi.fromJSON(config.dockviewLayout)
+          try {
+            dockviewApi.fromJSON(config.dockviewLayout)
+          } catch {
+            // fallback
+          }
         } else {
           dockviewApi.clear()
-          Object.values(config.panels).forEach((p, idx) => {
+          const panelEntries = Object.values(config.panels)
+          if (panelEntries.length === 5) {
             dockviewApi.addPanel({
-              id: p.id,
-              component: p.widgetType,
-              title: p.title,
-              params: p.widgetProps,
-              position: idx === 0 ? undefined : { direction: idx % 2 === 0 ? 'below' : 'right' }
+              id: panelEntries[0].id,
+              component: panelEntries[0].widgetType,
+              title: panelEntries[0].title,
+              params: panelEntries[0].widgetProps
             })
-          })
+            dockviewApi.addPanel({
+              id: panelEntries[1].id,
+              component: panelEntries[1].widgetType,
+              title: panelEntries[1].title,
+              params: panelEntries[1].widgetProps,
+              position: { referencePanel: panelEntries[0].id, direction: 'right' }
+            })
+            dockviewApi.addPanel({
+              id: panelEntries[2].id,
+              component: panelEntries[2].widgetType,
+              title: panelEntries[2].title,
+              params: panelEntries[2].widgetProps,
+              position: { referencePanel: panelEntries[0].id, direction: 'below' }
+            })
+            dockviewApi.addPanel({
+              id: panelEntries[3].id,
+              component: panelEntries[3].widgetType,
+              title: panelEntries[3].title,
+              params: panelEntries[3].widgetProps,
+              position: { referencePanel: panelEntries[1].id, direction: 'below' }
+            })
+            dockviewApi.addPanel({
+              id: panelEntries[4].id,
+              component: panelEntries[4].widgetType,
+              title: panelEntries[4].title,
+              params: panelEntries[4].widgetProps,
+              position: { referencePanel: panelEntries[1].id, direction: 'right' }
+            })
+          } else {
+            panelEntries.forEach((p, idx) => {
+              dockviewApi.addPanel({
+                id: p.id,
+                component: p.widgetType,
+                title: p.title,
+                params: p.widgetProps,
+                position: idx === 0 ? undefined : { direction: idx % 2 === 0 ? 'below' : 'right' }
+              })
+            })
+          }
         }
       }
       return true

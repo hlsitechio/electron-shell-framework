@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   AlertTriangle,
   ArrowDown,
@@ -87,7 +87,7 @@ export function GitUpdateDialog({
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [logs])
 
-  const runCheck = async () => {
+  const runCheck = useCallback(async () => {
     setChecking(true)
     setApplyResult(null)
     try {
@@ -116,7 +116,7 @@ export function GitUpdateDialog({
     } finally {
       setChecking(false)
     }
-  }
+  }, [repoIdOrPath, repoName])
 
   // Trigger check when opened
   useEffect(() => {
@@ -126,7 +126,7 @@ export function GitUpdateDialog({
       setCurrentStep('idle')
       void runCheck()
     }
-  }, [open, repoIdOrPath])
+  }, [open, runCheck])
 
   const runUpdate = async () => {
     if (applying) return

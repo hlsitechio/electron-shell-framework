@@ -72,7 +72,7 @@ import {
 interface WidgetItem {
   id: string
   title: string
-  widgetType: 'kpi' | 'chart' | 'table' | 'notes' | 'activity' | 'actionpad' | 'embed' | 'terminal' | 'cluster' | 'empty'
+  widgetType: string
   widgetProps: Record<string, any>
 }
 

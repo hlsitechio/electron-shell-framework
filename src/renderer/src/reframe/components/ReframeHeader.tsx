@@ -15,7 +15,13 @@ import {
   Shield,
   Zap,
   RefreshCw,
-  ChevronDown
+  ChevronDown,
+  BrainCircuit,
+  Video,
+  FileText,
+  Calendar,
+  TrendingUp,
+  ShieldCheck
 } from 'lucide-react'
 import { useReframeStore, DOCKVIEW_THEMES, TEMPLATES, TemplateId } from '../stores/reframe-store'
 import { FONT_MAP } from '../types/reframe-types'
@@ -28,7 +34,13 @@ const ICON_MAP: Record<string, React.FC<{ className?: string }>> = {
   Sparkles,
   Shield,
   Zap,
-  RefreshCw
+  RefreshCw,
+  BrainCircuit,
+  Video,
+  FileText,
+  Calendar,
+  TrendingUp,
+  ShieldCheck
 }
 
 export const ReframeHeader: React.FC = () => {

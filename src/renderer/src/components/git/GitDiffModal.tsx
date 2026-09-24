@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Archive,
   Check,
@@ -68,7 +68,7 @@ export function GitDiffModal({
 
   const diffScrollRef = useRef<HTMLDivElement | null>(null)
 
-  const loadDiff = async () => {
+  const loadDiff = useCallback(async () => {
     if (!repo) return
     setLoading(true)
     setStatusMessage(null)
@@ -89,7 +89,7 @@ export function GitDiffModal({
     } finally {
       setLoading(false)
     }
-  }
+  }, [repo])
 
   // Load when opened or repo changed
   useEffect(() => {
@@ -104,7 +104,7 @@ export function GitDiffModal({
       setConfirmDiscard(null)
       setShowStash(false)
     }
-  }, [open, repo?.id])
+  }, [open, repo, loadDiff])
 
   // Listen to live background watcher events to refresh diffs immediately
   useEffect(() => {
@@ -119,7 +119,7 @@ export function GitDiffModal({
     })
 
     return unsub
-  }, [open, repo?.id])
+  }, [open, repo, loadDiff])
 
   const filteredFiles = useMemo(() => {
     const q = filter.trim().toLowerCase()
